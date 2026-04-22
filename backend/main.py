@@ -15,7 +15,10 @@ app = FastAPI(title="Art Jatie API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"], # Ton frontend Next.js
+    allow_origins=[
+        "http://localhost:3000",
+        "https://art-jatie-boutique.vercel.app"  # Ajoute ton URL Vercel ici
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
