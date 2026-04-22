@@ -1,0 +1,193 @@
+/* ─── Sidebar ───────────────────────────────────────────────────────────────── */
+.sidebar {
+  width: 100%;
+}
+
+.block {
+  margin-bottom: 8px;
+}
+
+.blockTitle {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #1a1a1a;
+  margin: 0 0 16px 0;
+}
+
+.divider {
+  height: 1px;
+  background: #efefef;
+  margin: 20px 0;
+}
+
+/* ─── Catégories ────────────────────────────────────────────────────────────── */
+.categoryList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.categoryList a {
+  font-size: 13px;
+  color: #555;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.categoryList a:hover {
+  color: #e86b8c;
+}
+
+/* ─── Genre ─────────────────────────────────────────────────────────────────── */
+.genreGrid {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.genreBtn {
+  flex: 1;
+  min-width: 70px;
+  padding: 9px 10px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.genreBtn:hover {
+  border-color: #e86b8c;
+  color: #e86b8c;
+}
+
+.genreBtnActive {
+  background: #1a1a1a !important;
+  border-color: #1a1a1a !important;
+  color: #fff !important;
+}
+
+/* ─── Couleurs ──────────────────────────────────────────────────────────────── */
+.colorGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.colorItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #444;
+  text-align: left;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+  width: 100%;
+}
+
+.colorItem:hover {
+  border-color: #e86b8c;
+  background: #fdf6f8;
+}
+.colorActive {
+  border-color: #e86b8c !important;
+  background: #fdf6f8 !important;
+  font-weight: 600;
+}
+
+.dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  flex-shrink: 0;
+}
+
+.colorLabel {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80px;
+}
+
+/* ─── Tailles ───────────────────────────────────────────────────────────────── */
+.sizeGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.sizeBtn {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  padding: 7px 13px;
+  font-size: 11px;
+  color: #555;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.sizeBtn:hover {
+  border-color: #e86b8c;
+  color: #e86b8c;
+}
+.sizeBtnActive {
+  background: #1a1a1a;
+  border-color: #1a1a1a;
+  color: #fff;
+}
+
+/* ─── Prix ──────────────────────────────────────────────────────────────────── */
+.priceList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.priceLabel {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12px;
+  color: #555;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.radio {
+  accent-color: #e86b8c;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.clearPrice {
+  background: none;
+  border: none;
+  color: #e86b8c;
+  font-size: 11px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  text-align: left;
+}

@@ -1,0 +1,468 @@
+/* ─── Base ─────────────────────────────────────────────────────────────────── */
+.pageMain {
+  background-color: #fdfaf7;
+  color: #1a1a1a;
+}
+
+/* ─── Animations ────────────────────────────────────────────────────────────── */
+.fadeIn {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 0.8s ease,
+    transform 0.8s ease;
+}
+.fadeOut {
+  opacity: 0;
+  transform: translateY(40px);
+  transition:
+    opacity 0.8s ease,
+    transform 0.8s ease;
+}
+
+/* ─── HERO ──────────────────────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  top: 30px;
+  height: 90vh;
+  min-height: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.heroImageWrapper {
+  position: absolute;
+  inset: 0;
+}
+.heroImage {
+  object-fit: cover;
+}
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.3) 0%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+}
+.heroContent {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: #fff;
+  padding: 0 20px;
+  max-width: 800px;
+}
+.heroSurtitle {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  color: #e86b8c;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+.heroTitle {
+  font-family: "Playfair Display", serif;
+  font-size: clamp(36px, 6vw, 72px);
+  font-weight: 900;
+  line-height: 1.15;
+  margin-bottom: 24px;
+}
+.heroSubtitle {
+  font-size: clamp(14px, 2vw, 18px);
+  color: rgba(255, 255, 255, 0.85);
+  font-style: italic;
+}
+
+/* ─── Sections ──────────────────────────────────────────────────────────────── */
+.section {
+  padding: 100px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.sectionBeige {
+  background-color: #fdf6f8;
+  max-width: 100%;
+  padding: 100px 40px;
+}
+.sectionBeige > div {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 60px;
+}
+.sectionTag {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: #e86b8c;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 12px;
+}
+.sectionTitre {
+  font-family: "Playfair Display", serif;
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 800;
+  color: #1a1a1a;
+  line-height: 1.2;
+  margin: 0;
+}
+
+/* ─── Histoire ──────────────────────────────────────────────────────────────── */
+.histoireLayout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+.histoireImageWrapper {
+  position: relative;
+  aspect-ratio: 3/4;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.histoireImage {
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+.histoireImageWrapper:hover .histoireImage {
+  transform: scale(1.04);
+}
+.histoireBadge {
+  position: absolute;
+  bottom: 24px;
+  right: -20px;
+  background: #e86b8c;
+  color: #fff;
+  padding: 16px 24px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-radius: 2px;
+  box-shadow: 0 8px 24px rgba(232, 107, 140, 0.35);
+}
+.histoireTexte {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.paragraph {
+  font-size: 15px;
+  line-height: 1.9;
+  color: #444;
+  margin-bottom: 20px;
+}
+
+/* ─── Valeurs ───────────────────────────────────────────────────────────────── */
+.valeursContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.valeursGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+}
+.valeurCard {
+  background: #fff;
+  border-radius: 8px;
+  padding: 40px 32px;
+  text-align: center;
+  border: 1px solid #f0e8ec;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+.valeurCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(232, 107, 140, 0.12);
+}
+.valeurIcon {
+  font-size: 40px;
+  margin-bottom: 20px;
+}
+.valeurTitre {
+  font-family: "Playfair Display", serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 14px;
+}
+.valeurTexte {
+  font-size: 14px;
+  line-height: 1.8;
+  color: #666;
+}
+
+/* ─── Processus ─────────────────────────────────────────────────────────────── */
+.etapesGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  position: relative;
+}
+.etapesGrid::before {
+  content: "";
+  position: absolute;
+  top: 28px;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: linear-gradient(to right, #e86b8c, #f9a8bf);
+  z-index: 0;
+}
+.etapeCard {
+  text-align: center;
+  padding: 0 20px;
+  position: relative;
+  z-index: 1;
+}
+.etapeNumero {
+  width: 56px;
+  height: 56px;
+  background: #e86b8c;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+  margin: 0 auto 24px;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 4px 16px rgba(232, 107, 140, 0.35);
+}
+.etapeLine {
+  display: none;
+}
+.etapeTitre {
+  font-family: "Playfair Display", serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 12px;
+}
+.etapeTexte {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #666;
+}
+
+/* ─── Fondatrice ────────────────────────────────────────────────────────────── */
+.fondatriceLayout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.fondatriceTexte {
+  display: flex;
+  flex-direction: column;
+}
+.citation {
+  font-family: "Playfair Display", serif;
+  font-size: 17px;
+  font-style: italic;
+  color: #1a1a1a;
+  border-left: 3px solid #e86b8c;
+  padding-left: 20px;
+  margin: 24px 0 8px;
+  line-height: 1.7;
+}
+.citationAuteur {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #e86b8c;
+  font-weight: 700;
+}
+.fondatriceImageWrapper {
+  position: relative;
+  aspect-ratio: 3/4;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.fondatriceImage {
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+.fondatriceImageWrapper:hover .fondatriceImage {
+  transform: scale(1.04);
+}
+
+/* ─── CTA Final ─────────────────────────────────────────────────────────────── */
+.ctaSection {
+  position: relative;
+  min-height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.ctaImageWrapper {
+  position: absolute;
+  inset: 0;
+}
+.ctaImage {
+  object-fit: cover;
+}
+.ctaOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.75) 0%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+}
+.ctaContent {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: #fff;
+  padding: 60px 40px;
+  max-width: 700px;
+}
+.ctaTitre {
+  font-family: "Playfair Display", serif;
+  font-size: clamp(24px, 4vw, 42px);
+  font-weight: 800;
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+.ctaTexte {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 36px;
+  line-height: 1.7;
+}
+.ctaBtns {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.btnPrimary {
+  background: #e86b8c;
+  color: #fff;
+  padding: 14px 32px;
+  border-radius: 3px;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  transition:
+    background 0.25s,
+    transform 0.15s;
+}
+.btnPrimary:hover {
+  background: #fff;
+  color: #e86b8c;
+  transform: translateY(-2px);
+}
+.btnSecondary {
+  background: transparent;
+  color: #fff;
+  padding: 14px 32px;
+  border-radius: 3px;
+  border: 2px solid #fff;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  transition: all 0.25s;
+}
+.btnSecondary:hover {
+  background: #fff;
+  color: #1a1a1a;
+  transform: translateY(-2px);
+}
+
+/* ─── Blob fondatrice ───────────────────────────────────────────────────────── */
+.fondatriceBlob {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  animation: float 4s ease-in-out infinite; /* ← effet flottant */
+}
+
+/* ─── Animation flottante ───────────────────────────────────────────────────── */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-18px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.blobSvg {
+  width: 100%;
+  height: auto;
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 20px 40px rgba(232, 107, 140, 0.3))
+    drop-shadow(0 8px 16px rgba(232, 107, 140, 0.15)); /* ← box-shadow pour SVG */
+}
+
+.blobDeco {
+  width: 102%;
+  height: auto;
+  position: absolute;
+  top: 2.5%;
+  left: -1%;
+  z-index: 1;
+  opacity: 0.6;
+}
+
+/* ─── Responsive ────────────────────────────────────────────────────────────── */
+@media (max-width: 968px) {
+  .histoireLayout,
+  .fondatriceLayout {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .histoireBadge {
+    right: 20px;
+  }
+  .valeursGrid {
+    grid-template-columns: 1fr;
+  }
+  .etapesGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40px;
+  }
+  .etapesGrid::before {
+    display: none;
+  }
+  .section {
+    padding: 60px 20px;
+  }
+  .sectionBeige {
+    padding: 60px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .etapesGrid {
+    grid-template-columns: 1fr;
+  }
+  .hero {
+    height: 70vh;
+  }
+}

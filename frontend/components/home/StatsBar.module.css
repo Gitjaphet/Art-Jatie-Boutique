@@ -1,0 +1,76 @@
+.statsContainer {
+  background-color: var(--color-cream);
+  border-top: 1px solid var(--color-sand);
+  border-bottom: 1px solid var(--color-sand);
+  padding: 40px 0;
+  display: flex;
+  justify-content: center;
+  overflow: hidden; /* Empêche tout débordement pendant l'animation */
+}
+
+.statsWrapper {
+  max-width: 1200px;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 32px;
+  padding: 0 40px;
+}
+
+/* --- ANIMATIONS DE BASE --- */
+.statGroup {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  opacity: 0;
+  transform: translateY(30px);
+  /* L'animation d'apparition douce */
+  transition:
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* L'état quand le composant entre dans l'écran */
+.visible .statGroup {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.statNumber {
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 600;
+  color: var(--color-black);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.statLabel {
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-taupe);
+  font-weight: 600;
+}
+
+/* Ligne de séparation subtile entre les items */
+.separator {
+  width: 1px;
+  height: 40px;
+  background-color: var(--color-sand);
+}
+
+@media (max-width: 768px) {
+  .separator {
+    display: none;
+  }
+}

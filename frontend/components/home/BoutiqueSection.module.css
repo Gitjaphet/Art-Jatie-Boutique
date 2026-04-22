@@ -1,0 +1,535 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=DM+Sans:wght@200;300;400;500&display=swap");
+
+/* =====================
+   ROOT & VARIABLES
+   ===================== */
+.root {
+  --cream: #f8f4ef;
+  --ink: #1a1714;
+  --pink: #e86b8c;
+  --pink-light: #fae8ed;
+  --pink-mid: #f2b8ca;
+  --taupe: #9a8c82;
+  --rule: rgba(26, 23, 20, 0.08);
+  --card-radius: 20px;
+
+  background: #faf7f3;
+  font-family: "DM Sans", sans-serif;
+  padding: 120px 0 140px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Blobs décoratifs ── */
+.bgBlob1 {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(232, 107, 140, 0.08) 0%, transparent 70%);
+  top: -200px;
+  right: -150px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bgBlob2 {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(232, 107, 140, 0.05) 0%, transparent 70%);
+  bottom: -100px;
+  left: -80px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.watermark {
+  position: absolute;
+  font-family: "Playfair Display", serif;
+  font-size: 400px;
+  font-weight: 700;
+  font-style: italic;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(232, 107, 140, 0.05);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  top: -60px;
+  right: -40px;
+  z-index: 0;
+}
+
+/* =====================
+   CONTAINER
+   ===================== */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 48px;
+  position: relative;
+  z-index: 1;
+}
+
+/* =====================
+   EN-TÊTE
+   ===================== */
+.header {
+  text-align: center;
+  margin-bottom: 72px;
+  opacity: 0;
+  transform: translateY(30px);
+  transition:
+    opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.headerVisible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.eyebrowRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.eyebrowLine {
+  display: block;
+  width: 40px;
+  height: 1px;
+  background: var(--pink);
+  opacity: 0.6;
+}
+
+.eyebrow {
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--pink);
+}
+
+.title {
+  font-family: "Playfair Display", serif;
+  font-size: clamp(40px, 5vw, 64px);
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-bottom: 20px;
+}
+
+.titleItalic {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--pink);
+}
+
+.subtitle {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--taupe);
+  font-weight: 300;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* =====================
+   GRILLE PRODUITS
+   ===================== */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  margin-bottom: 72px;
+}
+
+/* =====================
+   CARTE PRODUIT
+   ===================== */
+.card {
+  background: #fff;
+  border-radius: var(--card-radius);
+  overflow: hidden;
+  border: 1px solid rgba(26, 23, 20, 0.06);
+  opacity: 0;
+  transform: translateY(40px) scale(0.97);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.4s ease;
+  cursor: pointer;
+}
+
+.card:hover {
+  box-shadow:
+    0 20px 60px rgba(232, 107, 140, 0.14),
+    0 6px 20px rgba(26, 23, 20, 0.06);
+  transform: translateY(-6px) scale(1) !important;
+}
+
+.cardVisible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* ── Image ── */
+.cardImage {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Motif géométrique décoratif */
+.cardPattern {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.5) 1px, transparent 1px),
+    radial-gradient(circle at 60% 70%, rgba(255,255,255,0.4) 1px, transparent 1px),
+    radial-gradient(circle at 80% 30%, rgba(255,255,255,0.3) 1px, transparent 1px);
+  background-size: 40px 40px, 60px 60px, 30px 30px;
+  pointer-events: none;
+}
+
+.cardEmoji {
+  font-size: 72px;
+  line-height: 1;
+  filter: drop-shadow(0 8px 20px rgba(0,0,0,0.1));
+  transform: rotate(-5deg);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 1;
+}
+
+.card:hover .cardEmoji {
+  transform: rotate(0deg) scale(1.12);
+}
+
+/* Badge stock */
+.stockBadge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 10;
+  color: #fff;
+  font-family: "DM Sans", sans-serif;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 5px 10px 5px 8px;
+  border-radius: 99px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+}
+
+.stockDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.8);
+  animation: stockPulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+/* Badge Coup de cœur */
+.hotBadge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 10;
+  background: var(--pink);
+  color: #fff;
+  font-family: "DM Sans", sans-serif;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  padding: 5px 10px;
+  border-radius: 99px;
+  box-shadow: 0 3px 12px rgba(232, 107, 140, 0.4);
+  animation: floatHot 3s ease-in-out infinite;
+}
+
+/* Overlay hover */
+.cardOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(26, 23, 20, 0.35);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  z-index: 20;
+}
+
+.card:hover .cardOverlay {
+  opacity: 1;
+}
+
+.quickBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  color: var(--ink);
+  font-family: "DM Sans", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 12px 22px;
+  border-radius: 99px;
+  border: none;
+  cursor: pointer;
+  transform: translateY(12px);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.card:hover .quickBtn {
+  transform: translateY(0);
+}
+
+.quickBtn:hover {
+  background: var(--pink);
+  color: #fff;
+}
+
+.quickArrow {
+  font-size: 14px;
+  transition: transform 0.3s ease;
+}
+.quickBtn:hover .quickArrow {
+  transform: translateX(3px);
+}
+
+/* ── Body carte ── */
+.cardBody {
+  padding: 20px 22px 22px;
+}
+
+.cardTag {
+  display: inline-block;
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--pink);
+  background: var(--pink-light);
+  padding: 3px 10px;
+  border-radius: 99px;
+  margin-bottom: 10px;
+}
+
+.cardName {
+  font-family: "Playfair Display", serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.25;
+  margin-bottom: 5px;
+  letter-spacing: -0.01em;
+}
+
+.cardSub {
+  font-size: 12px;
+  color: var(--taupe);
+  font-weight: 300;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardPrices {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.cardPrice {
+  font-family: "Playfair Display", serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.cardOldPrice {
+  font-size: 12px;
+  color: var(--taupe);
+  text-decoration: line-through;
+  font-weight: 300;
+}
+
+/* Bouton panier */
+.addBtn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background 0.3s ease,
+    transform 0.2s ease,
+    box-shadow 0.3s ease;
+}
+
+.addBtn:hover {
+  background: var(--pink);
+  transform: scale(1.1) rotate(8deg);
+  box-shadow: 0 6px 20px rgba(232, 107, 140, 0.35);
+}
+
+/* =====================
+   BOUTON VOIR PLUS
+   ===================== */
+.cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.ctaBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  text-decoration: none;
+  background: var(--ink);
+  color: #fff;
+  border-radius: 99px;
+  padding: 0;
+  overflow: hidden;
+  font-family: "DM Sans", sans-serif;
+  position: relative;
+  transition:
+    box-shadow 0.35s ease,
+    transform 0.25s ease;
+}
+
+.ctaBtn:hover {
+  box-shadow: 0 14px 40px rgba(232, 107, 140, 0.35);
+  transform: translateY(-3px);
+}
+
+.ctaBtnInner {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 17px 32px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 1;
+  /* Fond animé au hover */
+  transition: background 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ctaBtn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--pink);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ctaBtn:hover::before {
+  transform: scaleX(1);
+}
+
+.ctaBtnArrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--pink);
+  color: #fff;
+  width: 54px;
+  font-size: 18px;
+  align-self: stretch;
+  position: relative;
+  z-index: 1;
+  transition:
+    background 0.4s ease,
+    transform 0.3s ease;
+}
+
+.ctaBtn:hover .ctaBtnArrow {
+  background: rgba(255,255,255,0.2);
+  transform: translateX(4px);
+}
+
+.ctaHint {
+  font-size: 11px;
+  color: var(--taupe);
+  font-weight: 300;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+/* =====================
+   KEYFRAMES
+   ===================== */
+@keyframes stockPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.7); }
+}
+
+@keyframes floatHot {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-3px); }
+}
+
+/* =====================
+   RESPONSIVE
+   ===================== */
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .root {
+    padding: 80px 0 100px;
+  }
+  .container {
+    padding: 0 20px;
+  }
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .header {
+    margin-bottom: 48px;
+  }
+  .watermark {
+    font-size: 200px;
+  }
+}

@@ -1,0 +1,137 @@
+/* --- LE PANNEAU --- */
+.panel {
+  position: relative;
+  display: flex;
+  width: 100%;
+  max-width: 320px;
+  flex-direction: column;
+  background-color: #fdfaf7; /* Le beau beige de ton site */
+  height: 100%;
+  box-shadow: -10px 0 50px rgba(0, 0, 0, 0.08);
+}
+
+/* --- HEADER DU MENU --- */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 30px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.brand {
+  font-family: "Playfair Display", serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: #1a1a1a;
+  transition: transform 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeBtn:hover {
+  transform: rotate(90deg);
+  color: #e86b8c;
+}
+
+/* --- NAVIGATION --- */
+.navContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 40px 30px;
+  gap: 30px;
+  overflow-y: auto;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+/* L'effet de décalage vers la droite au survol */
+.navLink:hover {
+  transform: translateX(10px);
+}
+
+/* Le petit numéro de style "éditorial" (01, 02...) */
+.navNumber {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.2);
+  margin-right: 15px;
+  margin-top: 4px;
+  transition: color 0.3s ease;
+}
+
+.navText {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a1a1a;
+  transition: color 0.3s ease;
+}
+
+.navLink:hover .navNumber,
+.navLink:hover .navText {
+  color: #e86b8c;
+}
+
+/* --- FOOTER DU MENU (Réseaux) --- */
+.footer {
+  padding: 30px;
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+  text-align: center;
+}
+
+.footerLabel {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: #a09d9a;
+  margin-bottom: 20px;
+}
+
+.socials {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+}
+
+.socialIcon {
+  color: #1a1a1a;
+  transition: all 0.3s ease;
+}
+
+.socialIcon:hover {
+  color: #e86b8c;
+  transform: translateY(-4px);
+}
+
+/* --- BOUTON BURGER (Header) --- */
+.burgerBtn {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.burgerBtn:active {
+  transform: scale(0.9);
+}

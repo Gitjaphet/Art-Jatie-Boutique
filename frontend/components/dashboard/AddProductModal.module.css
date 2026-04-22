@@ -1,0 +1,350 @@
+/* components/dashboard/AddProductModal.module.css */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(
+    0,
+    0,
+    0,
+    0.75
+  ); /* Plus sombre pour compenser la perte du flou */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999999;
+  padding: 20px;
+  /* OPTIMISATION : On retire le backdrop-filter qui fait ramer le scroll */
+  animation: fadeIn 0.2s ease;
+}
+
+.modal {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  width: 100%;
+  max-width: 620px;
+  max-height: 80vh;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  /* OPTIMISATION GPU */
+  transform: translateZ(0);
+}
+
+.header {
+  padding: 24px 28px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-radius: 18px 18px 0 0;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.01em;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 3px;
+  font-weight: 500;
+  margin-bottom: 0;
+}
+
+.closeBtn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+}
+
+.closeBtn:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.body {
+  padding: 22px 28px;
+  overflow-y: auto;
+  flex: 1;
+  /* OPTIMISATIONS CRITIQUES POUR LE SCROLL (Accélération Matérielle) */
+  -webkit-overflow-scrolling: touch;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.inputGroup {
+  margin-bottom: 14px;
+}
+
+.label {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: var(--font-body);
+}
+
+.input:focus {
+  border-color: var(--rose);
+}
+
+select.input {
+  cursor: pointer;
+}
+
+/* Boutons Tags (Couleurs & Tailles) */
+.tagBtn {
+  padding: 5px 13px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  font-family: var(--font-body);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+}
+
+.tagBtnColorActive {
+  border-color: var(--rose);
+  background: var(--rose-dim);
+  color: var(--rose);
+}
+
+.tagBtnSize {
+  border-radius: 7px;
+  min-width: 38px;
+}
+
+.tagBtnSizeActive {
+  border-color: var(--gold);
+  background: var(--gold-dim);
+  color: var(--gold);
+  border-radius: 7px;
+}
+
+/* Zone d'Upload Image */
+.dropZone {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: pointer;
+  background: var(--surface);
+  transition: all 0.2s;
+  min-height: 100px;
+  overflow: hidden;
+}
+
+.dropZoneActive {
+  border-color: var(--rose);
+  background: var(--rose-glow);
+}
+
+.dropZoneHasFile {
+  border-color: var(--border-hover);
+}
+
+/* Bouton Coup de Coeur */
+.hotToggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 13px 16px;
+  border-radius: 10px;
+  transition: all 0.2s;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.hotToggleActive {
+  background: var(--rose-dim);
+  border-color: var(--rose);
+}
+
+.hotCheckbox {
+  width: 17px;
+  height: 17px;
+  border-radius: 4px;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.hotCheckboxActive {
+  border-color: var(--rose);
+  background: var(--rose);
+}
+
+.hotText {
+  flex: 1;
+}
+
+.hotTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.hotTitleActive {
+  color: var(--rose);
+}
+
+.hotSub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 1px;
+  font-weight: 500;
+}
+
+.hotIcon {
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.hotIconActive {
+  color: var(--rose);
+}
+
+/* Pied de page et Boutons */
+.footer {
+  padding: 18px 28px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-radius: 0 0 18px 18px;
+}
+
+.btnSecondary {
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-body);
+}
+
+.btnSecondary:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.btnPrimary {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 22px;
+  background: var(--rose);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-body);
+}
+
+.btnPrimary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(190, 24, 93, 0.25);
+}
+
+.btnPrimary:disabled {
+  background: var(--surface2);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.spinnerSmall {
+  width: 13px;
+  height: 13px;
+  border: 2px solid var(--text-muted);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

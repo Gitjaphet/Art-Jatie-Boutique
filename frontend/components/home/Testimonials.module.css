@@ -1,0 +1,162 @@
+.section {
+  padding: 120px 60px;
+  background-color: var(--color-cream);
+  text-align: center;
+  overflow: hidden; /* Empêche la piste de déborder de l'écran */
+}
+
+.subtitle {
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-taupe);
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 600;
+  color: var(--color-black);
+  margin-bottom: 60px;
+}
+
+/* --- Le Carrousel --- */
+.carouselWindow {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  overflow: hidden; /* Cache les slides qui sont sur les côtés */
+  position: relative;
+  padding: 20px 0;
+}
+
+.carouselTrack {
+  display: flex;
+  /* L'animation de glissement ultra douce (cubic-bezier pour un effet "pro") */
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: transform;
+}
+
+.carouselSlide {
+  flex: 0 0 100%; /* Chaque slide prend exactement 100% de la fenêtre */
+  min-width: 100%;
+  padding: 0 20px;
+  box-sizing: border-box;
+  opacity: 0.5;
+  transform: scale(0.95);
+  transition: all 0.6s ease;
+}
+
+.carouselSlideActive {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* --- La Carte d'avis --- */
+.card {
+  background: #fff;
+  border: 1px solid var(--color-sand);
+  border-radius: 24px;
+  padding: 60px 40px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.quoteIcon {
+  font-family: var(--font-display);
+  font-size: 80px;
+  color: var(--color-accent-light);
+  line-height: 0.5;
+  margin-bottom: 24px;
+}
+
+.stars {
+  color: var(--color-accent);
+  font-size: 18px;
+  letter-spacing: 4px;
+  margin-bottom: 24px;
+}
+
+.text {
+  font-family: var(--font-display);
+  font-size: clamp(20px, 2.5vw, 28px);
+  font-style: italic;
+  color: var(--color-black);
+  line-height: 1.5;
+  margin-bottom: 32px;
+}
+
+.author {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-black);
+}
+
+.productInfo {
+  font-size: 13px;
+  color: var(--color-taupe);
+  margin-top: 6px;
+  font-weight: 300;
+}
+
+/* --- Contrôles --- */
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  margin-top: 40px;
+}
+
+.navBtn {
+  background: #fff;
+  border: 1px solid var(--color-sand);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-taupe);
+  font-size: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.navBtn:hover {
+  background: var(--color-black);
+  border-color: var(--color-black);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.dots {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-sand);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+  border: none;
+}
+
+.dotActive {
+  background: var(--color-black);
+  transform: scale(1.5);
+}

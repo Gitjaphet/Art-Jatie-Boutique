@@ -1,0 +1,110 @@
+@import url("https://fonts.googleapis.com/css2?family=Gochi+Hand&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Inter:wght@300;400;600;800&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-gochi: "Gochi Hand", cursive;
+  --font-display: "Cormorant Garamond", serif;
+  --font-body: "Inter", sans-serif;
+
+  /* C'est ICI qu'il faut mettre les couleurs d'été ! */
+  --color-background: #ffffff;
+  --color-foreground: #111827;
+
+  --color-accent: #e86b8c; /* Le rose de la vague sous ton logo */
+  --color-accent-light: #fce8ed; /* Un fond rose très pâle */
+  --color-black: #111827; /* Noir moderne */
+  --color-taupe: #6b7280; /* Gris perle élégant */
+  --color-cream: #ffffff; /* Blanc pur */
+  --color-sand: #f3f4f6; /* Gris très clair pour les lignes */
+}
+
+:root {
+  /* On garde les mêmes variables ici par sécurité pour le CSS pur */
+  --background: #ffffff;
+  --foreground: #111827;
+  --color-accent: #e86b8c; /* Le rose de la vague sous ton logo */
+  --color-accent-light: #fce8ed; /* Un fond rose très pâle */
+  --color-black: #111827;
+  --color-taupe: #6b7280;
+  --color-cream: #ffffff;
+  --color-sand: #f3f4f6;
+
+  --font-display: "Cormorant Garamond", serif;
+  --font-body: "Inter", sans-serif;
+}
+
+/* On désactive le mode sombre forcé si tu veux garder une identité "luxe claire" */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Tu peux choisir de rester sur un thème clair ou définir des couleurs sombres ici */
+  }
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+  line-height: 1.6;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* --- ANIMATIONS GLOBALES --- */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-cream);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-sand);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}

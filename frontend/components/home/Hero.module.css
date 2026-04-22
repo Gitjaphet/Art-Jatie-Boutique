@@ -1,0 +1,665 @@
+/* --- BASE & DESKTOP --- */
+.heroRoot {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 700px;
+  max-height: 960px;
+  overflow: hidden;
+  background: var(--color-cream, #fdfaf7);
+  display: flex;
+  align-items: center;
+}
+
+.heroBackground {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  width: 768px;
+  height: 1024px;
+  background-image: url("/images/hero/art-jatie-plage.jpeg");
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  z-index: 1;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 25%);
+  mask-image: linear-gradient(to right, transparent 0%, black 25%);
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    rgba(253, 250, 247, 0.98) 0%,
+    rgba(253, 250, 247, 0.6) 40%,
+    rgba(20, 20, 20, 0.5) 100%
+  );
+  z-index: 1;
+}
+
+.centerGlow {
+  position: absolute;
+  top: 50%;
+  left: 65%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(
+    circle,
+    rgba(232, 107, 140, 0.15) 0%,
+    transparent 70%
+  );
+  z-index: 2;
+  pointer-events: none;
+}
+
+.decoLine {
+  position: absolute;
+  left: 48px;
+  top: 15%;
+  bottom: 15%;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--color-taupe, #a09d9a) 30%,
+    var(--color-taupe, #a09d9a) 70%,
+    transparent
+  );
+  transform-origin: top;
+  transform: scaleY(0);
+  transition: transform 1.2s cubic-bezier(0.87, 0, 0.13, 1) 0.3s;
+  z-index: 3;
+}
+.decoLineReady {
+  transform: scaleY(1);
+}
+
+.ghostText {
+  position: absolute;
+  bottom: -2%;
+  left: -1%;
+  font-family: var(--font-display, "Playfair Display", serif);
+  font-size: clamp(120px, 18vw, 240px);
+  font-weight: 700;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(0, 0, 0, 0.06);
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 2;
+  opacity: 0;
+  transform: translateX(-20px);
+  transition:
+    opacity 1s ease 0.5s,
+    transform 1s ease 0.5s;
+}
+.ghostTextReady {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.content {
+  position: relative;
+  z-index: 10;
+  padding: 0 0 0 80px;
+  max-width: 560px;
+  flex-shrink: 0;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-black, #1a1a1a);
+  color: #fff;
+  padding: 7px 18px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.6s ease 0.2s,
+    transform 0.6s ease 0.2s;
+}
+.badgeReady {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.badgeDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent, #e86b8c);
+  animation: pulseDot 2s ease infinite;
+}
+@keyframes pulseDot {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.7;
+  }
+}
+
+.title {
+  font-family: var(--font-display, "Playfair Display", serif);
+  font-size: clamp(56px, 7vw, 96px);
+  font-weight: 600;
+  line-height: 0.95;
+  color: var(--color-black, #1a1a1a);
+  letter-spacing: -0.02em;
+  margin-bottom: 24px;
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.8s ease 0.35s,
+    transform 0.8s ease 0.35s;
+}
+.titleReady {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.titleItalic {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--color-accent, #e86b8c);
+}
+
+.subtitle {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--color-taupe, #a09d9a);
+  font-weight: 300;
+  max-width: 400px;
+  margin-bottom: 48px;
+  padding-left: 20px;
+  border-left: 2px solid var(--color-accent, #e86b8c);
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 0.7s ease 0.5s,
+    transform 0.7s ease 0.5s;
+}
+.subtitleReady {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ctas {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 0.7s ease 0.65s,
+    transform 0.7s ease 0.65s;
+}
+.ctasReady {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.btnPrimaryWrapper,
+.btnGhostWrapper {
+  display: inline-block;
+}
+
+.btnPrimary {
+  background: var(--color-black, #1a1a1a);
+  color: #fff;
+  padding: 16px 36px;
+  border-radius: 99px;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.25s;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+.btnPrimary:hover {
+  background: var(--color-accent, #e86b8c);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(232, 107, 140, 0.35);
+}
+
+.btnGhost {
+  background: transparent;
+  color: var(--color-charcoal, #333);
+  padding: 16px 0;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: gap 0.3s ease;
+}
+.btnGhost:hover {
+  gap: 14px;
+}
+.btnGhost::after {
+  content: "";
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--color-black, #1a1a1a);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+.btnGhost:hover::after {
+  transform: scaleX(1);
+}
+
+/* --- IMAGES FLOTTANTES --- */
+.heroPhotos {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.photoCard {
+  position: absolute;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.15),
+    0 4px 16px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  pointer-events: all;
+  opacity: 0;
+  transform: scale(0.88) rotate(var(--card-rot));
+  transition:
+    opacity 0.8s ease,
+    transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.4s ease;
+  will-change: transform;
+}
+.photoCardReady {
+  opacity: 1;
+  transform: scale(1) rotate(var(--card-rot));
+}
+.photoCard:hover {
+  box-shadow:
+    0 36px 80px rgba(0, 0, 0, 0.22),
+    0 8px 24px rgba(0, 0, 0, 0.12) !important;
+  transform: scale(1.05) rotate(0deg) translateY(-8px) !important;
+  z-index: 20 !important;
+}
+
+.photoCardLabel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 40px 16px 16px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
+  color: #fff;
+  transform: translateY(8px);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+.photoCard:hover .photoCardLabel {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cardEyebrow {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 2px;
+}
+.cardTitle {
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font-display, "Playfair Display", serif);
+  margin-bottom: 2px;
+}
+.cardPrice {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Animations Float */
+.float0 {
+  animation: float0 6s ease-in-out infinite;
+}
+.float1 {
+  animation: float1 8s ease-in-out infinite 1s;
+}
+.float2 {
+  animation: float2 7s ease-in-out infinite 2s;
+}
+.float3 {
+  animation: float3 9s ease-in-out infinite 0.5s;
+}
+
+@keyframes float0 {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  40% {
+    transform: translate(6px, -14px);
+  }
+  70% {
+    transform: translate(-4px, 8px);
+  }
+}
+@keyframes float1 {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  35% {
+    transform: translate(-8px, -10px);
+  }
+  65% {
+    transform: translate(6px, 12px);
+  }
+}
+@keyframes float2 {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  45% {
+    transform: translate(10px, -8px);
+  }
+  75% {
+    transform: translate(-6px, 10px);
+  }
+}
+@keyframes float3 {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  30% {
+    transform: translate(-10px, -12px);
+  }
+  60% {
+    transform: translate(8px, 6px);
+  }
+}
+
+/* Stat Badge */
+.statBadge {
+  position: absolute;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 12px 18px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  z-index: 15;
+  opacity: 0;
+  transition: opacity 0.6s ease 1s;
+  pointer-events: none;
+}
+.statBadgeReady {
+  opacity: 1;
+}
+.statEyebrow {
+  font-size: 11px;
+  color: var(--color-taupe, #a09d9a);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.statValue {
+  font-size: 22px;
+  font-weight: 700;
+  font-family: var(--font-display, "Playfair Display", serif);
+  color: var(--color-black, #1a1a1a);
+  line-height: 1;
+}
+
+/* Scroll & Editorial (Desktop) */
+.scroll {
+  position: absolute;
+  bottom: 40px;
+  left: 80px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  opacity: 0;
+  transition: opacity 0.8s ease 1.2s;
+  z-index: 10;
+}
+.scrollReady {
+  opacity: 1;
+}
+.scrollLine {
+  width: 48px;
+  height: 1px;
+  background: var(--color-taupe, #a09d9a);
+  position: relative;
+  overflow: hidden;
+}
+.scrollLine::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: var(--color-black, #1a1a1a);
+  animation: lineScroll 2s ease-in-out infinite 1.5s;
+}
+.scrollText {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-taupe, #a09d9a);
+  font-weight: 500;
+}
+@keyframes lineScroll {
+  0% {
+    left: -100%;
+  }
+  50% {
+    left: 0;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.editorialNumber {
+  position: absolute;
+  bottom: 40px;
+  right: 48px;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--color-taupe, #a09d9a);
+  font-weight: 500;
+  transition: opacity 0.8s ease 1.4s;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.editorialDigit {
+  font-family: var(--font-display, "Playfair Display", serif);
+  font-size: 20px;
+  color: var(--color-black, #1a1a1a);
+  font-weight: 300;
+}
+
+/* ========================================================================= */
+/* --- RESPONSIVE MOBILE : IMAGE EN HAUT, TEXTE EN BAS, 2 CARTES ---         */
+/* ========================================================================= */
+
+@media (max-width: 968px) {
+  .heroRoot {
+    min-height: 100svh;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 85px; /* Laisse l'espace pour le header */
+    background: var(--color-cream, #fdfaf7);
+  }
+
+  /* 1. IMAGE PRINCIPALE (EN HAUT) */
+  .heroBackground {
+    position: relative;
+    top: 0;
+    width: 100%;
+    height: 45vh;
+    transform: none;
+    background-position: center 25%;
+    -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+    z-index: 1;
+  }
+
+  /* Cache les effets desktop */
+  .heroOverlay,
+  .centerGlow {
+    display: none !important;
+  }
+
+  /* 2. CONTENU TEXTE (EN BAS) */
+  .content {
+    position: relative;
+    padding: 0 24px 40px 24px;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    z-index: 10;
+    margin-top: -30px;
+  }
+
+  .badge {
+    margin: 0 auto 16px auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .title {
+    font-size: clamp(40px, 11vw, 54px);
+    margin-bottom: 12px;
+  }
+
+  .subtitle {
+    padding-left: 0;
+    border-left: none;
+    margin: 0 auto 32px auto;
+    font-size: 14px;
+  }
+
+  .ctas {
+    flex-direction: column;
+    width: 100%;
+    gap: 16px;
+  }
+
+  .btnPrimaryWrapper,
+  .btnPrimary,
+  .btnGhostWrapper,
+  .btnGhost {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* 3. CARTES FLOTTANTES (Une à droite, une à gauche) */
+  /* On cache la 3ème et la 4ème carte */
+  .photoCard:nth-child(3),
+  .photoCard:nth-child(4) {
+    display: none !important;
+  }
+
+  /* Carte 1 (À droite) */
+  .photoCard:nth-child(1) {
+    width: 130px !important;
+    height: 170px !important;
+    top: calc(85px + 28vh) !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: 15px !important;
+    transform: rotate(8deg) !important;
+    z-index: 15 !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+  }
+
+  /* Carte 2 (À gauche) */
+  .photoCard:nth-child(2) {
+    display: block !important; /* Force l'affichage */
+    width: 120px !important;
+    height: 160px !important;
+    top: calc(85px + 36vh) !important; /* Un peu plus bas pour l'asymétrie */
+    bottom: auto !important;
+    right: auto !important;
+    left: 15px !important;
+    transform: rotate(-6deg) !important;
+    z-index: 14 !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+  }
+
+  /* Évite l'effet de zoom extrême au clic sur mobile */
+  .photoCard:hover {
+    transform: scale(1.02) translateY(-4px) !important;
+  }
+
+  .photoCardLabel {
+    padding: 20px 10px 10px;
+    opacity: 1; /* Toujours visible */
+  }
+
+  .cardTitle {
+    font-size: 11px;
+  }
+  .cardPrice {
+    font-size: 10px;
+  }
+
+  /* 4. BADGE STATISTIQUES (En haut à gauche) */
+  .statBadge {
+    top: 110px !important;
+    bottom: auto !important;
+    left: 20px !important;
+    transform: none !important;
+    padding: 8px 14px;
+    z-index: 15;
+  }
+
+  .statEyebrow {
+    font-size: 9px;
+  }
+  .statValue {
+    font-size: 16px;
+  }
+
+  /* Éléments desktop cachés */
+  .decoLine,
+  .ghostText,
+  .scroll,
+  .editorialNumber {
+    display: none !important;
+  }
+}

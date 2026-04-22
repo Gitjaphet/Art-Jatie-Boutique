@@ -1,0 +1,273 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30px 60px;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  background: transparent;
+}
+
+/* --- LOGIQUE DE COULEUR --- */
+
+/* 1. État par défaut (Accueil, au-dessus de la plage) */
+.navLink,
+.socialLink,
+.cartBtn {
+  color: #ffffff;
+  transition: all 0.3s ease;
+}
+
+/* 2. État SCROLLÉ ou PAGE CLAIRE (Boutique) */
+.headerScrolled,
+.darkTheme {
+  padding: 15px 60px;
+  background: rgba(250, 247, 245, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* On force le passage au NOIR pour les liens et icônes */
+.headerScrolled .navLink,
+.darkTheme .navLink,
+.headerScrolled .socialLink,
+.darkTheme .socialLink,
+.headerScrolled .cartBtn,
+.darkTheme .cartBtn {
+  color: #1a1a1a !important;
+}
+
+/* On s'assure que les SVG (traits) suivent aussi */
+.headerScrolled svg,
+.darkTheme svg {
+  stroke: #1a1a1a !important;
+}
+
+/* --- DÉTAILS DE DESIGN --- */
+
+.nav {
+  display: flex;
+  gap: 40px;
+}
+
+.navLink {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  text-decoration: none;
+  position: relative;
+  padding-bottom: 4px;
+}
+
+.navLink::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: #e86b8c; /* Ton rose corail */
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.3s ease;
+}
+
+.navLink:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.actions {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.socials {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
+  padding-right: 24px;
+}
+
+.headerScrolled .socials,
+.darkTheme .socials {
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.socialLink:hover,
+.cartBtn:hover {
+  color: #e86b8c !important;
+  transform: translateY(-2px);
+}
+
+.cartBadge {
+  position: absolute;
+  /* On le place en haut à droite de l'icône */
+  top: -2px;
+  right: -5px;
+
+  background-color: #e86b8c; /* Ton rose corail */
+  color: #ffffff;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  /* Taille du cercle */
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+
+  /* Centrage du chiffre dans le cercle */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Pour qu'il ressorte bien même sur fond clair */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  /* On s'assure qu'il est toujours au-dessus */
+  z-index: 10;
+
+  /* On retire toute animation de hover pour qu'il reste fixe */
+  pointer-events: none;
+}
+
+.cartBtn:hover .cartIcon {
+  transform: scale(1.1);
+}
+/* Couleur noire forcée pour les liens du milieu sur l'accueil */
+.navHome {
+  color: #1a1a1a !important; /* Noir profond */
+}
+
+/* On s'assure que les icônes de droite restent blanches sur l'accueil */
+.socialLink,
+.cartBtn {
+  color: #ffffff;
+}
+
+.cartBtn {
+  position: relative; /* Indispensable pour positionner le badge par rapport au bouton */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 5px;
+  transition: transform 0.3s ease;
+}
+
+.cartIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Par contre, si on est sur la Boutique (darkTheme) ou si on Scrolle, TOUT devient noir */
+.headerScrolled .navLink,
+.darkTheme .navLink,
+.headerScrolled .socialLink,
+.darkTheme .socialLink,
+.headerScrolled .cartBtn,
+.darkTheme .cartBtn {
+  color: #1a1a1a !important;
+}
+
+.headerScrolled svg,
+.darkTheme svg {
+  stroke: #1a1a1a !important;
+}
+
+/* --- Style du lien Actif --- */
+.active {
+  color: #e86b8c !important; /* Devient rose si actif */
+}
+
+/* On force l'affichage de la barre sous le lien actif */
+.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px; /* Un peu plus épais pour l'état actif */
+  background: #e86b8c;
+  transform: scaleX(1) !important; /* Toujours visible */
+  transform-origin: left;
+}
+
+/* Optionnel : Une petite lueur douce sous le texte actif */
+.active {
+  text-shadow: 0 0 10px rgba(232, 107, 140, 0.2);
+}
+
+/* --- RESPONSIVE MOBILE --- */
+
+/* Par défaut, on cache le bouton mobile sur desktop */
+.mobileNavWrapper {
+  display: none;
+  color: inherit; /* Pour hériter du blanc/noir dynamique */
+}
+
+/* On force la couleur du bouton SVG burger via les mêmes classes que le panier */
+.headerScrolled .mobileNavWrapper button svg,
+.darkTheme .mobileNavWrapper button svg {
+  stroke: #1a1a1a !important;
+}
+
+@media (max-width: 968px) {
+  .header {
+    padding: 15px 20px; /* Plus petit padding sur mobile */
+  }
+
+  .cartBtn {
+    color: #1a1a1a;
+  }
+
+  .headerScrolled,
+  .darkTheme {
+    padding: 10px 20px; /* Ajustement du padding au scroll */
+  }
+
+  /* On cache la navigation texte et les réseaux sociaux */
+  .nav,
+  .socials {
+    display: none;
+  }
+
+  /* On affiche le menu burger */
+  .mobileNavWrapper {
+    display: block;
+  }
+
+  /* On réduit légèrement l'espacement entre le panier et le burger */
+  .actions {
+    gap: 12px;
+  }
+
+  /* Ajustement de la taille du logo sur mobile */
+  .logo img {
+    width: 140px !important;
+    height: auto !important;
+  }
+}
+
+@media (max-width: 968px) {
+  /* ... vos autres codes mobiles ici ... */
+
+  /* On force le panier et le menu burger en noir sur mobile car le fond est clair ! */
+  .cartBtn svg,
+  .mobileNavWrapper button svg {
+    stroke: #1a1a1a !important;
+  }
+}
