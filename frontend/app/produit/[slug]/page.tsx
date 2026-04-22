@@ -1,6 +1,7 @@
 import { getProductBySlug } from "@/lib/api";
 import Link from "next/link";
 import AddToCartButton from "@/components/product/AddToCartButton";
+import Image from "next/image";
 
 export default async function ProductPage({
   params,
@@ -28,9 +29,9 @@ export default async function ProductPage({
       </Link>
       <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-10">
         <div className="bg-gray-100 rounded-lg overflow-hidden">
-          {product.images[0] && (
-            <img
-              src={product.images[0].src}
+          {product.image && (
+            <Image
+              src={product.image}
               alt={product.name}
               className="w-full h-full object-cover"
             />
