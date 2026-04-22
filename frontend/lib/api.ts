@@ -1,6 +1,7 @@
 // frontend/lib/api.ts
 
-const API_URL = "http://localhost:8000";
+// Utilisation de la variable d'environnement Vercel (avec localhost en secours)
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 // 1. Définition de l'interface brute venant de la base de données (Backend)
 interface ApiProduct {
@@ -17,6 +18,7 @@ interface ApiProduct {
   on_order: boolean;
   colors?: string; // stocké sous forme "Rouge,Bleu"
   sizes?: string; // stocké sous forme "S,M,L"
+  description?: string; // au cas où tu as une description
 }
 
 export async function getProducts(onOrder?: boolean) {
@@ -29,7 +31,6 @@ export async function getProducts(onOrder?: boolean) {
   if (!res.ok) throw new Error("Erreur de réseau");
   const data: ApiProduct[] = await res.json();
 
-  // REMPLACEMENT de (p: any) par (p: ApiProduct)
   return data.map((p: ApiProduct) => ({
     id: p.id,
     name: p.name,
@@ -78,4 +79,31 @@ export async function getAllProducts() {
     is_hot: p.is_hot,
     on_order: p.on_order,
   }));
+}
+
+// --- LA NOUVELLE FONCTION MANQUANTE ---
+export async function getProductBySlug(slug: string) {
+  const res = await fetch(`${API_URL}/products/${slug}`);
+  if (!res.ok) throw new Error("Produit introuvable");
+  const p: ApiProduct = await res.json();
+
+  return {
+    id: p.id,
+    name: p.name,
+    subtitle: `${p.category} · ${p.genre}`,
+    rawPrice: p.price_ar,
+    rawOldPrice: p.old_price_ar,
+    price: `${p.price_ar.toLocaleString("fr-FR")} Ar`,
+    oldPrice: p.old_price_ar
+      ? `${p.old_price_ar.toLocaleString("fr-FR")} Ar`
+      : undefined,
+    badge: p.badge,
+    tag: p.tag,
+    color: "#f5ead9",
+    image: p.image,
+    hot: p.is_hot,
+    colorsArray: p.colors ? p.colors.split(",").map((c) => c.trim()) : [],
+    sizesArray: p.sizes ? p.sizes.split(",").map((s) => s.trim()) : [],
+    description: p.description || "Un magnifique article Art Jatie.",
+  };
 }
