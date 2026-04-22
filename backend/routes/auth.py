@@ -28,7 +28,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = D
     
     return {"access_token": access_token, "token_type": "bearer"}
 
-@router.post("/setup-admin")
+@router.get("/setup-admin")
 def setup_first_admin(session: Session = Depends(get_session)):
     """Route temporaire pour créer ton compte admin"""
     admin_exists = session.exec(select(User)).first()
