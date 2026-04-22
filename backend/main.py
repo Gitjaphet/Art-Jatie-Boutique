@@ -15,9 +15,9 @@ app = FastAPI(title="Art Jatie API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # On autorise TOUT le monde (le "*" est magique)
+    allow_origins=["*"], # On accepte tout pour le moment
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
