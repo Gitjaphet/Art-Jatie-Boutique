@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import styles from "./AddProductModal.module.css";
-import dash from "../../../app/admin/dashboard/AdminDashboard.module.css";
+import dash from "../../app/admin/dashboard/AdminDashboard.module.css";
 
 type User = { id: number; email: string; is_admin: boolean };
 
