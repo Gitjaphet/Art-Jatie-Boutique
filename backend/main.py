@@ -6,6 +6,9 @@ from database import create_db_and_tables
 # Importation des routeurs
 from routes import products, settings, auth
 
+from routes import users
+app.include_router(users.router, prefix="/users", tags=["Utilisateurs"])
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     create_db_and_tables()
