@@ -10,6 +10,7 @@ import ProductsTab from "../../../components/dashboard/ProductsTab";
 import SettingsTab from "../../../components/dashboard/SettingsTab";
 import PlanningTab from "../../../components/dashboard/PlanningTab";
 import PosTab from "../../../components/dashboard/PosTab";
+import UsersTab from "../../../components/dashboard/UsersTab";
 
 type SettingsData = {
   exchange_rate_eur?: string | number;
@@ -115,6 +116,22 @@ const I = {
       <line x1="12" y1="17" x2="12" y2="21" />
     </svg>
   ),
+  Users: () => (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+    >
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  ),
   Calendar: () => (
     <svg
       width="16"
@@ -183,7 +200,7 @@ function useToast() {
   return { toasts, add, rem };
 }
 
-type Tab = "overview" | "products" | "pos" | "planning" | "settings";
+type Tab = "overview" | "products" | "pos" | "planning" | "users" | "settings";
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -285,6 +302,7 @@ export default function AdminDashboard() {
     { id: "pos", label: "Point de vente", Icon: I.Monitor },
     { id: "products", label: "Catalogue", Icon: I.Bag },
     { id: "planning", label: "Planning", Icon: I.Calendar },
+    { id: "users", label: "Utilisateurs", Icon: I.Users },
     { id: "settings", label: "Réglages", Icon: I.Gear },
   ];
   const TITLES = {
@@ -292,6 +310,7 @@ export default function AdminDashboard() {
     pos: "Caisse (Point de vente)",
     products: "Gestion du catalogue",
     planning: "Planning des commandes",
+    users: "Gestion des utilisateurs",
     settings: "Paramètres",
   };
   const dateStr = new Date().toLocaleDateString("fr-FR", {
@@ -464,6 +483,7 @@ export default function AdminDashboard() {
             />
           )}
           {activeTab === "planning" && <PlanningTab products={products} />}
+          {activeTab === "users" && <UsersTab toast={toast} />}
           {activeTab === "settings" && (
             <SettingsTab
               initialSettings={settings} // <-- On a juste enlevé "as any"
