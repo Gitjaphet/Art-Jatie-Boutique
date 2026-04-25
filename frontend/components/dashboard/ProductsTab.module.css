@@ -342,69 +342,61 @@
   }
 }
 
-/* ... (garder le début du fichier identique) ... */
-
 /* ═══════════════════════════════════════════════
-   STRATÉGIE RESPONSIVE SENIOR
-   1. Tablette -> iPhone Pro Max : Sidebar Icons Only (Labels cachés)
-   2. < iPhone Pro Max : Tabs au sommet + Grid optimisée
+   RESPONSIVE — Tablette (≤ 900px)
 ═══════════════════════════════════════════════ */
-
 @media (max-width: 900px) {
+  /* On masque le tableau et on affiche les cards */
   .tableWrapper {
     display: none;
   }
+
   .cardGrid {
     display: flex;
   }
 
-  /* Optimisation de la toolbar pour gagner de la place */
-  .toolbar {
+  .deleteModal {
+    padding: 20px;
+    border-radius: 14px;
+  }
+
+  .deleteTitle {
+    font-size: 1.1rem;
+  }
+
+  .deleteActions {
+    flex-direction: column-reverse;
     gap: 8px;
-    margin-bottom: 16px;
+  }
+
+  .btnCancel,
+  .btnConfirm {
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
+    font-size: 14px;
   }
 }
 
-/* Cible spécifique pour le passage en "Tabs en haut" (Mobile classique) */
-@media (max-width: 430px) {
-  /* Taille approximative iPhone Pro Max */
-  .toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .toolbar > div {
-    width: 100%;
-  }
-
-  /* On réduit la taille des cartes pour éviter le scroll excessif */
+/* ═══════════════════════════════════════════════
+   RESPONSIVE — Mobile (≤ 480px)
+═══════════════════════════════════════════════ */
+@media (max-width: 480px) {
   .productCard {
-    padding: 10px;
-    border-radius: 12px;
+    padding: 12px;
+    gap: 10px;
   }
 
   .cardImage {
-    width: 50px;
-    height: 50px;
+    width: 56px;
+    height: 56px;
   }
 
   .cardName {
     font-size: 13px;
-    white-space: normal; /* Permet le retour à la ligne si nom long */
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
   }
-}
 
-/* Animations fluides pour le changement de layout */
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  .cardPrice {
+    font-size: 14px;
   }
 }

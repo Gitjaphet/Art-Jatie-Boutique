@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import dashboardStyles from "../../app/admin/dashboard/AdminDashboard.module.css";
 import styles from "./ProductsTab.module.css";
@@ -15,6 +15,11 @@ export type Product = {
   price_ar: number;
   badge: string;
   image: string;
+  tag?: string;
+  sizes?: string;
+  stock_quantity?: number;
+  is_hot?: boolean;
+  on_order?: boolean;
 };
 
 type ProductsTabProps = {
@@ -32,7 +37,8 @@ const I = {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="1.9"
+      strokeLinecap="round"
     >
       <circle cx="11" cy="11" r="8" />
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -45,7 +51,8 @@ const I = {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2.5"
+      strokeWidth="2.4"
+      strokeLinecap="round"
     >
       <line x1="12" y1="5" x2="12" y2="19" />
       <line x1="5" y1="12" x2="19" y2="12" />
@@ -58,7 +65,9 @@ const I = {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="1.9"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     >
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
@@ -71,7 +80,9 @@ const I = {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="1.9"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     >
       <polyline points="3 6 5 6 21 6" />
       <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
@@ -87,7 +98,9 @@ const I = {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     >
       <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
       <line x1="12" y1="9" x2="12" y2="13" />
@@ -120,23 +133,15 @@ export default function ProductsTab({
   toast,
   settings,
 }: ProductsTabProps) {
+  const [isSmallMobile, setIsSmallMobile] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [q, setQ] = useState("");
-  const [isSmallMobile, setIsSmallMobile] = useState(false);
-
-  // Détection iPhone Pro Max (430px)
-  useEffect(() => {
-    const checkSize = () => setIsSmallMobile(window.innerWidth <= 430);
-    checkSize();
-    window.addEventListener("resize", checkSize);
-    return () => window.removeEventListener("resize", checkSize);
-  }, []);
 
   const filt = products.filter(
-    (p) =>
+    (p: Product) =>
       p.name.toLowerCase().includes(q.toLowerCase()) ||
       p.category.toLowerCase().includes(q.toLowerCase()),
   );
@@ -150,9 +155,15 @@ export default function ProductsTab({
         { method: "DELETE" },
       );
       if (res.ok) {
+        toast("Création supprimée avec succès.", "success");
         refresh();
-        toast("Supprimé", "success");
+      } else {
+        const err = await res.json();
+        toast(`Erreur : ${err.detail || "Impossible de supprimer."}`, "error");
       }
+    } catch (err) {
+      console.error("Détail de l'erreur :", err);
+      toast("Erreur de connexion au serveur.", "error");
     } finally {
       setIsDeleting(false);
       setProductToDelete(null);
@@ -160,18 +171,25 @@ export default function ProductsTab({
   };
 
   return (
-    <div className={styles.container}>
-      {/* ── TOOLBAR ADAPTATIVE ── */}
-      <div className={`${dashboardStyles.toolbar} ${styles.customToolbar}`}>
-        <div className={styles.searchWrapper}>
-          <span className={styles.searchIcon}>
+    <div style={{ animation: "fadeUp .4s var(--ease) both" }}>
+      {/* ── TOOLBAR ── */}
+      <div className={dashboardStyles.toolbar}>
+        <div style={{ position: "relative" }}>
+          <span
+            style={{
+              position: "absolute",
+              left: "11px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              color: "var(--text-muted)",
+              pointerEvents: "none",
+            }}
+          >
             <I.Search />
           </span>
           <input
             type="text"
-            placeholder={
-              isSmallMobile ? "Rechercher..." : "Rechercher une création..."
-            }
+            placeholder="Rechercher…"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             className={dashboardStyles.searchInput}
@@ -181,16 +199,22 @@ export default function ProductsTab({
           onClick={() => setShowAddModal(true)}
           className={dashboardStyles.btnPrimary}
         >
-          <I.Plus />{" "}
-          <span>{isSmallMobile ? "Ajouter" : "Nouvelle création"}</span>
+          <I.Plus /> Nouvelle création
         </button>
       </div>
 
-      {/* ── TABLEAU (Desktop > 900px) ── */}
+      {/* ══════════════════════════════════════════
+          TABLEAU — visible uniquement sur desktop
+      ══════════════════════════════════════════ */}
       <div className={`${dashboardStyles.tableCard} ${styles.tableWrapper}`}>
         <table className={dashboardStyles.table}>
           <thead>
-            <tr>
+            <tr
+              style={{
+                borderBottom: "1px solid var(--border)",
+                background: "var(--surface2)",
+              }}
+            >
               {[
                 "Création",
                 "Catégorie",
@@ -198,63 +222,142 @@ export default function ProductsTab({
                 "Prix",
                 "Statut",
                 "Actions",
-              ].map((h) => (
-                <th key={h} className={dashboardStyles.th}>
+              ].map((h, i) => (
+                <th key={i} className={dashboardStyles.th}>
                   {h}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {filt.map((p, i) => (
+            {filt.map((p: Product, i: number) => (
               <tr
                 key={p.id}
                 className={dashboardStyles.tr}
-                style={{ animationDelay: `${i * 0.03}s` }}
+                style={{
+                  animation: `fadeUp .35s var(--ease) ${i * 0.04}s both`,
+                }}
               >
                 <td className={dashboardStyles.td}>
-                  <div className={styles.flexCenter}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "11px",
+                    }}
+                  >
                     <Image
                       src={p.image}
                       alt={p.name}
-                      width={40}
-                      height={40}
-                      className={styles.tableImg}
+                      width={42}
+                      height={42}
+                      style={{
+                        objectFit: "cover",
+                        borderRadius: "9px",
+                        border: "1px solid var(--border)",
+                        flexShrink: 0,
+                      }}
                     />
                     <div>
-                      <div className={styles.tableName}>{p.name}</div>
-                      <div className={styles.tableSub}>{p.genre}</div>
+                      <div
+                        style={{
+                          fontSize: "13px",
+                          fontWeight: "600",
+                          color: "var(--text-primary)",
+                        }}
+                      >
+                        {p.name}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: "11px",
+                          color: "var(--text-muted)",
+                          marginTop: "2px",
+                          fontWeight: "500",
+                        }}
+                      >
+                        {p.genre}
+                      </div>
                     </div>
                   </div>
                 </td>
                 <td className={dashboardStyles.td}>
-                  <span className={styles.catTag}>{p.category}</span>
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: "600",
+                      color: "var(--text-secondary)",
+                      background: "var(--surface2)",
+                      padding: "3px 9px",
+                      borderRadius: "6px",
+                      border: "1px solid var(--border)",
+                    }}
+                  >
+                    {p.category}
+                  </span>
                 </td>
                 <td className={dashboardStyles.td}>
-                  <div className={styles.colorWrap}>
-                    {p.colors?.split(",").map((c) => (
-                      <span key={c} className={styles.colorTag}>
-                        {c.trim()}
-                      </span>
-                    ))}
+                  <div
+                    style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}
+                  >
+                    {p.colors &&
+                      p.colors.split(",").map((c: string) => (
+                        <span
+                          key={c}
+                          style={{
+                            fontSize: "11px",
+                            fontWeight: "600",
+                            color: "var(--text-muted)",
+                            background: "var(--surface)",
+                            padding: "2px 7px",
+                            borderRadius: "4px",
+                            border: "1px solid var(--border)",
+                          }}
+                        >
+                          {c.trim()}
+                        </span>
+                      ))}
                   </div>
                 </td>
-                <td className={dashboardStyles.td}>
-                  <strong>{p.price_ar.toLocaleString()}</strong>{" "}
-                  <small>Ar</small>
+                <td
+                  className={dashboardStyles.td}
+                  style={{ whiteSpace: "nowrap" }}
+                >
+                  <span
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      fontSize: "1.1rem",
+                      fontWeight: "600",
+                      color: "var(--text-primary)",
+                    }}
+                  >
+                    {p.price_ar.toLocaleString("fr-FR")}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      color: "var(--text-muted)",
+                      marginLeft: "3px",
+                      fontWeight: "500",
+                    }}
+                  >
+                    Ar
+                  </span>
                 </td>
                 <td className={dashboardStyles.td}>
                   <Badge b={p.badge} />
                 </td>
                 <td className={dashboardStyles.td}>
-                  <div className={styles.flexCenter}>
+                  <div style={{ display: "flex", gap: "5px" }}>
                     <button
+                      title="Modifier"
                       onClick={() => setEditingProduct(p)}
-                      className={dashboardStyles.actionBtn}
+                      className={`${dashboardStyles.actionBtn} ${dashboardStyles.editBtn}`}
                     >
                       <I.Pen />
                     </button>
                     <button
+                      title="Supprimer"
                       onClick={() => setProductToDelete(p)}
                       className={`${dashboardStyles.actionBtn} ${dashboardStyles.deleteBtn}`}
                     >
@@ -264,50 +367,86 @@ export default function ProductsTab({
                 </td>
               </tr>
             ))}
+            {!filt.length && (
+              <tr>
+                <td colSpan={6} className={styles.emptyState}>
+                  Aucun résultat trouvé
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
 
-      {/* ── CARDS (Mobile & Tablette < 900px) ── */}
+      {/* ══════════════════════════════════════════
+          CARDS — visible sur mobile & tablette
+      ══════════════════════════════════════════ */}
       <div className={styles.cardGrid}>
-        {filt.map((p, i) => (
+        {filt.length === 0 && (
+          <div className={styles.emptyState}>Aucun résultat trouvé</div>
+        )}
+        {filt.map((p: Product, i: number) => (
           <div
             key={p.id}
             className={styles.productCard}
             style={{ animationDelay: `${i * 0.05}s` }}
           >
+            {/* Image */}
             <div className={styles.cardImage}>
               <Image
                 src={p.image}
                 alt={p.name}
                 fill
-                sizes="80px"
+                sizes="64px"
                 style={{ objectFit: "cover" }}
               />
             </div>
+
+            {/* Contenu */}
             <div className={styles.cardBody}>
-              <div className={styles.cardHeader}>
-                <h4 className={styles.cardName}>{p.name}</h4>
-                <span className={styles.cardPrice}>
-                  {p.price_ar.toLocaleString()} <small>Ar</small>
-                </span>
-              </div>
+              <p className={styles.cardName}>{p.name}</p>
+
               <div className={styles.cardMeta}>
                 <span className={styles.cardGenre}>{p.genre}</span>
+                <span className={styles.cardCategory}>{p.category}</span>
                 <Badge b={p.badge} />
               </div>
+
+              <p className={styles.cardPrice}>
+                {p.price_ar.toLocaleString("fr-FR")}
+                <span className={styles.cardPriceSub}>Ar</span>
+              </p>
+
+              {p.colors && (
+                <div className={styles.cardColors}>
+                  {p.colors
+                    .split(",")
+                    .slice(0, 4)
+                    .map((c) => (
+                      <span key={c} className={styles.colorTag}>
+                        {c.trim()}
+                      </span>
+                    ))}
+                  {p.colors.split(",").length > 4 && (
+                    <span className={styles.colorTag}>
+                      +{p.colors.split(",").length - 4}
+                    </span>
+                  )}
+                </div>
+              )}
+
               <div className={styles.cardActions}>
                 <button
-                  onClick={() => setEditingProduct(p)}
                   className={`${styles.cardBtn} ${styles.cardBtnEdit}`}
+                  onClick={() => setEditingProduct(p)}
                 >
-                  <I.Pen /> {!isSmallMobile && "Modifier"}
+                  <I.Pen /> Modifier
                 </button>
                 <button
-                  onClick={() => setProductToDelete(p)}
                   className={`${styles.cardBtn} ${styles.cardBtnDelete}`}
+                  onClick={() => setProductToDelete(p)}
                 >
-                  <I.Bin /> {!isSmallMobile && "Supprimer"}
+                  <I.Bin /> Supprimer
                 </button>
               </div>
             </div>
@@ -315,7 +454,7 @@ export default function ProductsTab({
         ))}
       </div>
 
-      {/* ── MODALS (Statiques) ── */}
+      {/* ── MODALS ── */}
       {showAddModal && (
         <AddProductModal
           onClose={() => setShowAddModal(false)}
@@ -343,16 +482,20 @@ export default function ProductsTab({
                 <I.Warning />
               </div>
               <div>
-                <h3 className={styles.deleteTitle}>Supprimer ?</h3>
-                <p className={styles.deleteSubtitle}>Action définitive</p>
+                <h3 className={styles.deleteTitle}>Supprimer la création</h3>
+                <p className={styles.deleteSubtitle}>Action irréversible</p>
               </div>
             </div>
             <p className={styles.deleteText}>
-              Supprimer <strong>{productToDelete.name}</strong> ?
+              Êtes-vous sûr de vouloir supprimer{" "}
+              <strong>{productToDelete.name}</strong> ?<br />
+              Cette création et ses données seront définitivement effacées du
+              catalogue.
             </p>
             <div className={styles.deleteActions}>
               <button
                 onClick={() => setProductToDelete(null)}
+                disabled={isDeleting}
                 className={styles.btnCancel}
               >
                 Annuler
@@ -362,7 +505,12 @@ export default function ProductsTab({
                 disabled={isDeleting}
                 className={styles.btnConfirm}
               >
-                {isDeleting ? "..." : "Supprimer"}
+                {isDeleting ? (
+                  <div className={styles.spinnerSmall} />
+                ) : (
+                  <I.Bin />
+                )}
+                {isDeleting ? "Suppression..." : "Oui, supprimer"}
               </button>
             </div>
           </div>
