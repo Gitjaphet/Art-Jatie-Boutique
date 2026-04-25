@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import styles from "./AddProductModal.module.css";
+import modalStyles from "./AddProductModal.module.css";
 import dash from "../../app/admin/dashboard/AdminDashboard.module.css";
+import styles from "./UsersTab.module.css";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -81,6 +82,21 @@ const I = {
       <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
   ),
+  Warning: () => (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    >
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+      <line x1="12" y1="9" x2="12" y2="13" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  ),
 };
 
 type Props = {
@@ -96,12 +112,16 @@ export default function UsersTab({ toast }: Props) {
   const [isAdmin, setIsAdmin] = useState(true);
   const [showForm, setShowForm] = useState(false);
 
-  // État pour le changement de mot de passe
+  // Changement mot de passe
   const [changingPasswordFor, setChangingPasswordFor] = useState<User | null>(
     null,
   );
   const [newPassword, setNewPassword] = useState("");
   const [changingSub, setChangingSub] = useState(false);
+
+  // Suppression
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [deletingSub, setDeletingSub] = useState(false);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -145,16 +165,22 @@ export default function UsersTab({ toast }: Props) {
     }
   };
 
-  const handleDelete = async (id: number, userEmail: string) => {
-    if (!confirm(`Supprimer ${userEmail} ?`)) return;
+  const handleDelete = async () => {
+    if (!userToDelete) return;
+    setDeletingSub(true);
     try {
-      const res = await fetch(`${API}/users/${id}`, { method: "DELETE" });
+      const res = await fetch(`${API}/users/${userToDelete.id}`, {
+        method: "DELETE",
+      });
       if (res.ok) {
         toast("Utilisateur supprimé.");
         fetchUsers();
+        setUserToDelete(null);
       } else toast("Erreur lors de la suppression.", "error");
     } catch {
       toast("Erreur réseau.", "error");
+    } finally {
+      setDeletingSub(false);
     }
   };
 
@@ -188,92 +214,39 @@ export default function UsersTab({ toast }: Props) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
-      {/* MODAL CHANGEMENT MOT DE PASSE */}
+      {/* ── MODAL CHANGER MOT DE PASSE ── */}
       {changingPasswordFor && (
         <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.6)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 999999,
-            animation: "fadeIn 0.2s ease",
-          }}
+          className={styles.overlay}
+          onClick={(e) =>
+            e.target === e.currentTarget && setChangingPasswordFor(null)
+          }
         >
-          <div
-            style={{
-              background: "var(--bg)",
-              border: "1px solid var(--border)",
-              borderRadius: "18px",
-              width: "100%",
-              maxWidth: "420px",
-              padding: "28px",
-              margin: "20px",
-              animation: "modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
-            }}
-          >
-            {/* Header */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                marginBottom: "20px",
-              }}
-            >
+          <div className={styles.modal}>
+            <div className={styles.modalHeader}>
               <div>
-                <h3
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    fontSize: "1.4rem",
-                    fontWeight: 600,
-                    margin: 0,
-                    color: "var(--text-primary)",
-                  }}
-                >
-                  Changer le mot de passe
-                </h3>
-                <p
-                  style={{
-                    fontSize: "12px",
-                    color: "var(--text-muted)",
-                    marginTop: "4px",
-                    fontWeight: 500,
-                  }}
-                >
+                <h3 className={styles.modalTitle}>Changer le mot de passe</h3>
+                <p className={styles.modalSubtitle}>
                   {changingPasswordFor.email}
                 </p>
               </div>
               <button
+                className={styles.closeBtn}
                 onClick={() => {
                   setChangingPasswordFor(null);
                   setNewPassword("");
-                }}
-                style={{
-                  background: "var(--surface2)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "8px",
-                  width: "34px",
-                  height: "34px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  color: "var(--text-secondary)",
                 }}
               >
                 <I.X />
               </button>
             </div>
-
-            {/* Formulaire */}
-            <div className={styles.inputGroup}>
-              <label className={styles.label}>Nouveau mot de passe *</label>
+            <div className={modalStyles.inputGroup}>
+              <label className={modalStyles.label}>
+                Nouveau mot de passe *
+              </label>
               <input
                 type="password"
-                className={styles.input}
+                className={modalStyles.input}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="••••••••"
@@ -281,33 +254,24 @@ export default function UsersTab({ toast }: Props) {
                 autoFocus
               />
             </div>
-
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: "10px",
-                marginTop: "20px",
-              }}
-            >
+            <div className={styles.modalFooter}>
               <button
-                type="button"
+                className={styles.btnCancel}
                 onClick={() => {
                   setChangingPasswordFor(null);
                   setNewPassword("");
                 }}
-                className={styles.btnSecondary}
               >
                 Annuler
               </button>
               <button
                 onClick={handleChangePassword}
                 disabled={changingSub || newPassword.length < 6}
-                className={styles.btnPrimary}
+                className={modalStyles.btnPrimary}
               >
                 {changingSub ? (
                   <>
-                    <div className={styles.spinnerSmall} /> En cours…
+                    <div className={modalStyles.spinnerSmall} /> En cours…
                   </>
                 ) : (
                   <>
@@ -320,7 +284,58 @@ export default function UsersTab({ toast }: Props) {
         </div>
       )}
 
-      {/* HEADER */}
+      {/* ── MODAL SUPPRIMER ── */}
+      {userToDelete && (
+        <div
+          className={styles.overlay}
+          onClick={(e) => e.target === e.currentTarget && setUserToDelete(null)}
+        >
+          <div className={styles.deleteModal}>
+            <div className={styles.deleteHeader}>
+              <div className={styles.warningIcon}>
+                <I.Warning />
+              </div>
+              <div>
+                <h3 className={styles.deleteTitle}>
+                  Supprimer l&apos;utilisateur
+                </h3>
+                <p className={styles.deleteSubtitle}>Action irréversible</p>
+              </div>
+            </div>
+            <p className={styles.deleteText}>
+              Êtes-vous sûr de vouloir supprimer{" "}
+              <strong>{userToDelete.email}</strong> ?<br />
+              Ce compte sera définitivement effacé.
+            </p>
+            <div className={styles.deleteActions}>
+              <button
+                className={styles.btnCancel}
+                onClick={() => setUserToDelete(null)}
+                disabled={deletingSub}
+              >
+                Annuler
+              </button>
+              <button
+                className={styles.btnConfirm}
+                onClick={handleDelete}
+                disabled={deletingSub}
+              >
+                {deletingSub ? (
+                  <>
+                    <div className={styles.spinnerSmall} /> Suppression…
+                  </>
+                ) : (
+                  <>
+                    <I.Trash /> Oui, supprimer
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── HEADER ── */}
       <div
         style={{
           display: "flex",
@@ -360,7 +375,7 @@ export default function UsersTab({ toast }: Props) {
         </button>
       </div>
 
-      {/* FORMULAIRE CRÉATION */}
+      {/* ── FORMULAIRE CRÉATION ── */}
       {showForm && (
         <div
           style={{
@@ -382,112 +397,106 @@ export default function UsersTab({ toast }: Props) {
           >
             Créer un compte
           </h3>
-          <div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "14px",
-                marginBottom: "14px",
-              }}
-            >
-              <div className={styles.inputGroup}>
-                <label className={styles.label}>Email *</label>
-                <input
-                  type="email"
-                  className={styles.input}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@artjatie.mg"
-                  required
-                />
-              </div>
-              <div className={styles.inputGroup}>
-                <label className={styles.label}>Mot de passe *</label>
-                <input
-                  type="password"
-                  className={styles.input}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  minLength={6}
-                />
-              </div>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "14px",
+              marginBottom: "14px",
+            }}
+          >
+            <div className={modalStyles.inputGroup}>
+              <label className={modalStyles.label}>Email *</label>
+              <input
+                type="email"
+                className={modalStyles.input}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@artjatie.mg"
+                required
+              />
             </div>
+            <div className={modalStyles.inputGroup}>
+              <label className={modalStyles.label}>Mot de passe *</label>
+              <input
+                type="password"
+                className={modalStyles.input}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                minLength={6}
+              />
+            </div>
+          </div>
+          <div
+            onClick={() => setIsAdmin(!isAdmin)}
+            className={`${modalStyles.hotToggle} ${isAdmin ? modalStyles.hotToggleActive : ""}`}
+            style={{ marginBottom: "18px", cursor: "pointer" }}
+          >
             <div
-              onClick={() => setIsAdmin(!isAdmin)}
-              className={`${styles.hotToggle} ${isAdmin ? styles.hotToggleActive : ""}`}
-              style={{ marginBottom: "18px", cursor: "pointer" }}
+              className={`${modalStyles.hotCheckbox} ${isAdmin ? modalStyles.hotCheckboxActive : ""}`}
             >
-              <div
-                className={`${styles.hotCheckbox} ${isAdmin ? styles.hotCheckboxActive : ""}`}
-              >
-                {isAdmin && (
-                  <svg
-                    width="11"
-                    height="11"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="white"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                  >
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                )}
-              </div>
-              <div className={styles.hotText}>
-                <div
-                  className={`${styles.hotTitle} ${isAdmin ? styles.hotTitleActive : ""}`}
+              {isAdmin && (
+                <svg
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="3"
+                  strokeLinecap="round"
                 >
-                  Accès administrateur
-                </div>
-                <div className={styles.hotSub}>
-                  Peut accéder au dashboard et gérer le catalogue
-                </div>
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              )}
+            </div>
+            <div className={modalStyles.hotText}>
+              <div
+                className={`${modalStyles.hotTitle} ${isAdmin ? modalStyles.hotTitleActive : ""}`}
+              >
+                Accès administrateur
               </div>
-              <span
-                style={{ color: isAdmin ? "var(--rose)" : "var(--text-muted)" }}
-              >
-                <I.User />
-              </span>
+              <div className={modalStyles.hotSub}>
+                Peut accéder au dashboard et gérer le catalogue
+              </div>
             </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: "10px",
-              }}
+            <span
+              style={{ color: isAdmin ? "var(--rose)" : "var(--text-muted)" }}
             >
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className={styles.btnSecondary}
-              >
-                Annuler
-              </button>
-              <button
-                onClick={handleSubmit}
-                disabled={sub}
-                className={styles.btnPrimary}
-              >
-                {sub ? (
-                  <>
-                    <div className={styles.spinnerSmall} /> En cours…
-                  </>
-                ) : (
-                  <>
-                    <I.Plus /> Créer
-                  </>
-                )}
-              </button>
-            </div>
+              <I.User />
+            </span>
+          </div>
+          <div
+            style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}
+          >
+            <button
+              type="button"
+              onClick={() => setShowForm(false)}
+              className={modalStyles.btnSecondary}
+            >
+              Annuler
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={sub}
+              className={modalStyles.btnPrimary}
+            >
+              {sub ? (
+                <>
+                  <div className={modalStyles.spinnerSmall} /> En cours…
+                </>
+              ) : (
+                <>
+                  <I.Plus /> Créer
+                </>
+              )}
+            </button>
           </div>
         </div>
       )}
 
-      {/* LISTE */}
+      {/* ── LISTE ── */}
       <div className={dash.tableCard}>
         <table className={dash.table}>
           <thead>
@@ -579,7 +588,6 @@ export default function UsersTab({ toast }: Props) {
                         justifyContent: "flex-end",
                       }}
                     >
-                      {/* 🔑 BOUTON CHANGER MOT DE PASSE */}
                       <button
                         onClick={() => {
                           setChangingPasswordFor(u);
@@ -590,9 +598,8 @@ export default function UsersTab({ toast }: Props) {
                       >
                         <I.Key />
                       </button>
-                      {/* 🗑 BOUTON SUPPRIMER */}
                       <button
-                        onClick={() => handleDelete(u.id, u.email)}
+                        onClick={() => setUserToDelete(u)}
                         className={`${dash.actionBtn} ${dash.deleteBtn}`}
                         title="Supprimer"
                       >
