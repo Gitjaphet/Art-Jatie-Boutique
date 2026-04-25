@@ -578,3 +578,107 @@
     border-top: 1px dashed #eee;
   }
 }
+
+/* ── À AJOUTER À LA FIN DE CartePage.module.css ── */
+
+/* Groupes de livraison */
+.deliveryGroup {
+  margin-bottom: 16px;
+}
+
+.deliveryGroupLabel {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #bbb;
+  margin: 0 0 8px;
+  padding-left: 2px;
+}
+
+/* Lien téléphone dans livraison */
+.phoneLink {
+  color: #e86b8c;
+  font-weight: 700;
+  text-decoration: none;
+}
+.phoneLink:hover {
+  text-decoration: underline;
+}
+
+/* Grille coopératives */
+.coopGrid {
+  margin: 10px 0 0 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  animation: fadeUp 0.2s ease;
+}
+
+.coopOption {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border: 1.5px solid #e8e2dc;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+  background: #fff;
+  transition: all 0.18s;
+}
+
+.coopOption:hover {
+  border-color: #e86b8c;
+  color: #e86b8c;
+}
+
+.coopActive {
+  border-color: #e86b8c !important;
+  background: #fdf0f4 !important;
+  color: #e86b8c !important;
+}
+
+.coopOption input {
+  display: none;
+}
+
+.coopInput {
+  width: 100%;
+  border: 1.5px solid #e8e2dc;
+  border-radius: 8px;
+  padding: 9px 13px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #1a1a1a;
+  outline: none;
+  transition: border-color 0.2s;
+  margin-top: 4px;
+}
+.coopInput:focus {
+  border-color: #e86b8c;
+}
+
+.coopNote {
+  width: 100%;
+  font-size: 11px;
+  color: #aaa;
+  line-height: 1.5;
+  margin: 4px 0 0;
+  font-style: italic;
+}
+
+/* Note livraison variable dans sidebar */
+.deliveryNote {
+  background: #fffbf0;
+  border: 1.5px solid #f5d87a;
+  border-radius: 8px;
+  padding: 10px 13px;
+  font-size: 12px;
+  color: #92400e;
+  font-weight: 500;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
