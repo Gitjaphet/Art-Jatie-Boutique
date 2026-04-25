@@ -235,9 +235,7 @@ export default function CartContent() {
                 onChange={() => setZone("nosybe_ville")}
               />
               <div className={styles.deliveryInfo}>
-                <span className={styles.deliveryName}>
-                  Nosy Be — En ville (Jabala)
-                </span>
+                <span className={styles.deliveryName}>Nosy Be — En ville</span>
                 <span className={styles.deliveryDesc}>
                   Livraison dans Jabala et ses alentours immédiats
                 </span>
