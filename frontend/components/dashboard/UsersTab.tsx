@@ -3,6 +3,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import styles from "./AddProductModal.module.css";
 import dash from "../../app/admin/dashboard/AdminDashboard.module.css";
 
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 type User = { id: number; email: string; is_admin: boolean };
 
 const I = {
@@ -36,6 +38,21 @@ const I = {
       <path d="M9 6V4h6v2" />
     </svg>
   ),
+  Key: () => (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    >
+      <circle cx="7.5" cy="15.5" r="5.5" />
+      <path d="M21 2l-9.6 9.6" />
+      <path d="M15.5 7.5l3 3L22 7l-3-3" />
+    </svg>
+  ),
   User: () => (
     <svg
       width="14"
@@ -48,6 +65,20 @@ const I = {
     >
       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
       <circle cx="12" cy="7" r="4" />
+    </svg>
+  ),
+  X: () => (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
   ),
 };
@@ -65,11 +96,16 @@ export default function UsersTab({ toast }: Props) {
   const [isAdmin, setIsAdmin] = useState(true);
   const [showForm, setShowForm] = useState(false);
 
+  // État pour le changement de mot de passe
+  const [changingPasswordFor, setChangingPasswordFor] = useState<User | null>(
+    null,
+  );
+  const [newPassword, setNewPassword] = useState("");
+  const [changingSub, setChangingSub] = useState(false);
+
   const fetchUsers = useCallback(async () => {
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/users/`,
-      );
+      const res = await fetch(`${API}/users/`);
       if (res.ok) setUsers(await res.json());
     } catch {
       toast("Impossible de charger les utilisateurs.", "error");
@@ -87,14 +123,11 @@ export default function UsersTab({ toast }: Props) {
     if (!email || !password) return;
     setSub(true);
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/users/`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password, is_admin: isAdmin }),
-        },
-      );
+      const res = await fetch(`${API}/users/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, is_admin: isAdmin }),
+      });
       if (res.ok) {
         toast("Utilisateur créé avec succès !");
         setEmail("");
@@ -115,12 +148,7 @@ export default function UsersTab({ toast }: Props) {
   const handleDelete = async (id: number, userEmail: string) => {
     if (!confirm(`Supprimer ${userEmail} ?`)) return;
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/users/${id}`,
-        {
-          method: "DELETE",
-        },
-      );
+      const res = await fetch(`${API}/users/${id}`, { method: "DELETE" });
       if (res.ok) {
         toast("Utilisateur supprimé.");
         fetchUsers();
@@ -130,8 +158,168 @@ export default function UsersTab({ toast }: Props) {
     }
   };
 
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!changingPasswordFor || !newPassword) return;
+    setChangingSub(true);
+    try {
+      const res = await fetch(
+        `${API}/users/${changingPasswordFor.id}/password`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ new_password: newPassword }),
+        },
+      );
+      if (res.ok) {
+        toast("Mot de passe modifié avec succès !");
+        setChangingPasswordFor(null);
+        setNewPassword("");
+      } else {
+        const err = await res.json();
+        toast(`Erreur : ${err.detail}`, "error");
+      }
+    } catch {
+      toast("Erreur réseau.", "error");
+    } finally {
+      setChangingSub(false);
+    }
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
+      {/* MODAL CHANGEMENT MOT DE PASSE */}
+      {changingPasswordFor && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 999999,
+            animation: "fadeIn 0.2s ease",
+          }}
+        >
+          <div
+            style={{
+              background: "var(--bg)",
+              border: "1px solid var(--border)",
+              borderRadius: "18px",
+              width: "100%",
+              maxWidth: "420px",
+              padding: "28px",
+              margin: "20px",
+              animation: "modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+            }}
+          >
+            {/* Header */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                marginBottom: "20px",
+              }}
+            >
+              <div>
+                <h3
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: "1.4rem",
+                    fontWeight: 600,
+                    margin: 0,
+                    color: "var(--text-primary)",
+                  }}
+                >
+                  Changer le mot de passe
+                </h3>
+                <p
+                  style={{
+                    fontSize: "12px",
+                    color: "var(--text-muted)",
+                    marginTop: "4px",
+                    fontWeight: 500,
+                  }}
+                >
+                  {changingPasswordFor.email}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setChangingPasswordFor(null);
+                  setNewPassword("");
+                }}
+                style={{
+                  background: "var(--surface2)",
+                  border: "1px solid var(--border)",
+                  borderRadius: "8px",
+                  width: "34px",
+                  height: "34px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  color: "var(--text-secondary)",
+                }}
+              >
+                <I.X />
+              </button>
+            </div>
+
+            {/* Formulaire */}
+            <div className={styles.inputGroup}>
+              <label className={styles.label}>Nouveau mot de passe *</label>
+              <input
+                type="password"
+                className={styles.input}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="••••••••"
+                minLength={6}
+                autoFocus
+              />
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "10px",
+                marginTop: "20px",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setChangingPasswordFor(null);
+                  setNewPassword("");
+                }}
+                className={styles.btnSecondary}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleChangePassword}
+                disabled={changingSub || newPassword.length < 6}
+                className={styles.btnPrimary}
+              >
+                {changingSub ? (
+                  <>
+                    <div className={styles.spinnerSmall} /> En cours…
+                  </>
+                ) : (
+                  <>
+                    <I.Key /> Confirmer
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* HEADER */}
       <div
         style={{
@@ -168,12 +356,11 @@ export default function UsersTab({ toast }: Props) {
           onClick={() => setShowForm(!showForm)}
           className={dash.btnPrimary}
         >
-          <I.Plus />
-          Nouvel utilisateur
+          <I.Plus /> Nouvel utilisateur
         </button>
       </div>
 
-      {/* FORMULAIRE DE CRÉATION */}
+      {/* FORMULAIRE CRÉATION */}
       {showForm && (
         <div
           style={{
@@ -195,8 +382,7 @@ export default function UsersTab({ toast }: Props) {
           >
             Créer un compte
           </h3>
-
-          <div onSubmit={handleSubmit as React.FormEventHandler}>
+          <div>
             <div
               style={{
                 display: "grid",
@@ -229,8 +415,6 @@ export default function UsersTab({ toast }: Props) {
                 />
               </div>
             </div>
-
-            {/* TOGGLE ADMIN */}
             <div
               onClick={() => setIsAdmin(!isAdmin)}
               className={`${styles.hotToggle} ${isAdmin ? styles.hotToggleActive : ""}`}
@@ -269,7 +453,6 @@ export default function UsersTab({ toast }: Props) {
                 <I.User />
               </span>
             </div>
-
             <div
               style={{
                 display: "flex",
@@ -304,7 +487,7 @@ export default function UsersTab({ toast }: Props) {
         </div>
       )}
 
-      {/* LISTE DES UTILISATEURS */}
+      {/* LISTE */}
       <div className={dash.tableCard}>
         <table className={dash.table}>
           <thead>
@@ -313,7 +496,7 @@ export default function UsersTab({ toast }: Props) {
               <th className={dash.th}>Rôle</th>
               <th className={dash.th}>ID</th>
               <th className={dash.th} style={{ textAlign: "right" }}>
-                Action
+                Actions
               </th>
             </tr>
           </thead>
@@ -343,7 +526,7 @@ export default function UsersTab({ toast }: Props) {
                     fontSize: "13px",
                   }}
                 >
-                  Aucun utilisateur pour le moment.
+                  Aucun utilisateur.
                 </td>
               </tr>
             ) : (
@@ -389,13 +572,33 @@ export default function UsersTab({ toast }: Props) {
                     </span>
                   </td>
                   <td className={dash.td} style={{ textAlign: "right" }}>
-                    <button
-                      onClick={() => handleDelete(u.id, u.email)}
-                      className={`${dash.actionBtn} ${dash.deleteBtn}`}
-                      title="Supprimer"
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "6px",
+                        justifyContent: "flex-end",
+                      }}
                     >
-                      <I.Trash />
-                    </button>
+                      {/* 🔑 BOUTON CHANGER MOT DE PASSE */}
+                      <button
+                        onClick={() => {
+                          setChangingPasswordFor(u);
+                          setNewPassword("");
+                        }}
+                        className={`${dash.actionBtn} ${dash.editBtn}`}
+                        title="Changer le mot de passe"
+                      >
+                        <I.Key />
+                      </button>
+                      {/* 🗑 BOUTON SUPPRIMER */}
+                      <button
+                        onClick={() => handleDelete(u.id, u.email)}
+                        className={`${dash.actionBtn} ${dash.deleteBtn}`}
+                        title="Supprimer"
+                      >
+                        <I.Trash />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))

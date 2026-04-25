@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from models.models import User
 from database import get_session
 from core.auth import get_password_hash
-
 
 router = APIRouter()
 
@@ -12,6 +11,9 @@ class CreateUserRequest(BaseModel):
     email: str
     password: str
     is_admin: bool = True
+
+class ChangePasswordRequest(BaseModel):
+    new_password: str
 
 @router.get("/")
 def get_users(session: Session = Depends(get_session)):
@@ -23,7 +25,6 @@ def create_user(body: CreateUserRequest, session: Session = Depends(get_session)
     existing = session.exec(select(User).where(User.email == body.email)).first()
     if existing:
         raise HTTPException(status_code=400, detail="Cet email est déjà utilisé.")
-    
     new_user = User(
         email=body.email,
         hashed_password=get_password_hash(body.password),
@@ -33,6 +34,23 @@ def create_user(body: CreateUserRequest, session: Session = Depends(get_session)
     session.commit()
     session.refresh(new_user)
     return {"id": new_user.id, "email": new_user.email, "is_admin": new_user.is_admin}
+
+# ✅ NOUVEAU : Changer le mot de passe
+@router.patch("/{user_id}/password")
+def change_password(
+    user_id: int,
+    body: ChangePasswordRequest,
+    session: Session = Depends(get_session)
+):
+    user = session.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur introuvable.")
+    if len(body.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Mot de passe trop court (min 6 caractères).")
+    user.hashed_password = get_password_hash(body.new_password)
+    session.add(user)
+    session.commit()
+    return {"message": "Mot de passe modifié avec succès."}
 
 @router.delete("/{user_id}")
 def delete_user(user_id: int, session: Session = Depends(get_session)):
