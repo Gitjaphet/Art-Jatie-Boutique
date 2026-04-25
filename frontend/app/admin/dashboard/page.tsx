@@ -229,7 +229,9 @@ export default function AdminDashboard() {
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch("http://localhost:8000/settings/");
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/settings/`,
+      );
       if (!res.ok) throw new Error("Erreur serveur");
       const data = await res.json();
       setSettings(data);
@@ -243,7 +245,9 @@ export default function AdminDashboard() {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch("http://localhost:8000/products/");
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/products/`,
+      );
       if (!res.ok) throw new Error("Erreur serveur");
       if (res.ok) setProducts(await res.json());
     } catch (err) {
