@@ -5,6 +5,7 @@ from models.models import User
 from database import get_session
 from core.auth import get_password_hash
 
+
 router = APIRouter()
 
 class CreateUserRequest(BaseModel):
