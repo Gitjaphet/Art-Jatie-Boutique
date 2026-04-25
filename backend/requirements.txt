@@ -4,7 +4,6 @@ sqlmodel
 psycopg2-binary
 alembic
 python-jose[cryptography]
-
 python-multipart
 cloudinary
 python-dotenv
@@ -12,3 +11,4 @@ httpx
 gunicorn
 supabase
 bcrypt
+passlib[bcrypt]
