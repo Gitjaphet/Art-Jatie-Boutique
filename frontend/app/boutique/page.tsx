@@ -112,11 +112,10 @@ export default function BoutiquePage() {
         setLoading(true);
 
         // Charger settings + produits en parallèle
-        const [settings, inStock] = await Promise.all([
+        const [settings, allItems] = await Promise.all([
           getSettings(),
-          getProducts(false), // uniquement en stock
+          getProducts(true), // On charge TOUT le catalogue
         ]);
-
         // Appliquer le taux de change depuis la DB
         const rate = Number(settings.exchange_rate_eur) || 4800;
 
@@ -138,14 +137,13 @@ export default function BoutiquePage() {
           );
         }
 
-        const mapped = [
-          ...inStock.map((p: Record<string, unknown>) =>
-            mapApiProduct(p, false, rate),
-          ),
-        ];
+        const mapped = allItems.map((p: Record<string, unknown>) =>
+          mapApiProduct(p, false, rate),
+        );
+        const filtered = mapped.filter((p) => p.badge !== "Sur commande");
 
         const seen = new Set<number>();
-        const deduped = mapped.filter((p) => {
+        const deduped = filtered.filter((p) => {
           if (seen.has(p.id)) return false;
           seen.add(p.id);
           return true;
