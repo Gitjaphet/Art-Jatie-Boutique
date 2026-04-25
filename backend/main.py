@@ -15,7 +15,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
     "https://art-jatie-boutique.vercel.app",
-    "https://art-jatie-boutique.onrender.com",  # ← ajoute ça
+    
     "http://localhost:3000",
 ],
     allow_credentials=True,
