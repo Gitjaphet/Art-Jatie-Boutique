@@ -57,6 +57,20 @@ export default function ProductCard({
     setTimeout(() => setOrderSuccess(false), 3000);
   };
 
+  // Helper pour l'icône de genre
+  const getGenreIcon = (genre: string) => {
+    switch (genre) {
+      case "Femme":
+        return "♀";
+      case "Homme":
+        return "♂";
+      case "Enfant":
+        return "🧒";
+      default:
+        return "✨";
+    }
+  };
+
   return (
     <>
       {showModal && (
@@ -139,15 +153,11 @@ export default function ProductCard({
                 </div>
               )}
             </div>
+
             <div className={styles.infoRight}>
               {product.genre && (
                 <span className={styles.genre}>
-                  {product.genre === "Femme"
-                    ? "♀"
-                    : product.genre === "Homme"
-                      ? "♂"
-                      : "🧒"}{" "}
-                  {product.genre}
+                  {getGenreIcon(product.genre)} {product.genre}
                 </span>
               )}
               {product.sizes && product.sizes.length > 0 && (
