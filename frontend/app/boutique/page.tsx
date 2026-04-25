@@ -56,7 +56,11 @@ function mapApiProduct(
     id: Number(raw.id),
     name: (raw.name as string) ?? "",
     tag: (raw.tag as string) ?? "",
-    genre: ((raw.genre as string) ?? "Femme") as Product["genre"],
+
+    // On récupère 'genre' depuis l'objet raw renvoyé par ton backend Python
+    // Si c'est vide, on met "Femme" par défaut pour respecter le type Union
+    genre: ((raw.genre as string) || "Femme") as Product["genre"],
+
     category: ((raw.category as string) ?? "TENUES") as Product["category"],
     priceAr,
     priceArDisplay,
