@@ -1,16 +1,11 @@
 "use client";
-
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import type { Product } from "../../app/boutique/page";
+import { useCartStore } from "../../lib/cart";
+import CommandeModal from "./CommandeModal";
 import styles from "./ProductCard.module.css";
-
-type Props = {
-  product: Product;
-  listView?: boolean;
-  commandeMode?: boolean;
-};
 
 const COLOR_MAP: Record<string, string> = {
   Beige: "#D4B896",
@@ -23,6 +18,13 @@ const COLOR_MAP: Record<string, string> = {
   Rouge: "#E53935",
   Vert: "#4CAF50",
   Gris: "#9E9E9E",
+  Kaki: "#8B9467",
+};
+
+type Props = {
+  product: Product;
+  listView?: boolean;
+  commandeMode?: boolean;
 };
 
 export default function ProductCard({
@@ -32,131 +34,155 @@ export default function ProductCard({
 }: Props) {
   const [hovered, setHovered] = useState(false);
   const [added, setAdded] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState(false);
+  const addItem = useCartStore((s) => s.addItem);
 
-  const handleAction = (e: React.MouseEvent) => {
+  const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.priceAr,
+      quantity: 1,
+      image: product.image,
+      category: product.category,
+    });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
-    // TODO: connecter au contexte panier / commande
+  };
+
+  const handleOrderSuccess = () => {
+    setOrderSuccess(true);
+    setTimeout(() => setOrderSuccess(false), 3000);
   };
 
   return (
-    <div
-      className={`${styles.card} ${listView ? styles.listCard : ""}`}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      {/* ── Image ── */}
-      <div className={styles.imageWrapper}>
-        <Image
-          src={product.image}
-          alt={product.name}
-          fill
-          sizes="(max-width: 768px) 50vw, 33vw"
-          className={styles.image}
-          style={{ transform: hovered ? "scale(1.07)" : "scale(1)" }}
+    <>
+      {showModal && (
+        <CommandeModal
+          product={product}
+          onClose={() => setShowModal(false)}
+          onSuccess={handleOrderSuccess}
         />
+      )}
 
-        {product.badge && (
-          <span
-            className={`${styles.badge} ${
-              product.badge === "Rupture"
-                ? styles.badgeSoldOut
-                : styles.badgeSale
-            }`}
+      <div
+        className={`${styles.card} ${listView ? styles.listCard : ""}`}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        {/* Image */}
+        <div className={styles.imageWrapper}>
+          <Image
+            src={product.image}
+            alt={product.name}
+            fill
+            sizes="(max-width: 768px) 50vw, 33vw"
+            className={styles.image}
+            style={{ transform: hovered ? "scale(1.07)" : "scale(1)" }}
+          />
+          {product.badge && (
+            <span
+              className={`${styles.badge} ${product.badge === "Rupture" ? styles.badgeSoldOut : styles.badgeSale}`}
+            >
+              {product.badge}
+            </span>
+          )}
+          <div
+            className={`${styles.overlay} ${hovered ? styles.overlayVisible : ""}`}
           >
-            {product.badge}
-          </span>
-        )}
-
-        <div
-          className={`${styles.overlay} ${hovered ? styles.overlayVisible : ""}`}
-        >
-          <Link href={`/produit/${product.id}`} className={styles.btnDetails}>
-            Voir les détails
-          </Link>
+            <Link href={`/produit/${product.id}`} className={styles.btnDetails}>
+              Voir les détails
+            </Link>
+          </div>
         </div>
-      </div>
 
-      {/* ── Infos ── */}
-      <div className={styles.info}>
-        <span className={styles.tag}>{product.tag}</span>
-        <h3 className={styles.name}>{product.name}</h3>
+        {/* Infos */}
+        <div className={styles.info}>
+          <span className={styles.tag}>{product.tag}</span>
+          <h3 className={styles.name}>{product.name}</h3>
 
-        <div className={styles.infoBottom}>
-          {/* Colonne gauche : prix + couleurs */}
-          <div className={styles.infoLeft}>
-            <div className={styles.priceBlock}>
-              <div className={styles.priceRow}>
-                <span className={styles.priceAr}>{product.priceArDisplay}</span>
-                {product.oldPriceAr && (
-                  <span className={styles.oldPrice}>{product.oldPriceAr}</span>
-                )}
-              </div>
-              <div className={styles.priceEur}>
-                ≈ {product.priceEur} €
-                {product.oldPriceEur && (
-                  <span className={styles.oldPriceEur}>
-                    {" "}
-                    {product.oldPriceEur}
+          <div className={styles.infoBottom}>
+            <div className={styles.infoLeft}>
+              <div className={styles.priceBlock}>
+                <div className={styles.priceRow}>
+                  <span className={styles.priceAr}>
+                    {product.priceArDisplay}
                   </span>
-                )}
+                  {product.oldPriceAr && (
+                    <span className={styles.oldPrice}>
+                      {product.oldPriceAr}
+                    </span>
+                  )}
+                </div>
+                <div className={styles.priceEur}>
+                  ≈ {product.priceEur} €
+                  {product.oldPriceEur && (
+                    <span className={styles.oldPriceEur}>
+                      {" "}
+                      {product.oldPriceEur}
+                    </span>
+                  )}
+                </div>
               </div>
+              {product.colors.length > 0 && (
+                <div className={styles.colorDots}>
+                  {product.colors.map((c) => (
+                    <span
+                      key={c}
+                      className={styles.colorDot}
+                      title={c}
+                      style={{ backgroundColor: COLOR_MAP[c] ?? "#ccc" }}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-
-            {product.colors.length > 0 && (
-              <div className={styles.colorDots}>
-                {product.colors.map((c) => (
-                  <span
-                    key={c}
-                    className={styles.colorDot}
-                    title={c}
-                    style={{ backgroundColor: COLOR_MAP[c] ?? "#ccc" }}
-                  />
-                ))}
-              </div>
-            )}
+            <div className={styles.infoRight}>
+              {product.genre && (
+                <span className={styles.genre}>
+                  {product.genre === "Femme"
+                    ? "♀"
+                    : product.genre === "Homme"
+                      ? "♂"
+                      : "🧒"}{" "}
+                  {product.genre}
+                </span>
+              )}
+              {product.sizes && product.sizes.length > 0 && (
+                <div className={styles.sizesRow}>
+                  {product.sizes.map((s) => (
+                    <span key={s} className={styles.sizeChip}>
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Colonne droite : genre + tailles */}
-          <div className={styles.infoRight}>
-            {product.genre && (
-              <span className={styles.genre}>
-                {product.genre === "Femme"
-                  ? "♀"
-                  : product.genre === "Homme"
-                    ? "♂"
-                    : "🧒"}{" "}
-                {product.genre}
-              </span>
-            )}
-            {product.sizes && product.sizes.length > 0 && (
-              <div className={styles.sizesRow}>
-                {product.sizes.map((s) => (
-                  <span key={s} className={styles.sizeChip}>
-                    {s}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* BOUTON */}
+          {commandeMode ? (
+            <button
+              className={`${styles.btnCart} ${orderSuccess ? styles.btnCartAdded : styles.btnCommande}`}
+              onClick={(e) => {
+                e.preventDefault();
+                if (!orderSuccess) setShowModal(true);
+              }}
+            >
+              {orderSuccess ? "✓ Commande envoyée !" : "Commander"}
+            </button>
+          ) : (
+            <button
+              className={`${styles.btnCart} ${added ? styles.btnCartAdded : ""}`}
+              onClick={handleAddToCart}
+            >
+              {added ? "✓ Ajouté au panier !" : "Ajouter au panier"}
+            </button>
+          )}
         </div>
-
-        <button
-          className={`${styles.btnCart} ${added ? styles.btnCartAdded : ""} ${
-            commandeMode ? styles.btnCommande : ""
-          }`}
-          onClick={handleAction}
-        >
-          {added
-            ? commandeMode
-              ? "✓ Demande envoyée !"
-              : "✓ Ajouté !"
-            : commandeMode
-              ? "Commander"
-              : "Ajouter au panier"}
-        </button>
       </div>
-    </div>
+    </>
   );
 }

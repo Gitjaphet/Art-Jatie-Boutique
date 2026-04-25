@@ -43,3 +43,27 @@ class User(SQLModel, table=True):
     email: str = Field(unique=True, index=True)
     hashed_password: str
     is_admin: bool = Field(default=True)
+
+# --- COMMANDES SUR COMMANDE ---
+class Order(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    
+    # Infos client
+    client_name: str
+    client_email: str
+    client_whatsapp: str
+    client_message: Optional[str] = None
+    
+    # Infos produit
+    product_id: int
+    product_name: str
+    product_image: str
+    product_price_ar: int
+    
+    # Choix client
+    selected_size: str
+    selected_color: str
+    
+    # Statut
+    status: str = Field(default="En attente")
+    created_at: datetime = Field(default_factory=datetime.utcnow)

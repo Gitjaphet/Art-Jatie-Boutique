@@ -11,6 +11,7 @@ import SettingsTab from "../../../components/dashboard/SettingsTab";
 import PlanningTab from "../../../components/dashboard/PlanningTab";
 import PosTab from "../../../components/dashboard/PosTab";
 import UsersTab from "../../../components/dashboard/UsersTab";
+import OrdersTab from "@/components/dashboard/OrdersTab";
 
 type SettingsData = {
   exchange_rate_eur?: string | number;
@@ -132,6 +133,23 @@ const I = {
       <path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </svg>
   ),
+  ClipboardList: () => (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+      <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+      <line x1="9" y1="12" x2="15" y2="12" />
+      <line x1="9" y1="16" x2="13" y2="16" />
+    </svg>
+  ),
   Calendar: () => (
     <svg
       width="16"
@@ -200,7 +218,14 @@ function useToast() {
   return { toasts, add, rem };
 }
 
-type Tab = "overview" | "products" | "pos" | "planning" | "users" | "settings";
+type Tab =
+  | "overview"
+  | "products"
+  | "pos"
+  | "planning"
+  | "orders"
+  | "users"
+  | "settings";
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -307,6 +332,7 @@ export default function AdminDashboard() {
     { id: "products", label: "Catalogue", Icon: I.Bag },
     { id: "planning", label: "Planning", Icon: I.Calendar },
     { id: "users", label: "Utilisateurs", Icon: I.Users },
+    { id: "orders", label: "Commandes", Icon: I.ClipboardList },
     { id: "settings", label: "Réglages", Icon: I.Gear },
   ];
   const TITLES = {
@@ -315,6 +341,7 @@ export default function AdminDashboard() {
     products: "Gestion du catalogue",
     planning: "Planning des commandes",
     users: "Gestion des utilisateurs",
+    orders: "Commandes clients",
     settings: "Paramètres",
   };
   const dateStr = new Date().toLocaleDateString("fr-FR", {
@@ -488,6 +515,7 @@ export default function AdminDashboard() {
           )}
           {activeTab === "planning" && <PlanningTab products={products} />}
           {activeTab === "users" && <UsersTab toast={toast} />}
+          {activeTab === "orders" && <OrdersTab toast={toast} />}
           {activeTab === "settings" && (
             <SettingsTab
               initialSettings={settings} // <-- On a juste enlevé "as any"

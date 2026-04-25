@@ -1,0 +1,371 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+  animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0ece8;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  background: #faf9f7;
+}
+
+.productPreview {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.productImg {
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid #f0ece8;
+}
+
+.productTag {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #e86b8c;
+  font-weight: 700;
+  margin: 0 0 2px;
+}
+
+.productName {
+  font-family: "Playfair Display", serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 2px;
+}
+
+.productPrice {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.productPrice span {
+  color: #aaa;
+  font-weight: 400;
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.closeBtn {
+  background: #f0ece8;
+  border: none;
+  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.closeBtn:hover {
+  background: #e8e2dc;
+  color: #1a1a1a;
+}
+
+.body {
+  padding: 22px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.sectionTitle {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #aaa;
+  margin: 0 0 14px;
+}
+
+.divider {
+  height: 1px;
+  background: #f0ece8;
+  margin: 20px 0;
+}
+
+.field {
+  margin-bottom: 16px;
+}
+
+.label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #666;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.selectedLabel {
+  color: #e86b8c;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: none;
+  margin-left: 6px;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.input {
+  width: 100%;
+  border: 1.5px solid #e8e2dc;
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 14px;
+  color: #1a1a1a;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  border-color: #e86b8c;
+}
+
+.inputWithIcon {
+  position: relative;
+}
+
+.inputWithIcon .input {
+  padding-left: 38px;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 15px;
+}
+
+.textarea {
+  width: 100%;
+  border: 1.5px solid #e8e2dc;
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 14px;
+  color: #1a1a1a;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+  resize: none;
+  box-sizing: border-box;
+}
+
+.textarea:focus {
+  border-color: #e86b8c;
+}
+
+/* Tailles */
+.sizeGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sizeBtn {
+  padding: 7px 16px;
+  border: 1.5px solid #e8e2dc;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  background: #fff;
+  color: #666;
+  transition: all 0.18s;
+  font-family: inherit;
+}
+
+.sizeBtn:hover {
+  border-color: #e86b8c;
+  color: #e86b8c;
+}
+
+.sizeBtnActive {
+  border-color: #e86b8c;
+  background: #fdf0f4;
+  color: #e86b8c;
+}
+
+/* Couleurs */
+.colorGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.colorBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.18s;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.colorBtn:hover {
+  transform: scale(1.15);
+}
+
+.colorBtnActive {
+  outline-color: #e86b8c;
+  transform: scale(1.15);
+}
+
+.error {
+  background: #fef2f2;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  color: #dc2626;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.footer {
+  padding: 16px 24px;
+  border-top: 1px solid #f0ece8;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  background: #faf9f7;
+}
+
+.btnCancel {
+  padding: 11px 20px;
+  background: transparent;
+  border: 1.5px solid #e8e2dc;
+  border-radius: 10px;
+  color: #666;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.btnCancel:hover {
+  border-color: #aaa;
+  color: #1a1a1a;
+}
+
+.btnConfirm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 24px;
+  background: #1a1a1a;
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  letter-spacing: 0.03em;
+}
+
+.btnConfirm:hover {
+  background: #e86b8c;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(232, 107, 140, 0.3);
+}
+
+.btnConfirm:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.spinner {
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 480px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+  .modal {
+    max-height: 95vh;
+    border-radius: 16px 16px 0 0;
+  }
+  .overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+}

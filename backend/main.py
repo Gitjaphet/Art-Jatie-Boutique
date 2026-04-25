@@ -2,9 +2,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from database import create_db_and_tables
-
-# Importation des routeurs
 from routes import products, settings, auth, users  # ✅ users ajouté ici
+from routes import orders
+
+
+app.include_router(orders.router, prefix="/orders", tags=["Commandes"])
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
