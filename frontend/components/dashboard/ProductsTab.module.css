@@ -9,7 +9,185 @@
   white-space: nowrap;
 }
 
-/* --- POP-UP DE SUPPRESSION --- */
+/* ═══════════════════════════════════════════════
+   TOOLBAR RESPONSIVE
+═══════════════════════════════════════════════ */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+/* ═══════════════════════════════════════════════
+   TABLE WRAPPER — desktop uniquement
+═══════════════════════════════════════════════ */
+.tableWrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ═══════════════════════════════════════════════
+   CARDS MOBILE — remplace le tableau sur petit écran
+═══════════════════════════════════════════════ */
+.cardGrid {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.productCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  transition: box-shadow 0.2s;
+  animation: fadeUp 0.3s var(--ease) both;
+}
+
+.productCard:active {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.cardImage {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.cardBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardName {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 2px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.cardGenre {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.cardCategory {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--surface2);
+  padding: 2px 8px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+}
+
+.cardPrice {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.cardPriceSub {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-left: 2px;
+}
+
+.cardColors {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.colorTag {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+.cardActions {
+  display: flex;
+  gap: 8px;
+}
+
+.cardBtn {
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.2s;
+}
+
+.cardBtnEdit {
+  background: var(--blue-dim, #eff6ff);
+  color: var(--blue, #2563eb);
+}
+
+.cardBtnEdit:active {
+  background: var(--blue, #2563eb);
+  color: white;
+}
+
+.cardBtnDelete {
+  background: var(--red-dim, #fef2f2);
+  color: var(--red, #dc2626);
+}
+
+.cardBtnDelete:active {
+  background: var(--red, #dc2626);
+  color: white;
+}
+
+/* ═══════════════════════════════════════════════
+   EMPTY STATE
+═══════════════════════════════════════════════ */
+.emptyState {
+  padding: 48px 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ═══════════════════════════════════════════════
+   POP-UP DE SUPPRESSION
+═══════════════════════════════════════════════ */
 .deleteOverlay {
   position: fixed;
   inset: 0;
@@ -131,4 +309,94 @@
   border-top-color: white;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
+}
+
+/* ═══════════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════════ */
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE — Tablette (≤ 900px)
+═══════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  /* On masque le tableau et on affiche les cards */
+  .tableWrapper {
+    display: none;
+  }
+
+  .cardGrid {
+    display: flex;
+  }
+
+  .deleteModal {
+    padding: 20px;
+    border-radius: 14px;
+  }
+
+  .deleteTitle {
+    font-size: 1.1rem;
+  }
+
+  .deleteActions {
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+
+  .btnCancel,
+  .btnConfirm {
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
+    font-size: 14px;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE — Mobile (≤ 480px)
+═══════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .productCard {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .cardImage {
+    width: 56px;
+    height: 56px;
+  }
+
+  .cardName {
+    font-size: 13px;
+  }
+
+  .cardPrice {
+    font-size: 14px;
+  }
 }
