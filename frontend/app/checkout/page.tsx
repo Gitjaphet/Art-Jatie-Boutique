@@ -433,7 +433,6 @@ function CheckoutContent() {
                 </span>
               </div>
               <div className={styles.paymentBadges}>
-                <span className={styles.paymentBadge}>Recommandé</span>
                 <span className={styles.stockBadge}>Stock réservé</span>
               </div>
             </label>
