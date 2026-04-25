@@ -35,7 +35,7 @@
   margin: 0;
 }
 
-/* Grid layout */
+/* ── Grid ── */
 .grid {
   display: grid;
   grid-template-columns: 1fr 340px;
@@ -49,7 +49,7 @@
   gap: 16px;
 }
 
-/* Cards */
+/* ── Cards ── */
 .card {
   background: #fff;
   border-radius: 16px;
@@ -67,7 +67,7 @@
   letter-spacing: 0.05em;
 }
 
-/* Mini panier */
+/* ── Mini panier ── */
 .miniCart {
   display: flex;
   flex-direction: column;
@@ -96,18 +96,15 @@
   flex-direction: column;
   gap: 2px;
 }
-
 .miniName {
   font-size: 13px;
   font-weight: 600;
   color: #1a1a1a;
 }
-
 .miniQty {
   font-size: 11px;
   color: #aaa;
 }
-
 .miniPrice {
   font-size: 13px;
   font-weight: 700;
@@ -115,13 +112,12 @@
   white-space: nowrap;
 }
 
-/* Formulaire */
+/* ── Formulaire ── */
 .formGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
 }
-
 .fullWidth {
   grid-column: 1 / -1;
 }
@@ -173,7 +169,53 @@
   background: #fff;
 }
 
-/* Options de paiement */
+.inputFile {
+  border: 1.5px dashed #e8e2dc;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #888;
+  background: #faf9f7;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.inputFile:hover {
+  border-color: #e86b8c;
+}
+
+.fieldNote {
+  font-size: 11px;
+  color: #bbb;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* ── Bannière priorité stock ── */
+.priorityBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: linear-gradient(135deg, #fdf0f4 0%, #fff9ec 100%);
+  border: 1px solid rgba(232, 107, 140, 0.25);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  color: #c05478;
+}
+.priorityBanner svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #e86b8c;
+}
+.priorityBanner p {
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+  color: #7a3050;
+}
+
+/* ── Options de paiement ── */
 .paymentOptions {
   display: flex;
   flex-direction: column;
@@ -194,12 +236,26 @@
 .paymentOption:hover {
   border-color: #e8e2dc;
 }
+.paymentOption input {
+  display: none;
+}
+
+/* MVola actif — rose */
 .paymentActive {
   border-color: #e86b8c !important;
   background: #fdf0f4;
 }
-.paymentOption input {
-  display: none;
+
+/* Orange Money actif — orange */
+.paymentActiveOm {
+  border-color: #ff6600 !important;
+  background: #fff5ec;
+}
+
+/* WhatsApp actif — vert */
+.paymentActiveWa {
+  border-color: #25d366 !important;
+  background: #f0fdf4;
 }
 
 .paymentIcon {
@@ -218,16 +274,21 @@
   flex-direction: column;
   gap: 2px;
 }
-
 .paymentName {
   font-size: 14px;
   font-weight: 700;
   color: #1a1a1a;
 }
-
 .paymentDesc {
   font-size: 12px;
   color: #aaa;
+}
+
+.paymentBadges {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
 }
 
 .paymentBadge {
@@ -239,23 +300,85 @@
   border-radius: 20px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
-/* Champ MVola */
-.mvolaField {
+.stockBadge {
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+/* ── Champs paiement mobile ── */
+.paymentFields {
   margin-top: 4px;
+  border-left: 3px solid #e86b8c;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.paymentInstructions {
+  background: #fdf6f9;
+  border-left: 3px solid #e86b8c;
+  border-radius: 0 10px 10px 0;
+  padding: 12px 16px;
+}
+
+.instrTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 8px;
+}
+
+.instrList {
+  margin: 0;
+  padding-left: 18px;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
-
-.mvolaNote {
-  font-size: 12px;
-  color: #aaa;
+.instrList li {
+  font-size: 13px;
+  color: #555;
   line-height: 1.5;
 }
 
-/* Erreur */
+.boutiqueNum {
+  font-size: 15px;
+  font-family: monospace;
+  color: #e86b8c;
+  letter-spacing: 0.03em;
+}
+
+/* ── WhatsApp info ── */
+.whatsappInfo {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #166534;
+  line-height: 1.5;
+  margin-top: 4px;
+}
+.whatsappInfo svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ── Erreur ── */
 .errorBox {
   display: flex;
   align-items: center;
@@ -269,10 +392,13 @@
   font-weight: 600;
 }
 
-/* Sidebar */
+/* ── Sidebar ── */
 .sidebar {
   position: sticky;
   top: 110px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .summaryCard {
@@ -296,14 +422,12 @@
   gap: 12px;
   margin-bottom: 16px;
 }
-
 .summaryRow {
   display: flex;
   justify-content: space-between;
   font-size: 14px;
   color: #666;
 }
-
 .summaryRowSub {
   font-size: 11px;
   color: #aaa;
@@ -330,7 +454,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .totalLabel {
@@ -339,7 +463,6 @@
   color: #1a1a1a;
   padding-top: 4px;
 }
-
 .finalAr {
   display: block;
   font-family: "Playfair Display", serif;
@@ -348,12 +471,30 @@
   color: #e86b8c;
   text-align: right;
 }
-
 .finalEur {
   display: block;
   color: #bbb;
   font-size: 13px;
   text-align: right;
+}
+
+/* Badge garantie stock */
+.guaranteeBadge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #15803d;
+  margin-bottom: 16px;
+}
+.guaranteeBadge svg {
+  color: #22c55e;
+  flex-shrink: 0;
 }
 
 .submitBtn {
@@ -398,7 +539,75 @@
   color: #d4b896;
 }
 
-/* Pending screen */
+/* ── NB Card ── */
+.nbCard {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid #f0ece8;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+}
+
+.nbTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 14px;
+}
+.nbTitle svg {
+  color: #e86b8c;
+  flex-shrink: 0;
+}
+
+.nbList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nbList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12px;
+  color: #555;
+  line-height: 1.55;
+}
+
+.nbDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.nbContact {
+  margin-top: 14px;
+  font-size: 12px;
+  color: #aaa;
+  border-top: 1px solid #f0ece8;
+  padding-top: 12px;
+}
+
+.nbLink {
+  color: #e86b8c;
+  text-decoration: none;
+  font-weight: 600;
+}
+.nbLink:hover {
+  text-decoration: underline;
+}
+
+/* ── Pending screen ── */
 .pendingScreen {
   display: flex;
   align-items: center;
@@ -435,7 +644,6 @@
   color: #1a1a1a;
   margin: 0 0 12px;
 }
-
 .pendingText {
   color: #666;
   font-size: 15px;
@@ -450,7 +658,6 @@
   text-align: left;
   margin-bottom: 28px;
 }
-
 .pendingStep {
   display: flex;
   align-items: center;
@@ -483,14 +690,13 @@
   color: #888;
   margin-bottom: 16px;
 }
-
 .pendingNote {
   font-size: 12px;
   color: #bbb;
   font-style: italic;
 }
 
-/* Success screen */
+/* ── Success screen ── */
 .successScreen {
   display: flex;
   align-items: center;
@@ -527,12 +733,29 @@
   color: #1a1a1a;
   margin: 0 0 12px;
 }
-
 .successText {
   color: #555;
   font-size: 15px;
   line-height: 1.6;
   margin: 0 0 10px;
+}
+
+/* Badge priorité sur l'écran succès */
+.successPriority {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #dcfce7;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #15803d;
+  margin: 0 0 12px;
+}
+.successPriority svg {
+  flex-shrink: 0;
+  color: #22c55e;
 }
 
 .successSubtext {
@@ -560,13 +783,12 @@
   transform: translateY(-2px);
 }
 
-/* Empty state */
+/* ── Empty ── */
 .emptyState {
   text-align: center;
   padding: 80px 20px;
   color: #888;
 }
-
 .backLink {
   display: inline-block;
   margin-top: 16px;
@@ -575,7 +797,7 @@
   font-weight: 600;
 }
 
-/* Loading */
+/* ── Loading ── */
 .loading {
   display: flex;
   align-items: center;
@@ -584,7 +806,7 @@
   color: #e86b8c;
 }
 
-/* Spin animation */
+/* ── Spin ── */
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -597,7 +819,7 @@
   animation: spin 1s linear infinite;
 }
 
-/* Responsive */
+/* ── Responsive ── */
 @media (max-width: 900px) {
   .grid {
     grid-template-columns: 1fr;
