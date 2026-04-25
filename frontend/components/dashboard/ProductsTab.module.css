@@ -401,7 +401,7 @@
    
    Breakpoints :
      ≤ 900px  → tablette / iPhone Pro Max  : labels visibles, sidebar compacte
-     ≤ 430px  → < iPhone Pro Max           : icônes SEULES, labels masqués
+     ≤ 414px  → iPhone 11 Pro Max et plus petit : icônes SEULES, labels masqués
 ═══════════════════════════════════════════════════════════════ */
 
 /* ── Tablette (≤ 900px) : compacter la sidebar, garder les labels ── */
@@ -468,8 +468,8 @@
   }
 }
 
-/* ── Petit mobile (≤ 430px) : icônes SEULES, zéro label ── */
-@media (max-width: 430px) {
+/* ── Petit mobile (≤ 414px) : iPhone 11 Pro Max et en dessous → icônes SEULES ── */
+@media (max-width: 414px) {
   .sidebar {
     width: 52px;
     min-width: 52px;
