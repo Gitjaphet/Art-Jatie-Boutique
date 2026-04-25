@@ -87,11 +87,14 @@ export default function UsersTab({ toast }: Props) {
     if (!email || !password) return;
     setSub(true);
     try {
-      const res = await fetch("http://localhost:8000/users/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, is_admin: isAdmin }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/users/`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password, is_admin: isAdmin }),
+        },
+      );
       if (res.ok) {
         toast("Utilisateur créé avec succès !");
         setEmail("");
@@ -112,9 +115,12 @@ export default function UsersTab({ toast }: Props) {
   const handleDelete = async (id: number, userEmail: string) => {
     if (!confirm(`Supprimer ${userEmail} ?`)) return;
     try {
-      const res = await fetch(`http://localhost:8000/users/${id}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/users/${id}`,
+        {
+          method: "DELETE",
+        },
+      );
       if (res.ok) {
         toast("Utilisateur supprimé.");
         fetchUsers();
