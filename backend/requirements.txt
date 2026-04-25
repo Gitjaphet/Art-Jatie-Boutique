@@ -11,4 +11,3 @@ httpx
 gunicorn
 supabase
 bcrypt
-passlib[bcrypt]
