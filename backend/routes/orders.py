@@ -4,13 +4,19 @@ Gestion des commandes — supporte panier complet + MVola + Orange Money + Whats
 """
 
 import json
-from fastapi import APIRouter, Depends, HTTPException
+import os
+import uuid
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlmodel import Session, select
 from pydantic import BaseModel
 from typing import Optional, List
+from supabase import create_client
 
 from models.models import Order, Product
 from database import get_session
+
+SUPABASE_URL = os.getenv("SUPABASE_URL", "")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")  
 
 router = APIRouter()
 
@@ -171,3 +177,21 @@ def delete_order(order_id: int, session: Session = Depends(get_session)):
     session.delete(order)
     session.commit()
     return {"message": "Commande supprimée."}
+
+
+@router.post("/upload-proof")
+async def upload_proof(file: UploadFile = File(...)):
+    try:
+        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        ext = file.filename.split(".")[-1] if file.filename else "jpg"
+        filename = f"{uuid.uuid4()}.{ext}"
+        content = await file.read()
+        supabase.storage.from_("payment-proofs").upload(
+            filename,
+            content,
+            {"content-type": file.content_type or "image/jpeg"}
+        )
+        url = supabase.storage.from_("payment-proofs").get_public_url(filename)
+        return {"url": url}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Upload échoué: {str(e)}")

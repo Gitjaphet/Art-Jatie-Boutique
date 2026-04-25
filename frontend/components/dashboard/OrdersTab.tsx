@@ -20,6 +20,7 @@ type Order = {
   selected_color: string;
   status: string;
   created_at: string;
+  cart_items_json?: string; //
 };
 
 const STATUS_OPTIONS = [
@@ -81,7 +82,8 @@ export default function OrdersTab({ toast }: Props) {
     try {
       const res = await fetch(`${API}/orders/`);
       if (!res.ok) throw new Error();
-      setOrders(await res.json());
+      const all = await res.json();
+      setOrders(all.filter((o: Order) => !o.cart_items_json)); // ✅ sur mesure seulement
     } catch {
       toast("Impossible de charger les commandes.", "error");
     } finally {

@@ -161,28 +161,7 @@ function CheckoutContent() {
       setOrderId(order.id);
 
       // MVola → initier la transaction automatique
-      if (payment === "mvola") {
-        const mvolaRes = await fetch(`${API_URL}/mvola/initiate`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            order_id: order.id,
-            customer_msisdn: mvolaPhone,
-            amount: total,
-            description: `Art Jatie commande #${order.id}`,
-          }),
-        });
-        if (!mvolaRes.ok) {
-          const err = await mvolaRes.json();
-          throw new Error(err.detail || "Erreur MVola.");
-        }
-        const mvolaData = await mvolaRes.json();
-        setStep("mvola_pending");
-        startPolling(mvolaData.serverCorrelationId, order.id);
-        return;
-      }
-
-      // Orange Money ou WhatsApp → confirmation manuelle via WhatsApp
+      // Tous les modes → confirmation manuelle via WhatsApp
       handleWhatsAppCheckout(order.id);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Une erreur est survenue.");
