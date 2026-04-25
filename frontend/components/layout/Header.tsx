@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import styles from "./Header.module.css";
 import Image from "next/image";
 import MobileNav from "./MobileNav";
-import { useCartStore } from "@/lib/cart";
+import CartBadge from "./CartBadge";
 
 const NAV_LINKS = [
   { href: "/boutique", label: "Boutique" },
@@ -18,14 +18,9 @@ const NAV_LINKS = [
 
 export default function Header({ darkIcons = false }: { darkIcons?: boolean }) {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
 
-  // ✅ Badge panier dynamique depuis Zustand
-  const totalItems = useCartStore((s) => s.totalItems());
-
   useEffect(() => {
-    setMounted(true);
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -37,7 +32,6 @@ export default function Header({ darkIcons = false }: { darkIcons?: boolean }) {
     <header
       className={`${styles.header} ${isScrolled ? styles.headerScrolled : ""} ${colorClass}`}
     >
-      {/* LOGO */}
       <Link href="/" className={styles.logo}>
         <Image
           src="/images/logo/art_jatie.png"
@@ -48,7 +42,6 @@ export default function Header({ darkIcons = false }: { darkIcons?: boolean }) {
         />
       </Link>
 
-      {/* NAV DESKTOP */}
       <nav className={styles.nav}>
         {NAV_LINKS.map((link) => (
           <Link
@@ -63,7 +56,6 @@ export default function Header({ darkIcons = false }: { darkIcons?: boolean }) {
         ))}
       </nav>
 
-      {/* ACTIONS */}
       <div className={styles.actions}>
         <div className={styles.socials}>
           <a href="#" className={styles.socialLink} aria-label="Facebook">
@@ -77,7 +69,7 @@ export default function Header({ darkIcons = false }: { darkIcons?: boolean }) {
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+              <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
             </svg>
           </a>
           <a href="#" className={styles.socialLink} aria-label="TikTok">
@@ -91,7 +83,7 @@ export default function Header({ darkIcons = false }: { darkIcons?: boolean }) {
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path>
+              <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
             </svg>
           </a>
           <a href="#" className={styles.socialLink} aria-label="YouTube">
@@ -105,13 +97,13 @@ export default function Header({ darkIcons = false }: { darkIcons?: boolean }) {
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path>
-              <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
+              <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z" />
+              <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" />
             </svg>
           </a>
         </div>
 
-        {/* ✅ Badge panier dynamique — seulement si monté (évite hydration mismatch) */}
+        {/* ✅ CartBadge est un composant client isolé — zéro erreur linter */}
         <Link
           href="/panier"
           className={styles.cartBtn}
@@ -128,14 +120,12 @@ export default function Header({ darkIcons = false }: { darkIcons?: boolean }) {
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-              <line x1="3" y1="6" x2="21" y2="6"></line>
-              <path d="M16 10a4 4 0 0 1-8 0"></path>
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <path d="M16 10a4 4 0 0 1-8 0" />
             </svg>
           </div>
-          {mounted && totalItems > 0 && (
-            <span className={styles.cartBadge}>{totalItems}</span>
-          )}
+          <CartBadge />
         </Link>
 
         <div className={styles.mobileNavWrapper}>
