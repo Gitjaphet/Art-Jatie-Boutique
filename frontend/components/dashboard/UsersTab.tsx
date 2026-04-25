@@ -67,7 +67,9 @@ export default function UsersTab({ toast }: Props) {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const res = await fetch("http://localhost:8000/users/");
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/users/`,
+      );
       if (res.ok) setUsers(await res.json());
     } catch {
       toast("Impossible de charger les utilisateurs.", "error");

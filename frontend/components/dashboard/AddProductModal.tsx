@@ -185,10 +185,13 @@ export default function AddProductModal({
     formData.append("image", img);
 
     try {
-      const res = await fetch("http://localhost:8000/products/", {
-        method: "POST",
-        body: formData,
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/products/`,
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
       if (res.ok) {
         toast("Création ajoutée avec succès !");
         onSuccess();

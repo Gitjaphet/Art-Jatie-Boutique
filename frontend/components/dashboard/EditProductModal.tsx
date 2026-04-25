@@ -225,7 +225,7 @@ export default function EditProductModal({
     try {
       // ─── REQUÊTE PUT POUR LA MODIFICATION ───
       const res = await fetch(
-        `http://localhost:8000/products/${productToEdit.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/products/${productToEdit.id}`,
         {
           method: "PUT",
           body: formData,

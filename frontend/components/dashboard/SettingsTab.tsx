@@ -48,7 +48,7 @@ export default function SettingsTab({
       if (sizes) params.append("new_sizes", sizes);
       if (cats) params.append("new_categories", cats);
       const res = await fetch(
-        `http://localhost:8000/settings/?${params.toString()}`,
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/settings/?${params.toString()}`,
         { method: "PATCH" },
       );
       if (res.ok) {
