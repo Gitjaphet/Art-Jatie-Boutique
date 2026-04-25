@@ -5,9 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import styles from "./Header.module.css";
 import Image from "next/image";
-import MobileNav from "./MobileNav"; // Import du menu mobile
+import MobileNav from "./MobileNav";
+import { useCartStore } from "@/lib/cart";
 
-// On définit les liens ici pour les utiliser dans le desktop ET le mobile
 const NAV_LINKS = [
   { href: "/boutique", label: "Boutique" },
   { href: "/commande", label: "Sur Commande" },
@@ -18,12 +18,15 @@ const NAV_LINKS = [
 
 export default function Header({ darkIcons = false }: { darkIcons?: boolean }) {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
 
+  // ✅ Badge panier dynamique depuis Zustand
+  const totalItems = useCartStore((s) => s.totalItems());
+
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
+    setMounted(true);
+    const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -34,35 +37,34 @@ export default function Header({ darkIcons = false }: { darkIcons?: boolean }) {
     <header
       className={`${styles.header} ${isScrolled ? styles.headerScrolled : ""} ${colorClass}`}
     >
-      {/* ── LOGO ── */}
+      {/* LOGO */}
       <Link href="/" className={styles.logo}>
         <Image
           src="/images/logo/art_jatie.png"
           alt="Art Jatie"
-          width={180} // Taille légèrement réduite pour mobile/desktop
+          width={180}
           height={180}
           style={{ objectFit: "contain" }}
         />
       </Link>
 
-      {/* ── NAVIGATION DESKTOP ── */}
+      {/* NAV DESKTOP */}
       <nav className={styles.nav}>
         {NAV_LINKS.map((link) => (
           <Link
             key={link.href}
             href={link.href}
             className={`${styles.navLink} 
-            ${pathname === link.href ? styles.active : ""} 
-            ${!darkIcons && !isScrolled ? styles.navHome : ""}`}
+              ${pathname === link.href ? styles.active : ""} 
+              ${!darkIcons && !isScrolled ? styles.navHome : ""}`}
           >
             {link.label}
           </Link>
         ))}
       </nav>
 
-      {/* ── ACTIONS (Réseaux, Panier, Menu Mobile) ── */}
+      {/* ACTIONS */}
       <div className={styles.actions}>
-        {/* Réseaux Sociaux (Cachés sur mobile) */}
         <div className={styles.socials}>
           <a href="#" className={styles.socialLink} aria-label="Facebook">
             <svg
@@ -109,7 +111,7 @@ export default function Header({ darkIcons = false }: { darkIcons?: boolean }) {
           </a>
         </div>
 
-        {/* Panier (Toujours visible) */}
+        {/* ✅ Badge panier dynamique — seulement si monté (évite hydration mismatch) */}
         <Link
           href="/panier"
           className={styles.cartBtn}
@@ -131,10 +133,11 @@ export default function Header({ darkIcons = false }: { darkIcons?: boolean }) {
               <path d="M16 10a4 4 0 0 1-8 0"></path>
             </svg>
           </div>
-          <span className={styles.cartBadge}>3</span>
+          {mounted && totalItems > 0 && (
+            <span className={styles.cartBadge}>{totalItems}</span>
+          )}
         </Link>
 
-        {/* Menu Burger Mobile */}
         <div className={styles.mobileNavWrapper}>
           <MobileNav navItems={NAV_LINKS} />
         </div>

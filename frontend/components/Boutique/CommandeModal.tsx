@@ -12,33 +12,26 @@ type Props = {
   onSuccess: () => void;
 };
 
-const COLORS_MAP: Record<string, string> = {
-  Beige: "#D4B896",
-  Blanc: "#F5F5F5",
-  Bleu: "#4A90D9",
-  Marron: "#795548",
-  Noir: "#1a1a1a",
-  Or: "#C9A84C",
-  Rose: "#E86B8C",
-  Rouge: "#E53935",
-  Vert: "#4CAF50",
-  Kaki: "#8B9467",
-  Multicolore: "linear-gradient(135deg,#E86B8C,#4A90D9,#4CAF50)",
-};
-
 export default function CommandeModal({ product, onClose, onSuccess }: Props) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [message, setMessage] = useState("");
-  const [size, setSize] = useState(product.sizes[0] || "");
-  const [color, setColor] = useState(product.colors[0] || "");
+  const [size, setSize] = useState("");
+  const [color, setColor] = useState("");
+  const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async () => {
     if (!name || !email || !whatsapp || !size || !color) {
       setError("Veuillez remplir tous les champs obligatoires.");
+      return;
+    }
+    if (!agreed) {
+      setError(
+        "Veuillez accepter les conditions de paiement avant de confirmer.",
+      );
       return;
     }
     setLoading(true);
@@ -74,11 +67,18 @@ export default function CommandeModal({ product, onClose, onSuccess }: Props) {
     }
   };
 
+  // Fermer seulement si on clique exactement sur l'overlay
+  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) onClose();
+  };
+
+  const advance = Math.round(product.priceAr * 0.5);
+  const formatAr = (n: number) =>
+    new Intl.NumberFormat("fr-FR").format(n) + " Ar";
+
   return (
-    <div
-      className={styles.overlay}
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
+    // ✅ Pas de backdrop-filter — juste un fond semi-transparent léger
+    <div className={styles.overlay} onClick={handleOverlayClick}>
       <div className={styles.modal}>
         {/* HEADER */}
         <div className={styles.header}>
@@ -94,7 +94,8 @@ export default function CommandeModal({ product, onClose, onSuccess }: Props) {
               <p className={styles.productTag}>{product.tag}</p>
               <h3 className={styles.productName}>{product.name}</h3>
               <p className={styles.productPrice}>
-                {product.priceArDisplay} <span>≈ {product.priceEur} €</span>
+                {product.priceArDisplay}
+                <span> ≈ {product.priceEur} €</span>
               </p>
             </div>
           </div>
@@ -117,44 +118,38 @@ export default function CommandeModal({ product, onClose, onSuccess }: Props) {
         <div className={styles.body}>
           <p className={styles.sectionTitle}>Votre sélection</p>
 
-          {/* TAILLES */}
-          <div className={styles.field}>
-            <label className={styles.label}>Taille *</label>
-            <div className={styles.sizeGrid}>
-              {product.sizes.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setSize(s)}
-                  className={`${styles.sizeBtn} ${size === s ? styles.sizeBtnActive : ""}`}
-                >
-                  {s}
-                </button>
-              ))}
+          {/* TAILLE — input libre */}
+          <div className={styles.grid2}>
+            <div className={styles.field}>
+              <label className={styles.label}>
+                Taille *{" "}
+                <span className={styles.hint}>XS, S, M, L, XL, 38, 40…</span>
+              </label>
+              <input
+                className={styles.input}
+                value={size}
+                onChange={(e) => setSize(e.target.value)}
+                placeholder="Ex : M, 40, Sur mesure…"
+              />
             </div>
-          </div>
 
-          {/* COULEURS */}
-          <div className={styles.field}>
-            <label className={styles.label}>
-              Couleur * <span className={styles.selectedLabel}>{color}</span>
-            </label>
-            <div className={styles.colorGrid}>
-              {product.colors.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setColor(c)}
-                  title={c}
-                  className={`${styles.colorBtn} ${color === c ? styles.colorBtnActive : ""}`}
-                  style={{ background: COLORS_MAP[c] ?? "#ccc" }}
-                />
-              ))}
+            {/* COULEUR — input libre */}
+            <div className={styles.field}>
+              <label className={styles.label}>
+                Couleur * <span className={styles.hint}>Soyez précis(e)</span>
+              </label>
+              <input
+                className={styles.input}
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                placeholder="Ex : Rouge vif, Beige rosé…"
+              />
             </div>
           </div>
 
           <div className={styles.divider} />
           <p className={styles.sectionTitle}>Vos coordonnées</p>
 
-          {/* FORMULAIRE */}
           <div className={styles.grid2}>
             <div className={styles.field}>
               <label className={styles.label}>Nom complet *</label>
@@ -201,6 +196,55 @@ export default function CommandeModal({ product, onClose, onSuccess }: Props) {
             />
           </div>
 
+          {/* ✅ CLAUSE 50% AVANCE */}
+          <div className={styles.paymentNotice}>
+            <div className={styles.paymentHeader}>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <span>Conditions de paiement</span>
+            </div>
+            <ul className={styles.paymentList}>
+              <li>
+                Une avance de <strong>50% ({formatAr(advance)})</strong> est
+                requise pour lancer la fabrication de votre commande.
+              </li>
+              <li>
+                En cas d&apos;annulation après confirmation, seulement
+                <strong> 50% de votre avance</strong> vous sera remboursée — les
+                50% restants couvrent les frais de fabrication engagés.
+              </li>
+              <li>
+                Notre équipe vous contactera via WhatsApp pour les modalités de
+                paiement de l&apos;avance.
+              </li>
+            </ul>
+
+            {/* Checkbox accord */}
+            <label className={styles.agreeRow}>
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className={styles.checkbox}
+              />
+              <span>
+                J&apos;ai lu et j&apos;accepte les conditions de paiement
+                ci-dessus.
+              </span>
+            </label>
+          </div>
+
           {error && <p className={styles.error}>{error}</p>}
         </div>
 
@@ -211,7 +255,7 @@ export default function CommandeModal({ product, onClose, onSuccess }: Props) {
           </button>
           <button
             onClick={handleSubmit}
-            disabled={loading}
+            disabled={loading || !agreed}
             className={styles.btnConfirm}
           >
             {loading ? (

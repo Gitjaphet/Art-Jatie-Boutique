@@ -2,18 +2,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from database import create_db_and_tables
-from routes import products, settings, auth, users  # ✅ users ajouté ici
-from routes import orders
-
-
-app.include_router(orders.router, prefix="/orders", tags=["Commandes"])
+from routes import products, settings, auth, users, orders  # ✅ orders ici
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     create_db_and_tables()
     yield
 
-# ✅ app est créé ICI d'abord
+# ✅ app créé EN PREMIER
 app = FastAPI(title="Art Jatie API", lifespan=lifespan)
 
 app.add_middleware(
@@ -31,8 +27,9 @@ app.add_middleware(
 def home():
     return {"message": "L'API Art Jatie est en ligne ! 🇲🇬"}
 
-# ✅ include_router APRÈS la création de app
+# ✅ Tous les routers APRÈS app
 app.include_router(products.router, prefix="/products", tags=["Produits"])
 app.include_router(settings.router, prefix="/settings", tags=["Réglages"])
-app.include_router(auth.router, prefix="/auth", tags=["Authentification"])
-app.include_router(users.router, prefix="/users", tags=["Utilisateurs"])
+app.include_router(auth.router,     prefix="/auth",     tags=["Authentification"])
+app.include_router(users.router,    prefix="/users",    tags=["Utilisateurs"])
+app.include_router(orders.router,   prefix="/orders",   tags=["Commandes"])  # ✅
