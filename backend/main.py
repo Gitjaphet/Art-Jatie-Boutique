@@ -11,13 +11,15 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Art Jatie API", lifespan=lifespan)
 
+# backend/main.py
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-    "https://art-jatie-boutique.vercel.app",
-    
-    "http://localhost:3000",
-],
+        "https://art-jatie-boutique.vercel.app",
+        "https://art-jatie-boutique.vercel.app/", # Avec slash
+        "http://localhost:3000",
+    ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
