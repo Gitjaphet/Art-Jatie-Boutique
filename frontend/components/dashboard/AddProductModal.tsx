@@ -106,26 +106,19 @@ export default function AddProductModal({
 
   const COLORS = useMemo(() => {
     const val = settings?.available_colors;
-    return typeof val === "string"
-      ? val.split(",").map((c: string) => c.trim())
-      : [];
+    return typeof val === "string" ? val.split(",").map((c) => c.trim()) : [];
   }, [settings?.available_colors]);
 
   const SIZES = useMemo(() => {
     const val = settings?.available_sizes;
-    return typeof val === "string"
-      ? val.split(",").map((s: string) => s.trim())
-      : [];
+    return typeof val === "string" ? val.split(",").map((s) => s.trim()) : [];
   }, [settings?.available_sizes]);
 
   const CATS = useMemo(() => {
     const val = settings?.available_categories;
-    return typeof val === "string"
-      ? val.split(",").map((c: string) => c.trim())
-      : [];
+    return typeof val === "string" ? val.split(",").map((c) => c.trim()) : [];
   }, [settings?.available_categories]);
 
-  // ─── NOUVEAU : Calcul de la catégorie par défaut (sans useEffect) ───
   const currentCat = cat || CATS[0] || "";
 
   const tog = useCallback(
@@ -134,10 +127,8 @@ export default function AddProductModal({
       list: string[],
       setList: React.Dispatch<React.SetStateAction<string[]>>,
     ) => {
-      setList((prevList: string[]) =>
-        prevList.includes(item)
-          ? prevList.filter((x) => x !== item)
-          : [...prevList, item],
+      setList((prev) =>
+        prev.includes(item) ? prev.filter((x) => x !== item) : [...prev, item],
       );
     },
     [],
@@ -146,7 +137,6 @@ export default function AddProductModal({
   const onFile = (f: File) => {
     if (!f || !f.type.startsWith("image/")) return;
     setImg(f);
-
     if (prev) URL.revokeObjectURL(prev);
     setPrev(URL.createObjectURL(f));
   };
@@ -172,7 +162,6 @@ export default function AddProductModal({
     const formData = new FormData();
     formData.append("name", name);
     formData.append("price_ar", price);
-    // ─── NOUVEAU : Utilisation de currentCat au lieu de cat ───
     formData.append("category", currentCat);
     formData.append("genre", genre);
     formData.append("tag", tag);
@@ -187,10 +176,7 @@ export default function AddProductModal({
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/products/`,
-        {
-          method: "POST",
-          body: formData,
-        },
+        { method: "POST", body: formData },
       );
       if (res.ok) {
         toast("Création ajoutée avec succès !");
@@ -214,7 +200,7 @@ export default function AddProductModal({
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div className={styles.modal}>
-        {/* HEADER */}
+        {/* ── HEADER ── */}
         <div className={styles.header}>
           <div>
             <h2 className={styles.title}>Nouvelle Création</h2>
@@ -227,7 +213,7 @@ export default function AddProductModal({
           </button>
         </div>
 
-        {/* BODY SCROLLABLE */}
+        {/* ── BODY ── */}
         <div className={styles.body}>
           <form id="pf" onSubmit={submit}>
             <div className={styles.grid}>
@@ -257,13 +243,12 @@ export default function AddProductModal({
             <div className={styles.grid}>
               <div className={styles.inputGroup}>
                 <label className={styles.label}>Catégorie</label>
-                {/* ─── NOUVEAU : Utilisation de currentCat au lieu de cat ─── */}
                 <select
                   className={styles.input}
                   value={currentCat}
                   onChange={(e) => setCat(e.target.value)}
                 >
-                  {CATS.map((c: string) => (
+                  {CATS.map((c) => (
                     <option key={c} value={c}>
                       {c}
                     </option>
@@ -286,47 +271,35 @@ export default function AddProductModal({
               </div>
             </div>
 
-            {/* COLORS */}
             <div className={styles.inputGroup}>
               <label className={styles.label}>Couleurs *</label>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "7px" }}>
-                {COLORS.map((c: string) => {
-                  const s = cols.includes(c);
-                  return (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => tog(c, cols, setCols)}
-                      className={`${styles.tagBtn} ${
-                        s ? styles.tagBtnColorActive : styles.tagBtnColor
-                      }`}
-                    >
-                      {c}
-                    </button>
-                  );
-                })}
+                {COLORS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => tog(c, cols, setCols)}
+                    className={`${styles.tagBtn} ${cols.includes(c) ? styles.tagBtnColorActive : ""}`}
+                  >
+                    {c}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* SIZES */}
             <div className={styles.inputGroup}>
               <label className={styles.label}>Tailles *</label>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "7px" }}>
-                {SIZES.map((sz: string) => {
-                  const s = sizes.includes(sz);
-                  return (
-                    <button
-                      key={sz}
-                      type="button"
-                      onClick={() => tog(sz, sizes, setSizes)}
-                      className={`${styles.tagBtn} ${styles.tagBtnSize} ${
-                        s ? styles.tagBtnSizeActive : ""
-                      }`}
-                    >
-                      {sz}
-                    </button>
-                  );
-                })}
+                {SIZES.map((sz) => (
+                  <button
+                    key={sz}
+                    type="button"
+                    onClick={() => tog(sz, sizes, setSizes)}
+                    className={`${styles.tagBtn} ${styles.tagBtnSize} ${sizes.includes(sz) ? styles.tagBtnSizeActive : ""}`}
+                  >
+                    {sz}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -372,7 +345,6 @@ export default function AddProductModal({
               />
             </div>
 
-            {/* DROPZONE */}
             <div className={styles.inputGroup}>
               <label className={styles.label}>Image *</label>
               <div
@@ -387,13 +359,7 @@ export default function AddProductModal({
                   onFile(e.dataTransfer.files[0]);
                 }}
                 onClick={() => document.getElementById("imgI")?.click()}
-                className={`${styles.dropZone} ${
-                  drag
-                    ? styles.dropZoneActive
-                    : prev
-                      ? styles.dropZoneHasFile
-                      : ""
-                }`}
+                className={`${styles.dropZone} ${drag ? styles.dropZoneActive : prev ? styles.dropZoneHasFile : ""}`}
               >
                 {prev ? (
                   <Image
@@ -444,17 +410,12 @@ export default function AddProductModal({
               </div>
             </div>
 
-            {/* HOT TOGGLE */}
             <label
               onClick={() => setHot(!hot)}
-              className={`${styles.hotToggle} ${
-                hot ? styles.hotToggleActive : ""
-              }`}
+              className={`${styles.hotToggle} ${hot ? styles.hotToggleActive : ""}`}
             >
               <div
-                className={`${styles.hotCheckbox} ${
-                  hot ? styles.hotCheckboxActive : ""
-                }`}
+                className={`${styles.hotCheckbox} ${hot ? styles.hotCheckboxActive : ""}`}
               >
                 {hot && (
                   <span style={{ color: "white" }}>
@@ -464,9 +425,7 @@ export default function AddProductModal({
               </div>
               <div className={styles.hotText}>
                 <div
-                  className={`${styles.hotTitle} ${
-                    hot ? styles.hotTitleActive : ""
-                  }`}
+                  className={`${styles.hotTitle} ${hot ? styles.hotTitleActive : ""}`}
                 >
                   Coup de cœur
                 </div>
@@ -475,9 +434,7 @@ export default function AddProductModal({
                 </div>
               </div>
               <span
-                className={`${styles.hotIcon} ${
-                  hot ? styles.hotIconActive : ""
-                }`}
+                className={`${styles.hotIcon} ${hot ? styles.hotIconActive : ""}`}
               >
                 <I.Fire />
               </span>
@@ -485,7 +442,7 @@ export default function AddProductModal({
           </form>
         </div>
 
-        {/* FOOTER */}
+        {/* ── FOOTER ── */}
         <div className={styles.footer}>
           <button
             type="button"
@@ -502,13 +459,11 @@ export default function AddProductModal({
           >
             {sub ? (
               <>
-                <div className={styles.spinnerSmall} />
-                En cours…
+                <div className={styles.spinnerSmall} /> En cours…
               </>
             ) : (
               <>
-                <I.Plus />
-                Ajouter
+                <I.Plus /> Ajouter
               </>
             )}
           </button>

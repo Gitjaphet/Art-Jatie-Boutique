@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import styles from "./AddProductModal.module.css"; // On réutilise le même CSS !
+import styles from "./EditProductModal.module.css"; // ✅ son propre CSS
 import Image from "next/image";
 
 const I = {
@@ -71,14 +71,13 @@ const I = {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-      <polyline points="17 21 17 13 7 13 7 21"></polyline>
-      <polyline points="7 3 7 8 15 8"></polyline>
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+      <polyline points="17 21 17 13 7 13 7 21" />
+      <polyline points="7 3 7 8 15 8" />
     </svg>
   ),
 };
 
-// On définit exactement à quoi ressemble un Produit pour rassurer TypeScript
 type ProductType = {
   id: number;
   name: string;
@@ -96,12 +95,13 @@ type ProductType = {
 };
 
 type EditProductModalProps = {
-  productToEdit: ProductType; // <-- On a remplacé le "any" par notre nouveau type !
+  productToEdit: ProductType;
   onClose: () => void;
   onSuccess: () => void;
   toast: (msg: string, type?: "success" | "error") => void;
   settings: Record<string, unknown> | null;
 };
+
 export default function EditProductModal({
   productToEdit,
   onClose,
@@ -124,7 +124,6 @@ export default function EditProductModal({
   const [prev, setPrev] = useState<string | null>(null);
   const [drag, setDrag] = useState(false);
 
-  // ─── PRÉ-REMPLISSAGE DES CHAMPS ───
   useEffect(() => {
     if (productToEdit) {
       setName(productToEdit.name);
@@ -137,12 +136,12 @@ export default function EditProductModal({
       setHot(productToEdit.is_hot || productToEdit.hot || false);
       setCols(
         productToEdit.colors
-          ? productToEdit.colors.split(",").map((c: string) => c.trim())
+          ? productToEdit.colors.split(",").map((c) => c.trim())
           : [],
       );
       setSizes(
         productToEdit.sizes
-          ? productToEdit.sizes.split(",").map((s: string) => s.trim())
+          ? productToEdit.sizes.split(",").map((s) => s.trim())
           : [],
       );
       setPrev(productToEdit.image);
@@ -151,23 +150,17 @@ export default function EditProductModal({
 
   const COLORS = useMemo(() => {
     const val = settings?.available_colors;
-    return typeof val === "string"
-      ? val.split(",").map((c: string) => c.trim())
-      : [];
+    return typeof val === "string" ? val.split(",").map((c) => c.trim()) : [];
   }, [settings?.available_colors]);
 
   const SIZES = useMemo(() => {
     const val = settings?.available_sizes;
-    return typeof val === "string"
-      ? val.split(",").map((s: string) => s.trim())
-      : [];
+    return typeof val === "string" ? val.split(",").map((s) => s.trim()) : [];
   }, [settings?.available_sizes]);
 
   const CATS = useMemo(() => {
     const val = settings?.available_categories;
-    return typeof val === "string"
-      ? val.split(",").map((c: string) => c.trim())
-      : [];
+    return typeof val === "string" ? val.split(",").map((c) => c.trim()) : [];
   }, [settings?.available_categories]);
 
   const tog = useCallback(
@@ -176,10 +169,8 @@ export default function EditProductModal({
       list: string[],
       setList: React.Dispatch<React.SetStateAction<string[]>>,
     ) => {
-      setList((prevList: string[]) =>
-        prevList.includes(item)
-          ? prevList.filter((x) => x !== item)
-          : [...prevList, item],
+      setList((prev) =>
+        prev.includes(item) ? prev.filter((x) => x !== item) : [...prev, item],
       );
     },
     [],
@@ -204,7 +195,6 @@ export default function EditProductModal({
       toast("Choisissez couleur & taille", "error");
       return;
     }
-
     setSub(true);
     const formData = new FormData();
     formData.append("name", name);
@@ -218,18 +208,12 @@ export default function EditProductModal({
     formData.append("on_order", status === "Sur commande" ? "true" : "false");
     formData.append("stock_quantity", status === "Sur commande" ? "0" : qty);
     formData.append("is_hot", hot ? "true" : "false");
-
-    // L'image n'est envoyée QUE si on l'a modifiée
     if (img) formData.append("image", img);
 
     try {
-      // ─── REQUÊTE PUT POUR LA MODIFICATION ───
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/products/${productToEdit.id}`,
-        {
-          method: "PUT",
-          body: formData,
-        },
+        { method: "PUT", body: formData },
       );
       if (res.ok) {
         toast("Création modifiée avec succès !", "success");
@@ -253,7 +237,7 @@ export default function EditProductModal({
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div className={styles.modal}>
-        {/* HEADER */}
+        {/* ── HEADER ── */}
         <div className={styles.header}>
           <div>
             <h2 className={styles.title}>Modifier la Création</h2>
@@ -266,7 +250,7 @@ export default function EditProductModal({
           </button>
         </div>
 
-        {/* BODY */}
+        {/* ── BODY ── */}
         <div className={styles.body}>
           <form id="edit-form" onSubmit={submit}>
             <div className={styles.grid}>
@@ -291,7 +275,7 @@ export default function EditProductModal({
               </div>
             </div>
 
-            <div className={styles.grid}>
+            <div className={styles.grid} style={{ marginTop: "16px" }}>
               <div className={styles.inputGroup}>
                 <label className={styles.label}>Catégorie</label>
                 <select
@@ -299,7 +283,7 @@ export default function EditProductModal({
                   value={cat}
                   onChange={(e) => setCat(e.target.value)}
                 >
-                  {CATS.map((c: string) => (
+                  {CATS.map((c) => (
                     <option key={c} value={c}>
                       {c}
                     </option>
@@ -322,45 +306,39 @@ export default function EditProductModal({
               </div>
             </div>
 
-            <div className={styles.inputGroup}>
+            <div className={styles.inputGroup} style={{ marginTop: "16px" }}>
               <label className={styles.label}>Couleurs *</label>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "7px" }}>
-                {COLORS.map((c: string) => {
-                  const s = cols.includes(c);
-                  return (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => tog(c, cols, setCols)}
-                      className={`${styles.tagBtn} ${s ? styles.tagBtnColorActive : styles.tagBtnColor}`}
-                    >
-                      {c}
-                    </button>
-                  );
-                })}
+                {COLORS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => tog(c, cols, setCols)}
+                    className={`${styles.tagBtn} ${cols.includes(c) ? styles.tagBtnColorActive : styles.tagBtnColor}`}
+                  >
+                    {c}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div className={styles.inputGroup}>
+            <div className={styles.inputGroup} style={{ marginTop: "16px" }}>
               <label className={styles.label}>Tailles *</label>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "7px" }}>
-                {SIZES.map((sz: string) => {
-                  const s = sizes.includes(sz);
-                  return (
-                    <button
-                      key={sz}
-                      type="button"
-                      onClick={() => tog(sz, sizes, setSizes)}
-                      className={`${styles.tagBtn} ${styles.tagBtnSize} ${s ? styles.tagBtnSizeActive : ""}`}
-                    >
-                      {sz}
-                    </button>
-                  );
-                })}
+                {SIZES.map((sz) => (
+                  <button
+                    key={sz}
+                    type="button"
+                    onClick={() => tog(sz, sizes, setSizes)}
+                    className={`${styles.tagBtn} ${styles.tagBtnSize} ${sizes.includes(sz) ? styles.tagBtnSizeActive : ""}`}
+                  >
+                    {sz}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div className={styles.grid}>
+            <div className={styles.grid} style={{ marginTop: "16px" }}>
               <div className={styles.inputGroup}>
                 <label className={styles.label}>Statut</label>
                 <select
@@ -396,7 +374,7 @@ export default function EditProductModal({
               )}
             </div>
 
-            <div className={styles.inputGroup}>
+            <div className={styles.inputGroup} style={{ marginTop: "16px" }}>
               <label className={styles.label}>Tag / Matière</label>
               <input
                 className={styles.input}
@@ -405,7 +383,7 @@ export default function EditProductModal({
               />
             </div>
 
-            <div className={styles.inputGroup}>
+            <div className={styles.inputGroup} style={{ marginTop: "16px" }}>
               <label className={styles.label}>
                 Changer l&apos;image (Optionnel)
               </label>
@@ -465,6 +443,7 @@ export default function EditProductModal({
 
             <label
               onClick={() => setHot(!hot)}
+              style={{ marginTop: "16px", display: "flex" }}
               className={`${styles.hotToggle} ${hot ? styles.hotToggleActive : ""}`}
             >
               <div
@@ -495,7 +474,7 @@ export default function EditProductModal({
           </form>
         </div>
 
-        {/* FOOTER */}
+        {/* ── FOOTER ── */}
         <div className={styles.footer}>
           <button
             type="button"
@@ -512,13 +491,11 @@ export default function EditProductModal({
           >
             {sub ? (
               <>
-                <div className={styles.spinnerSmall} />
-                En cours…
+                <div className={styles.spinnerSmall} /> En cours…
               </>
             ) : (
               <>
-                <I.Save />
-                Enregistrer
+                <I.Save /> Enregistrer
               </>
             )}
           </button>
