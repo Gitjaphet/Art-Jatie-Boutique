@@ -3,6 +3,7 @@ import { useCartStore } from "@/lib/cart";
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Trash2,
   Minus,
@@ -12,6 +13,7 @@ import {
   Heart,
   Tag,
   ChevronRight,
+  MapPin,
 } from "lucide-react";
 import styles from "./CartePage.module.css";
 
@@ -31,16 +33,17 @@ const DELIVERY_COSTS: Record<DeliveryZone, number> = {
   nosybe_ville: 0,
   darsalam: 5000,
   dzamanjar: 7000,
-  nosybe_autre: 0, // contact requis
-  hors_nosybe: 0, // coopérative
+  nosybe_autre: 0,
+  hors_nosybe: 0,
 };
 
 export default function CartContent() {
+  const router = useRouter();
   const { items, removeItem, updateQuantity, clearCart } = useCartStore();
   const [removing, setRemoving] = useState<number | null>(null);
   const [promoCode, setPromoCode] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
-  const [zone, setZone] = useState<DeliveryZone>("tana");
+  const [zone, setZone] = useState<DeliveryZone>("nosybe_ville");
   const [horsCoop, setHorsCoop] = useState<HorsCooperative>("service_rapide");
   const [autreCoopText, setAutreCoopText] = useState("");
 
@@ -75,7 +78,7 @@ export default function CartContent() {
     if (zone === "nosybe_ville") return "Gratuite";
     if (zone === "darsalam") return formatAr(5000);
     if (zone === "dzamanjar") return formatAr(7000);
-    if (zone === "nosybe_autre") return "Sur devis (contactez-nous)";
+    if (zone === "nosybe_autre") return "Sur devis";
     if (zone === "hors_nosybe") {
       if (horsCoop === "autre" && autreCoopText)
         return `Coopérative : ${autreCoopText}`;
@@ -88,6 +91,44 @@ export default function CartContent() {
       return labels[horsCoop];
     }
     return "—";
+  };
+
+  // Nom complet de la zone pour l'API
+  const deliveryZoneLabel = () => {
+    const map: Record<DeliveryZone, string> = {
+      tana: "Antananarivo",
+      nosybe_ville: "Nosy Be — En ville",
+      darsalam: "Nosy Be — Darsalam",
+      dzamanjar: "Nosy Be — Dzamanjar",
+      nosybe_autre: "Autre zone Nosy Be",
+      hors_nosybe:
+        horsCoop === "autre" && autreCoopText
+          ? `Hors Nosy Be — ${autreCoopText}`
+          : `Hors Nosy Be — ${horsCoop}`,
+    };
+    return map[zone];
+  };
+
+  // ── Passer la commande ─────────────────────────────────────────────────
+  const handleCheckout = () => {
+    if (zone === "nosybe_autre") {
+      alert(
+        "Pour cette zone, veuillez nous contacter directement au 032 022 5170.",
+      );
+      return;
+    }
+
+    // On encode les infos dans l'URL pour les récupérer dans la page checkout
+    const params = new URLSearchParams({
+      zone,
+      deliveryCost: String(deliveryCost),
+      deliveryLabel: deliveryZoneLabel(),
+      subtotal: String(subtotal),
+      discount: String(discount),
+      total: String(total),
+    });
+
+    router.push(`/checkout?${params.toString()}`);
   };
 
   if (items.length === 0)
@@ -219,11 +260,9 @@ export default function CartContent() {
             <Truck size={16} /> Options de livraison
           </h3>
 
-          {/* ── Nosy Be ── */}
           <div className={styles.deliveryGroup}>
             <p className={styles.deliveryGroupLabel}>🏝️ Nosy Be</p>
 
-            {/* Ville (Jabala) */}
             <label
               className={`${styles.deliveryOption} ${zone === "nosybe_ville" ? styles.deliveryActive : ""}`}
             >
@@ -248,7 +287,6 @@ export default function CartContent() {
               </span>
             </label>
 
-            {/* Darsalam */}
             <label
               className={`${styles.deliveryOption} ${zone === "darsalam" ? styles.deliveryActive : ""}`}
             >
@@ -268,7 +306,6 @@ export default function CartContent() {
               <span className={styles.deliveryPrice}>{formatAr(5000)}</span>
             </label>
 
-            {/* Dzamanjar */}
             <label
               className={`${styles.deliveryOption} ${zone === "dzamanjar" ? styles.deliveryActive : ""}`}
             >
@@ -288,7 +325,6 @@ export default function CartContent() {
               <span className={styles.deliveryPrice}>{formatAr(7000)}</span>
             </label>
 
-            {/* Autre Nosy Be */}
             <label
               className={`${styles.deliveryOption} ${zone === "nosybe_autre" ? styles.deliveryActive : ""}`}
             >
@@ -317,7 +353,6 @@ export default function CartContent() {
             </label>
           </div>
 
-          {/* ── Hors Nosy Be ── */}
           <div className={styles.deliveryGroup}>
             <p className={styles.deliveryGroupLabel}>🚚 Hors de Nosy Be</p>
             <label
@@ -343,7 +378,6 @@ export default function CartContent() {
               </span>
             </label>
 
-            {/* Sous-options coopérative */}
             {zone === "hors_nosybe" && (
               <div className={styles.coopGrid}>
                 {(
@@ -385,9 +419,8 @@ export default function CartContent() {
                   />
                 )}
                 <p className={styles.coopNote}>
-                  💡 Les tarifs des coopératives varient selon le poids et la
-                  destination. Le coût final vous sera confirmé avant
-                  l&apos;expédition.
+                  💡 Les tarifs varient selon le poids et la destination. Le
+                  coût final vous sera confirmé avant l&apos;expédition.
                 </p>
               </div>
             )}
@@ -408,14 +441,20 @@ export default function CartContent() {
               </span>
               <span className={styles.bold}>{formatAr(subtotal)}</span>
             </div>
+
             {discount > 0 && (
               <div className={styles.summaryRow}>
                 <span className={styles.promoLabel}>Code promo ARTJATIE10</span>
                 <span className={styles.promoValue}>−{formatAr(discount)}</span>
               </div>
             )}
+
+            {/* ── LIVRAISON dans le récap ── */}
             <div className={styles.summaryRow}>
-              <span>Livraison</span>
+              <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <MapPin size={13} style={{ color: "#d4b896" }} />
+                Livraison
+              </span>
               <span
                 className={
                   deliveryCost === 0 &&
@@ -428,20 +467,24 @@ export default function CartContent() {
                 {deliveryLabel()}
               </span>
             </div>
-            {deliveryCost > 0 && (
-              <div className={styles.summaryRow}>
-                <span>Estimation EUR</span>
-                <span style={{ color: "#aaa" }}>{formatEur(total)}</span>
-              </div>
-            )}
-            {deliveryCost === 0 &&
-              zone !== "hors_nosybe" &&
-              zone !== "nosybe_autre" && (
-                <div className={styles.summaryRow}>
-                  <span>Estimation EUR</span>
-                  <span style={{ color: "#aaa" }}>{formatEur(total)}</span>
-                </div>
+
+            {/* Zone de livraison */}
+            <div
+              className={styles.summaryRow}
+              style={{ fontSize: 11, color: "#aaa" }}
+            >
+              <span>{deliveryZoneLabel()}</span>
+              {(zone === "hors_nosybe" || zone === "nosybe_autre") && (
+                <span style={{ color: "#f59e0b", fontSize: 11 }}>
+                  À confirmer
+                </span>
               )}
+            </div>
+
+            <div className={styles.summaryRow}>
+              <span>Estimation EUR</span>
+              <span style={{ color: "#aaa" }}>{formatEur(total)}</span>
+            </div>
           </div>
 
           {/* Code promo */}
@@ -477,7 +520,6 @@ export default function CartContent() {
             </div>
           </div>
 
-          {/* Note si hors Nosy Be ou sur devis */}
           {(zone === "hors_nosybe" || zone === "nosybe_autre") && (
             <p className={styles.deliveryNote}>
               ⚠️ Les frais de livraison pour cette zone seront calculés et
@@ -485,7 +527,7 @@ export default function CartContent() {
             </p>
           )}
 
-          <button className={styles.checkoutBtn}>
+          <button className={styles.checkoutBtn} onClick={handleCheckout}>
             Passer la commande <ChevronRight size={18} />
           </button>
 
