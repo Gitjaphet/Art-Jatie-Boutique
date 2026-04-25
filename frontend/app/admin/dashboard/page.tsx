@@ -12,6 +12,7 @@ import PlanningTab from "../../../components/dashboard/PlanningTab";
 import PosTab from "../../../components/dashboard/PosTab";
 import UsersTab from "../../../components/dashboard/UsersTab";
 import OrdersTab from "@/components/dashboard/OrdersTab";
+import CartOrdersTab from "@/components/dashboard/CartOrdersTab";
 
 type SettingsData = {
   exchange_rate_eur?: string | number;
@@ -167,6 +168,22 @@ const I = {
       <line x1="3" y1="10" x2="21" y2="10" />
     </svg>
   ),
+  ShoppingCart: () => (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="9" cy="21" r="1" />
+      <circle cx="20" cy="21" r="1" />
+      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+    </svg>
+  ),
 };
 
 // --- TOAST COMPONENT ---
@@ -224,6 +241,7 @@ type Tab =
   | "pos"
   | "planning"
   | "orders"
+  | "cart_orders"
   | "users"
   | "settings";
 
@@ -236,7 +254,6 @@ export default function AdminDashboard() {
 
   const [loading, setLoading] = useState(true);
 
-  // ─── CORRECTION ICI : On utilise "any[]" pour satisfaire tous les sous-composants ───
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [products, setProducts] = useState<any[]>([]);
   const [settings, setSettings] = useState<SettingsData | null>(null);
@@ -332,18 +349,22 @@ export default function AdminDashboard() {
     { id: "products", label: "Catalogue", Icon: I.Bag },
     { id: "planning", label: "Planning", Icon: I.Calendar },
     { id: "users", label: "Utilisateurs", Icon: I.Users },
-    { id: "orders", label: "Commandes", Icon: I.ClipboardList },
+    { id: "orders", label: "Sur commande", Icon: I.ClipboardList },
+    { id: "cart_orders", label: "Commandes panier", Icon: I.ShoppingCart },
     { id: "settings", label: "Réglages", Icon: I.Gear },
   ];
-  const TITLES = {
+
+  const TITLES: Record<Tab, string> = {
     overview: "Vue d'ensemble",
     pos: "Caisse (Point de vente)",
     products: "Gestion du catalogue",
     planning: "Planning des commandes",
     users: "Gestion des utilisateurs",
-    orders: "Commandes clients",
+    orders: "Commandes sur mesure",
+    cart_orders: "Commandes panier",
     settings: "Paramètres",
   };
+
   const dateStr = new Date().toLocaleDateString("fr-FR", {
     weekday: "long",
     day: "numeric",
@@ -364,7 +385,6 @@ export default function AdminDashboard() {
             justifyContent: collapsed ? "center" : "space-between",
           }}
         >
-          {/* REMPLACEMENT ICI : Image dans la Sidebar */}
           {!collapsed && (
             <div
               style={{
@@ -502,7 +522,6 @@ export default function AdminDashboard() {
         </header>
 
         <div ref={contentRef} className={styles.content}>
-          {/* Les erreurs rouges sur pos et products vont disparaitre ! */}
           {activeTab === "overview" && <OverviewTab products={products} />}
           {activeTab === "pos" && <PosTab products={products} toast={toast} />}
           {activeTab === "products" && (
@@ -516,9 +535,10 @@ export default function AdminDashboard() {
           {activeTab === "planning" && <PlanningTab products={products} />}
           {activeTab === "users" && <UsersTab toast={toast} />}
           {activeTab === "orders" && <OrdersTab toast={toast} />}
+          {activeTab === "cart_orders" && <CartOrdersTab toast={toast} />}
           {activeTab === "settings" && (
             <SettingsTab
-              initialSettings={settings} // <-- On a juste enlevé "as any"
+              initialSettings={settings}
               refreshSettings={fetchSettings}
               toast={toast}
             />

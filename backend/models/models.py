@@ -39,7 +39,7 @@ class User(SQLModel, table=True):
     is_admin: bool = Field(default=True)
 
 
-# --- COMMANDES ---
+# --- COMMANDES PANIER (depuis le checkout) ---
 class Order(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
 
@@ -49,14 +49,14 @@ class Order(SQLModel, table=True):
     client_whatsapp: str
     client_message: Optional[str] = None
 
-    # ── NOUVEAU : panier complet (JSON sérialisé) ──────────────────────────
+    # Panier complet (JSON sérialisé)
     # Format : '[{"id":1,"name":"Jupe Plage","price":25000,"quantity":1,"image":"...","category":"TENUES"}]'
     cart_items_json: Optional[str] = Field(default=None)
 
     # Infos livraison
-    delivery_zone: Optional[str] = Field(default=None)   # ex: "nosybe_ville", "darsalam"
-    delivery_cost: Optional[int] = Field(default=0)       # en Ariary
-    delivery_label: Optional[str] = Field(default=None)   # ex: "Nosy Be — En ville"
+    delivery_zone: Optional[str] = Field(default=None)
+    delivery_cost: Optional[int] = Field(default=0)
+    delivery_label: Optional[str] = Field(default=None)
 
     # Montants
     subtotal_ar: Optional[int] = Field(default=None)
@@ -71,12 +71,25 @@ class Order(SQLModel, table=True):
     selected_size: Optional[str] = Field(default=None)
     selected_color: Optional[str] = Field(default=None)
 
-    # ── NOUVEAU : champs MVola ─────────────────────────────────────────────
-    payment_method: str = Field(default="whatsapp")        # "mvola" | "whatsapp"
-    mvola_phone: Optional[str] = Field(default=None)        # Numéro MVola du client
-    mvola_correlation_id: Optional[str] = Field(default=None)   # serverCorrelationId
-    mvola_transaction_ref: Optional[str] = Field(default=None)  # Réf. finale MVola
-    mvola_status: Optional[str] = Field(default=None)       # PENDING | COMPLETED | FAILED
+    # ── PAIEMENT ───────────────────────────────────────────────────────────
+    payment_method: str = Field(default="whatsapp")   # "mvola" | "orange_money" | "whatsapp"
+
+    # Infos compte MVola
+    mvola_account_name: Optional[str] = Field(default=None)
+    mvola_phone: Optional[str] = Field(default=None)
+
+    # Infos compte Orange Money
+    om_account_name: Optional[str] = Field(default=None)
+    om_phone: Optional[str] = Field(default=None)
+
+    # Preuve de paiement
+    payment_proof_text: Optional[str] = Field(default=None)   # Référence texte (ex: "123456")
+    payment_proof_image: Optional[str] = Field(default=None)  # URL image preuve uploadée
+
+    # Suivi MVola API (pour l'intégration future)
+    mvola_correlation_id: Optional[str] = Field(default=None)
+    mvola_transaction_ref: Optional[str] = Field(default=None)
+    mvola_status: Optional[str] = Field(default=None)         # PENDING | COMPLETED | FAILED
 
     # Statut général
     status: str = Field(default="En attente")
