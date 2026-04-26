@@ -1,4 +1,24 @@
-/* --- BASE & DESKTOP --- */
+/* =========================================================================
+   Hero.module.css — Responsive Premium
+   Breakpoints couverts :
+     - Desktop         : > 1024px
+     - Tablette        : 769px – 1024px  (iPad, Samsung Tab, etc.)
+     - iPhone 11PM     : 414px  (390–430px)
+     - Itel A70        : 360px  (340–389px)
+     - Très petits     : < 340px
+   ========================================================================= */
+
+/* ─── TOKENS ─────────────────────────────────────────────────────────────── */
+:root {
+  --color-cream: #fdfaf7;
+  --color-black: #1a1a1a;
+  --color-accent: #e86b8c;
+  --color-taupe: #a09d9a;
+  --color-charcoal: #333;
+  --font-display: "Playfair Display", serif;
+}
+
+/* ─── BASE & DESKTOP (> 1024px) ──────────────────────────────────────────── */
 .heroRoot {
   position: relative;
   width: 100%;
@@ -6,7 +26,7 @@
   min-height: 700px;
   max-height: 960px;
   overflow: hidden;
-  background: var(--color-cream, #fdfaf7);
+  background: var(--color-cream);
   display: flex;
   align-items: center;
 }
@@ -64,8 +84,8 @@
   background: linear-gradient(
     to bottom,
     transparent,
-    var(--color-taupe, #a09d9a) 30%,
-    var(--color-taupe, #a09d9a) 70%,
+    var(--color-taupe) 30%,
+    var(--color-taupe) 70%,
     transparent
   );
   transform-origin: top;
@@ -81,7 +101,7 @@
   position: absolute;
   bottom: -2%;
   left: -1%;
-  font-family: var(--font-display, "Playfair Display", serif);
+  font-family: var(--font-display);
   font-size: clamp(120px, 18vw, 240px);
   font-weight: 700;
   color: transparent;
@@ -114,7 +134,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--color-black, #1a1a1a);
+  background: var(--color-black);
   color: #fff;
   padding: 7px 18px;
   border-radius: 99px;
@@ -138,7 +158,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--color-accent, #e86b8c);
+  background: var(--color-accent);
   animation: pulseDot 2s ease infinite;
 }
 @keyframes pulseDot {
@@ -154,11 +174,11 @@
 }
 
 .title {
-  font-family: var(--font-display, "Playfair Display", serif);
+  font-family: var(--font-display);
   font-size: clamp(56px, 7vw, 96px);
   font-weight: 600;
   line-height: 0.95;
-  color: var(--color-black, #1a1a1a);
+  color: var(--color-black);
   letter-spacing: -0.02em;
   margin-bottom: 24px;
   opacity: 0;
@@ -175,18 +195,18 @@
 .titleItalic {
   font-style: italic;
   font-weight: 400;
-  color: var(--color-accent, #e86b8c);
+  color: var(--color-accent);
 }
 
 .subtitle {
   font-size: 15px;
   line-height: 1.8;
-  color: var(--color-taupe, #a09d9a);
+  color: var(--color-taupe);
   font-weight: 300;
   max-width: 400px;
   margin-bottom: 48px;
   padding-left: 20px;
-  border-left: 2px solid var(--color-accent, #e86b8c);
+  border-left: 2px solid var(--color-accent);
   opacity: 0;
   transform: translateY(20px);
   transition:
@@ -219,7 +239,7 @@
 }
 
 .btnPrimary {
-  background: var(--color-black, #1a1a1a);
+  background: var(--color-black);
   color: #fff;
   padding: 16px 36px;
   border-radius: 99px;
@@ -233,14 +253,14 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 .btnPrimary:hover {
-  background: var(--color-accent, #e86b8c);
+  background: var(--color-accent);
   transform: translateY(-2px);
   box-shadow: 0 8px 32px rgba(232, 107, 140, 0.35);
 }
 
 .btnGhost {
   background: transparent;
-  color: var(--color-charcoal, #333);
+  color: var(--color-charcoal);
   padding: 16px 0;
   border: none;
   font-size: 13px;
@@ -264,7 +284,7 @@
   left: 0;
   width: 100%;
   height: 1px;
-  background: var(--color-black, #1a1a1a);
+  background: var(--color-black);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.3s ease;
@@ -273,7 +293,7 @@
   transform: scaleX(1);
 }
 
-/* --- IMAGES FLOTTANTES --- */
+/* ─── PHOTOS FLOTTANTES ───────────────────────────────────────────────────── */
 .heroPhotos {
   position: absolute;
   inset: 0;
@@ -337,7 +357,7 @@
 .cardTitle {
   font-size: 14px;
   font-weight: 700;
-  font-family: var(--font-display, "Playfair Display", serif);
+  font-family: var(--font-display);
   margin-bottom: 2px;
 }
 .cardPrice {
@@ -345,7 +365,7 @@
   color: rgba(255, 255, 255, 0.85);
 }
 
-/* Animations Float */
+/* Float animations */
 .float0 {
   animation: float0 6s ease-in-out infinite;
 }
@@ -426,7 +446,7 @@
 }
 .statEyebrow {
   font-size: 11px;
-  color: var(--color-taupe, #a09d9a);
+  color: var(--color-taupe);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   margin-bottom: 2px;
@@ -434,12 +454,12 @@
 .statValue {
   font-size: 22px;
   font-weight: 700;
-  font-family: var(--font-display, "Playfair Display", serif);
-  color: var(--color-black, #1a1a1a);
+  font-family: var(--font-display);
+  color: var(--color-black);
   line-height: 1;
 }
 
-/* Scroll & Editorial (Desktop) */
+/* Scroll & Editorial */
 .scroll {
   position: absolute;
   bottom: 40px;
@@ -457,7 +477,7 @@
 .scrollLine {
   width: 48px;
   height: 1px;
-  background: var(--color-taupe, #a09d9a);
+  background: var(--color-taupe);
   position: relative;
   overflow: hidden;
 }
@@ -468,14 +488,14 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: var(--color-black, #1a1a1a);
+  background: var(--color-black);
   animation: lineScroll 2s ease-in-out infinite 1.5s;
 }
 .scrollText {
   font-size: 10px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--color-taupe, #a09d9a);
+  color: var(--color-taupe);
   font-weight: 500;
 }
 @keyframes lineScroll {
@@ -496,7 +516,7 @@
   right: 48px;
   font-size: 11px;
   letter-spacing: 0.15em;
-  color: var(--color-taupe, #a09d9a);
+  color: var(--color-taupe);
   font-weight: 500;
   transition: opacity 0.8s ease 1.4s;
   display: flex;
@@ -504,158 +524,618 @@
   align-items: flex-end;
 }
 .editorialDigit {
-  font-family: var(--font-display, "Playfair Display", serif);
+  font-family: var(--font-display);
   font-size: 20px;
-  color: var(--color-black, #1a1a1a);
+  color: var(--color-black);
   font-weight: 300;
 }
 
-/* ========================================================================= */
-/* --- RESPONSIVE MOBILE : IMAGE EN HAUT, TEXTE EN BAS, 2 CARTES ---         */
-/* ========================================================================= */
-
-@media (max-width: 968px) {
+/* =========================================================================
+   TABLETTE  (769px – 1024px)
+   iPad mini, iPad Air, Samsung Tab A8, Surface Go…
+   ========================================================================= */
+@media (min-width: 769px) and (max-width: 1024px) {
   .heroRoot {
-    min-height: 100svh;
-    flex-direction: column;
-    justify-content: flex-start;
-    padding-top: 85px; /* Laisse l'espace pour le header */
-    background: var(--color-cream, #fdfaf7);
+    height: 100svh;
+    min-height: 600px;
+    max-height: 900px;
+    align-items: center;
   }
 
-  /* 1. IMAGE PRINCIPALE (EN HAUT) */
+  /* Image de fond décalée pour libérer le texte */
+  .heroBackground {
+    width: 55vw;
+    height: 100%;
+    background-position: center 20%;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 30%);
+    mask-image: linear-gradient(to right, transparent 0%, black 30%);
+  }
+
+  .heroOverlay {
+    background: linear-gradient(
+      to right,
+      rgba(253, 250, 247, 1) 0%,
+      rgba(253, 250, 247, 0.75) 45%,
+      rgba(20, 20, 20, 0.4) 100%
+    );
+  }
+
+  .content {
+    padding: 0 0 0 48px;
+    max-width: 50%;
+  }
+
+  .title {
+    font-size: clamp(44px, 6vw, 68px);
+    margin-bottom: 18px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    margin-bottom: 36px;
+  }
+
+  .badge {
+    margin-bottom: 24px;
+  }
+
+  /* Cartes — deux visible à droite */
+  .photoCard:nth-child(1) {
+    width: 160px !important;
+    height: 210px !important;
+    top: 12% !important;
+    left: auto !important;
+    right: 4% !important;
+  }
+  .photoCard:nth-child(2) {
+    width: 140px !important;
+    height: 185px !important;
+    top: 14% !important;
+    right: 22% !important;
+    left: auto !important;
+  }
+  .photoCard:nth-child(3) {
+    width: 150px !important;
+    height: 195px !important;
+    bottom: 14% !important;
+    left: auto !important;
+    right: 5% !important;
+  }
+  .photoCard:nth-child(4) {
+    width: 135px !important;
+    height: 175px !important;
+    bottom: 12% !important;
+    right: 22% !important;
+    left: auto !important;
+  }
+
+  .statBadge {
+    top: auto !important;
+    bottom: 10% !important;
+    left: 48px !important;
+    transform: none !important;
+  }
+
+  .decoLine {
+    left: 24px;
+    top: 20%;
+    bottom: 20%;
+  }
+
+  .scroll {
+    left: 48px;
+    bottom: 28px;
+  }
+  .editorialNumber {
+    right: 28px;
+    bottom: 28px;
+  }
+}
+
+/* =========================================================================
+   SMARTPHONE LARGE  (390px – 430px)
+   iPhone 11 Pro Max (414px), iPhone 12/13/14/15 Pro Max (430px),
+   iPhone XR (414px), Pixel 7 (412px), Samsung S23+ (393px)…
+   ========================================================================= */
+@media (min-width: 390px) and (max-width: 430px) {
+  .heroRoot {
+    height: 100svh;
+    min-height: 740px;
+    max-height: none;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 80px;
+    overflow: hidden;
+  }
+
+  /* ── Image en bannière haute ── */
   .heroBackground {
     position: relative;
     top: 0;
     width: 100%;
-    height: 45vh;
+    height: 42svh;
     transform: none;
-    background-position: center 25%;
-    -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
-    mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+    background-position: center 22%;
+    -webkit-mask-image: linear-gradient(to bottom, black 65%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 65%, transparent 100%);
     z-index: 1;
   }
 
-  /* Cache les effets desktop */
+  /* Retire les effets desktop inutiles */
   .heroOverlay,
   .centerGlow {
     display: none !important;
   }
 
-  /* 2. CONTENU TEXTE (EN BAS) */
+  /* Légère teinte crème sous le texte */
+  .heroRoot::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 62svh;
+    background: var(--color-cream);
+    z-index: 0;
+  }
+
+  /* ── Contenu texte ── */
   .content {
     position: relative;
-    padding: 0 24px 40px 24px;
+    padding: 0 22px 32px;
     max-width: 100%;
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    width: 100%;
     z-index: 10;
-    margin-top: -30px;
+    margin-top: -24px;
   }
 
   .badge {
-    margin: 0 auto 16px auto;
+    margin: 0 auto 14px;
+    font-size: 9px;
+    padding: 6px 14px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   }
 
   .title {
-    font-size: clamp(40px, 11vw, 54px);
+    font-size: clamp(38px, 10.5vw, 50px);
+    line-height: 0.97;
+    margin-bottom: 14px;
+  }
+
+  .subtitle {
+    padding-left: 0;
+    border-left: none;
+    border-top: 2px solid var(--color-accent);
+    padding-top: 14px;
+    margin: 0 auto 28px;
+    font-size: 13.5px;
+    line-height: 1.75;
+    max-width: 90%;
+  }
+
+  .ctas {
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+  }
+  .btnPrimaryWrapper,
+  .btnGhostWrapper {
+    width: 100%;
+  }
+  .btnPrimary {
+    width: 100%;
+    padding: 15px 0;
+    font-size: 12px;
+  }
+  .btnGhost {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 0;
+  }
+
+  /* ── Cartes flottantes : 2 cartes encadrant la bannière ── */
+  .photoCard:nth-child(3),
+  .photoCard:nth-child(4) {
+    display: none !important;
+  }
+
+  /* Carte droite */
+  .photoCard:nth-child(1) {
+    width: 118px !important;
+    height: 154px !important;
+    top: calc(80px + 26svh) !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: 10px !important;
+    transform: rotate(7deg) !important;
+    z-index: 15 !important;
+  }
+  /* Carte gauche */
+  .photoCard:nth-child(2) {
+    display: block !important;
+    width: 108px !important;
+    height: 142px !important;
+    top: calc(80px + 33svh) !important;
+    bottom: auto !important;
+    left: 10px !important;
+    right: auto !important;
+    transform: rotate(-6deg) !important;
+    z-index: 14 !important;
+  }
+
+  .photoCard:active {
+    transform: scale(1.03) translateY(-3px) !important;
+  }
+
+  /* Label toujours visible sur mobile */
+  .photoCardLabel {
+    padding: 18px 9px 9px;
+    opacity: 1;
+    transform: none;
+  }
+  .cardTitle {
+    font-size: 10px;
+  }
+  .cardPrice {
+    font-size: 9.5px;
+  }
+
+  /* ── Stat Badge : coin supérieur gauche ── */
+  .statBadge {
+    top: 86px !important;
+    bottom: auto !important;
+    left: 14px !important;
+    transform: none !important;
+    padding: 7px 12px;
+    border-radius: 12px;
+    z-index: 20;
+  }
+  .statEyebrow {
+    font-size: 8.5px;
+  }
+  .statValue {
+    font-size: 15px;
+  }
+
+  /* Cache les éléments purement desktop */
+  .decoLine,
+  .ghostText,
+  .scroll,
+  .editorialNumber {
+    display: none !important;
+  }
+}
+
+/* =========================================================================
+   SMARTPHONE MOYEN  (340px – 389px)
+   Itel A70 (360px), Samsung A13 (360px), Redmi A1 (360px),
+   Moto G10 (360px), Realme C11 (360px)…
+   ========================================================================= */
+@media (min-width: 340px) and (max-width: 389px) {
+  .heroRoot {
+    height: 100svh;
+    min-height: 680px;
+    max-height: none;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 72px;
+    overflow: hidden;
+  }
+
+  .heroBackground {
+    position: relative;
+    top: 0;
+    width: 100%;
+    height: 40svh;
+    transform: none;
+    background-position: center 25%;
+    -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+    z-index: 1;
+  }
+
+  .heroOverlay,
+  .centerGlow {
+    display: none !important;
+  }
+
+  .heroRoot::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64svh;
+    background: var(--color-cream);
+    z-index: 0;
+  }
+
+  .content {
+    position: relative;
+    padding: 0 18px 28px;
+    max-width: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    z-index: 10;
+    margin-top: -20px;
+  }
+
+  .badge {
+    margin: 0 auto 12px;
+    font-size: 8.5px;
+    padding: 5px 12px;
+    letter-spacing: 0.18em;
+  }
+
+  .title {
+    font-size: clamp(34px, 10vw, 44px);
+    line-height: 0.97;
     margin-bottom: 12px;
   }
 
   .subtitle {
     padding-left: 0;
     border-left: none;
-    margin: 0 auto 32px auto;
-    font-size: 14px;
+    border-top: 2px solid var(--color-accent);
+    padding-top: 12px;
+    margin: 0 auto 24px;
+    font-size: 12.5px;
+    line-height: 1.7;
+    max-width: 95%;
   }
 
   .ctas {
     flex-direction: column;
     width: 100%;
-    gap: 16px;
+    gap: 10px;
   }
-
   .btnPrimaryWrapper,
-  .btnPrimary,
-  .btnGhostWrapper,
+  .btnGhostWrapper {
+    width: 100%;
+  }
+  .btnPrimary {
+    width: 100%;
+    padding: 14px 0;
+    font-size: 11.5px;
+  }
   .btnGhost {
     width: 100%;
     justify-content: center;
+    padding: 11px 0;
+    font-size: 11.5px;
   }
 
-  /* 3. CARTES FLOTTANTES (Une à droite, une à gauche) */
-  /* On cache la 3ème et la 4ème carte */
+  /* Cartes : réduites pour Itel A70 */
   .photoCard:nth-child(3),
   .photoCard:nth-child(4) {
     display: none !important;
   }
 
-  /* Carte 1 (À droite) */
   .photoCard:nth-child(1) {
-    width: 130px !important;
-    height: 170px !important;
-    top: calc(85px + 28vh) !important;
+    width: 104px !important;
+    height: 136px !important;
+    top: calc(72px + 24svh) !important;
     bottom: auto !important;
     left: auto !important;
-    right: 15px !important;
-    transform: rotate(8deg) !important;
+    right: 8px !important;
+    transform: rotate(7deg) !important;
     z-index: 15 !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14) !important;
   }
-
-  /* Carte 2 (À gauche) */
   .photoCard:nth-child(2) {
-    display: block !important; /* Force l'affichage */
-    width: 120px !important;
-    height: 160px !important;
-    top: calc(85px + 36vh) !important; /* Un peu plus bas pour l'asymétrie */
+    display: block !important;
+    width: 96px !important;
+    height: 126px !important;
+    top: calc(72px + 31svh) !important;
     bottom: auto !important;
+    left: 8px !important;
     right: auto !important;
-    left: 15px !important;
     transform: rotate(-6deg) !important;
     z-index: 14 !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14) !important;
   }
 
-  /* Évite l'effet de zoom extrême au clic sur mobile */
-  .photoCard:hover {
-    transform: scale(1.02) translateY(-4px) !important;
+  .photoCard:active {
+    transform: scale(1.02) translateY(-2px) !important;
   }
 
   .photoCardLabel {
-    padding: 20px 10px 10px;
-    opacity: 1; /* Toujours visible */
+    padding: 16px 8px 8px;
+    opacity: 1;
+    transform: none;
   }
-
   .cardTitle {
-    font-size: 11px;
-  }
-  .cardPrice {
-    font-size: 10px;
-  }
-
-  /* 4. BADGE STATISTIQUES (En haut à gauche) */
-  .statBadge {
-    top: 110px !important;
-    bottom: auto !important;
-    left: 20px !important;
-    transform: none !important;
-    padding: 8px 14px;
-    z-index: 15;
-  }
-
-  .statEyebrow {
     font-size: 9px;
   }
-  .statValue {
-    font-size: 16px;
+  .cardPrice {
+    font-size: 8.5px;
+  }
+  .cardEyebrow {
+    font-size: 8px;
   }
 
-  /* Éléments desktop cachés */
+  .statBadge {
+    top: 76px !important;
+    bottom: auto !important;
+    left: 10px !important;
+    transform: none !important;
+    padding: 6px 10px;
+    border-radius: 10px;
+    z-index: 20;
+  }
+  .statEyebrow {
+    font-size: 7.5px;
+  }
+  .statValue {
+    font-size: 13px;
+  }
+
+  .decoLine,
+  .ghostText,
+  .scroll,
+  .editorialNumber {
+    display: none !important;
+  }
+}
+
+/* =========================================================================
+   TRÈS PETITS ÉCRANS  (< 340px)
+   vieux Android, Itel P55 (320px), iPhone SE 1ère gen…
+   ========================================================================= */
+@media (max-width: 339px) {
+  .heroRoot {
+    height: 100svh;
+    min-height: 600px;
+    max-height: none;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 68px;
+    overflow: hidden;
+  }
+
+  .heroBackground {
+    position: relative;
+    top: 0;
+    width: 100%;
+    height: 36svh;
+    transform: none;
+    background-position: center 25%;
+    -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+    z-index: 1;
+  }
+
+  .heroOverlay,
+  .centerGlow {
+    display: none !important;
+  }
+
+  .heroRoot::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 68svh;
+    background: var(--color-cream);
+    z-index: 0;
+  }
+
+  .content {
+    position: relative;
+    padding: 0 14px 24px;
+    max-width: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    z-index: 10;
+    margin-top: -16px;
+  }
+
+  .badge {
+    margin: 0 auto 10px;
+    font-size: 8px;
+    padding: 5px 11px;
+    letter-spacing: 0.15em;
+  }
+
+  .title {
+    font-size: clamp(30px, 9.5vw, 38px);
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+
+  .subtitle {
+    padding-left: 0;
+    border-left: none;
+    border-top: 2px solid var(--color-accent);
+    padding-top: 10px;
+    margin: 0 auto 20px;
+    font-size: 12px;
+    line-height: 1.65;
+    max-width: 100%;
+  }
+
+  .ctas {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
+  .btnPrimaryWrapper,
+  .btnGhostWrapper {
+    width: 100%;
+  }
+  .btnPrimary {
+    width: 100%;
+    padding: 13px 0;
+    font-size: 11px;
+  }
+  .btnGhost {
+    width: 100%;
+    justify-content: center;
+    padding: 10px 0;
+    font-size: 11px;
+  }
+
+  /* Cartes réduites au minimum */
+  .photoCard:nth-child(3),
+  .photoCard:nth-child(4) {
+    display: none !important;
+  }
+
+  .photoCard:nth-child(1) {
+    width: 88px !important;
+    height: 116px !important;
+    top: calc(68px + 20svh) !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: 6px !important;
+    transform: rotate(7deg) !important;
+    z-index: 15 !important;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.13) !important;
+  }
+  .photoCard:nth-child(2) {
+    display: block !important;
+    width: 82px !important;
+    height: 108px !important;
+    top: calc(68px + 27svh) !important;
+    bottom: auto !important;
+    left: 6px !important;
+    right: auto !important;
+    transform: rotate(-5deg) !important;
+    z-index: 14 !important;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.13) !important;
+  }
+
+  .photoCardLabel {
+    display: none;
+  } /* trop petites pour afficher le label */
+
+  .statBadge {
+    top: 72px !important;
+    bottom: auto !important;
+    left: 8px !important;
+    transform: none !important;
+    padding: 5px 9px;
+    border-radius: 8px;
+    z-index: 20;
+  }
+  .statEyebrow {
+    font-size: 7px;
+  }
+  .statValue {
+    font-size: 12px;
+  }
+
   .decoLine,
   .ghostText,
   .scroll,
