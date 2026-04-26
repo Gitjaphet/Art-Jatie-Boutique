@@ -158,7 +158,8 @@ def seed_initial_data(session: Session = Depends(get_session)):
 async def update_product(
     product_id: int,
     name: str = Form(...),
-    tag: str = Form(...),
+    # Après
+    tag: Optional[str] = Form(None),
     genre: str = Form(...),
     category: str = Form(...),
     price_ar: int = Form(...),
