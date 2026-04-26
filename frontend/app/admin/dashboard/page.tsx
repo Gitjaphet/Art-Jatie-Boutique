@@ -21,7 +21,6 @@ type SettingsData = {
   available_categories?: string;
 };
 
-// --- ICONS ---
 const I = {
   Grid: () => (
     <svg
@@ -186,12 +185,7 @@ const I = {
   ),
 };
 
-// --- TOAST COMPONENT ---
-type ToastProps = {
-  message: string;
-  type: string;
-  onDone: () => void;
-};
+type ToastProps = { message: string; type: string; onDone: () => void };
 
 function Toast({ message, type, onDone }: ToastProps) {
   useEffect(() => {
@@ -204,7 +198,7 @@ function Toast({ message, type, onDone }: ToastProps) {
       className={styles.toast}
       style={{
         background: ok ? "var(--green-dim)" : "var(--red-dim)",
-        border: `1px solid ${ok ? "rgba(5, 150, 105, 0.25)" : "rgba(220, 38, 38, 0.25)"}`,
+        border: `1px solid ${ok ? "rgba(5,150,105,0.25)" : "rgba(220,38,38,0.25)"}`,
         color: ok ? "var(--green)" : "var(--red)",
       }}
     >
@@ -216,11 +210,7 @@ function Toast({ message, type, onDone }: ToastProps) {
   );
 }
 
-type ToastItem = {
-  id: number;
-  message: string;
-  type: string;
-};
+type ToastItem = { id: number; message: string; type: string };
 
 function useToast() {
   const [toasts, set] = useState<ToastItem[]>([]);
@@ -245,18 +235,64 @@ type Tab =
   | "users"
   | "settings";
 
+const TABS: {
+  id: Tab;
+  label: string;
+  shortLabel: string;
+  Icon: React.ElementType;
+}[] = [
+  {
+    id: "overview",
+    label: "Vue d'ensemble",
+    shortLabel: "Accueil",
+    Icon: I.Grid,
+  },
+  { id: "pos", label: "Point de vente", shortLabel: "Caisse", Icon: I.Monitor },
+  { id: "products", label: "Catalogue", shortLabel: "Produits", Icon: I.Bag },
+  {
+    id: "planning",
+    label: "Planning",
+    shortLabel: "Planning",
+    Icon: I.Calendar,
+  },
+  { id: "users", label: "Utilisateurs", shortLabel: "Users", Icon: I.Users },
+  {
+    id: "orders",
+    label: "Sur commande",
+    shortLabel: "Commandes",
+    Icon: I.ClipboardList,
+  },
+  {
+    id: "cart_orders",
+    label: "Commandes panier",
+    shortLabel: "Panier",
+    Icon: I.ShoppingCart,
+  },
+  { id: "settings", label: "Réglages", shortLabel: "Réglages", Icon: I.Gear },
+];
+
+const TITLES: Record<Tab, string> = {
+  overview: "Vue d'ensemble",
+  pos: "Caisse (Point de vente)",
+  products: "Gestion du catalogue",
+  planning: "Planning des commandes",
+  users: "Gestion des utilisateurs",
+  orders: "Commandes sur mesure",
+  cart_orders: "Commandes panier",
+  settings: "Paramètres",
+};
+
 export default function AdminDashboard() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [collapsed, setCollapsed] = useState(false);
   const { toasts, add: toast, rem } = useToast();
   const contentRef = useRef<HTMLDivElement>(null);
-
   const [loading, setLoading] = useState(true);
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [products, setProducts] = useState<any[]>([]);
   const [settings, setSettings] = useState<SettingsData | null>(null);
+
+  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
   useEffect(() => {
     const token = localStorage.getItem("admin_token");
@@ -271,14 +307,10 @@ export default function AdminDashboard() {
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/settings/`,
-      );
-      if (!res.ok) throw new Error("Erreur serveur");
-      const data = await res.json();
-      setSettings(data);
-    } catch (err) {
-      console.error(err);
+      const res = await fetch(`${API}/settings/`);
+      if (!res.ok) throw new Error();
+      setSettings(await res.json());
+    } catch {
       toast("Impossible de joindre le serveur Backend.", "error");
     } finally {
       setLoading(false);
@@ -287,13 +319,10 @@ export default function AdminDashboard() {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/products/`,
-      );
-      if (!res.ok) throw new Error("Erreur serveur");
-      if (res.ok) setProducts(await res.json());
-    } catch (err) {
-      console.error(err);
+      const res = await fetch(`${API}/products/`);
+      if (!res.ok) throw new Error();
+      setProducts(await res.json());
+    } catch {
       toast("Backend déconnecté. Vérifiez votre terminal.", "error");
     }
   };
@@ -303,26 +332,34 @@ export default function AdminDashboard() {
     router.push("/admin");
   };
 
-  const switchTab = (t: Tab) => {
-    if (t === activeTab) return;
+  const animateContent = (cb: () => void) => {
     if (contentRef.current) {
       contentRef.current.style.opacity = "0";
       contentRef.current.style.transform = "translateY(8px)";
     }
     setTimeout(() => {
-      setActiveTab(t);
+      cb();
       if (contentRef.current) {
         contentRef.current.style.transition = "none";
         contentRef.current.style.opacity = "0";
         contentRef.current.style.transform = "translateY(8px)";
         requestAnimationFrame(() => {
-          contentRef.current!.style.transition =
-            "opacity .35s var(--ease), transform .35s var(--ease)";
-          contentRef.current!.style.opacity = "1";
-          contentRef.current!.style.transform = "translateY(0)";
+          if (contentRef.current) {
+            contentRef.current.style.transition =
+              "opacity .35s var(--ease), transform .35s var(--ease)";
+            contentRef.current.style.opacity = "1";
+            contentRef.current.style.transform = "translateY(0)";
+          }
         });
       }
     }, 120);
+  };
+
+  const switchTab = (t: Tab) => {
+    if (t === activeTab) return;
+    // ✅ Rechargement silencieux des données à chaque changement d'onglet
+    fetchProducts();
+    animateContent(() => setActiveTab(t));
   };
 
   if (loading)
@@ -333,37 +370,12 @@ export default function AdminDashboard() {
           alt="Art Jatie"
           width={180}
           height={180}
-          style={{
-            animation: "fadeIn 0.5s ease",
-            objectFit: "contain",
-          }}
+          style={{ animation: "fadeIn 0.5s ease", objectFit: "contain" }}
           priority
         />
         <div className={styles.spinner} />
       </div>
     );
-
-  const TABS: { id: Tab; label: string; Icon: React.ElementType }[] = [
-    { id: "overview", label: "Vue d'ensemble", Icon: I.Grid },
-    { id: "pos", label: "Point de vente", Icon: I.Monitor },
-    { id: "products", label: "Catalogue", Icon: I.Bag },
-    { id: "planning", label: "Planning", Icon: I.Calendar },
-    { id: "users", label: "Utilisateurs", Icon: I.Users },
-    { id: "orders", label: "Sur commande", Icon: I.ClipboardList },
-    { id: "cart_orders", label: "Commandes panier", Icon: I.ShoppingCart },
-    { id: "settings", label: "Réglages", Icon: I.Gear },
-  ];
-
-  const TITLES: Record<Tab, string> = {
-    overview: "Vue d'ensemble",
-    pos: "Caisse (Point de vente)",
-    products: "Gestion du catalogue",
-    planning: "Planning des commandes",
-    users: "Gestion des utilisateurs",
-    orders: "Commandes sur mesure",
-    cart_orders: "Commandes panier",
-    settings: "Paramètres",
-  };
 
   const dateStr = new Date().toLocaleDateString("fr-FR", {
     weekday: "long",
@@ -373,11 +385,12 @@ export default function AdminDashboard() {
 
   return (
     <div className={styles.layout}>
-      {/* SIDEBAR */}
+      {/* ── SIDEBAR ── */}
       <aside
         className={styles.sidebar}
         style={{ width: collapsed ? "66px" : "260px" }}
       >
+        {/* Header */}
         <div
           className={styles.sidebarHeader}
           style={{
@@ -416,54 +429,51 @@ export default function AdminDashboard() {
               <div className={styles.sidebarSubtitle}>Administration</div>
             </div>
           )}
-
+          {/* Bouton menu caché sur mobile (inutile avec bottom nav) */}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className={styles.menuBtn}
+            className={`${styles.menuBtn} ${styles.menuBtnDesktop}`}
           >
             <I.Menu />
           </button>
         </div>
 
+        {/* Nav */}
         <nav
           className={styles.nav}
           style={{ padding: collapsed ? "14px 8px" : "18px 10px" }}
         >
-          {TABS.map(({ id, label, Icon }) => {
+          {TABS.map(({ id, label, shortLabel, Icon }) => {
             const active = activeTab === id;
             return (
               <button
                 key={id}
                 onClick={() => switchTab(id)}
                 title={collapsed ? label : undefined}
-                className={`${styles.navItem} ${
-                  active ? styles.navItemActive : styles.navItemInactive
-                }`}
+                className={`${styles.navItem} ${active ? styles.navItemActive : styles.navItemInactive}`}
                 style={{
                   padding: collapsed ? "10px 0" : "10px 13px",
                   justifyContent: collapsed ? "center" : "flex-start",
                 }}
               >
-                <span style={{ flexShrink: 0, opacity: active ? 1 : 0.65 }}>
+                <span
+                  className={styles.navIcon}
+                  style={{ opacity: active ? 1 : 0.65 }}
+                >
                   <Icon />
                 </span>
-                {!collapsed && <span>{label}</span>}
-                {!collapsed && active && (
-                  <div
-                    style={{
-                      marginLeft: "auto",
-                      width: "5px",
-                      height: "5px",
-                      borderRadius: "50%",
-                      background: "var(--rose)",
-                    }}
-                  />
-                )}
+                {/* Label desktop */}
+                {!collapsed && <span className={styles.navLabel}>{label}</span>}
+                {/* Short label mobile (géré par CSS) */}
+                <span className={styles.navShortLabel}>{shortLabel}</span>
+                {/* Dot actif desktop */}
+                {!collapsed && active && <div className={styles.activeDot} />}
               </button>
             );
           })}
         </nav>
 
+        {/* Logout */}
         <div
           style={{
             padding: collapsed ? "14px 8px" : "14px 10px",
@@ -480,12 +490,12 @@ export default function AdminDashboard() {
             }}
           >
             <I.Out />
-            {!collapsed && "Déconnexion"}
+            <span className={styles.logoutLabel}>Déconnexion</span>
           </button>
         </div>
       </aside>
 
-      {/* MAIN */}
+      {/* ── MAIN ── */}
       <main className={styles.main}>
         <header className={styles.topbar}>
           <h1 className={styles.pageTitle}>{TITLES[activeTab]}</h1>
@@ -546,7 +556,7 @@ export default function AdminDashboard() {
         </div>
       </main>
 
-      {/* TOASTS GLOBAL */}
+      {/* ── TOASTS ── */}
       <div
         style={{
           position: "fixed",

@@ -589,3 +589,173 @@ select.input {
   backdrop-filter: blur(16px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
+
+/* ── Classes utilitaires pour la nav responsive ── */
+.navLabel {
+  display: inline;
+}
+.navShortLabel {
+  display: none;
+}
+.activeDot {
+  margin-left: auto;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--rose);
+}
+.logoutLabel {
+  display: inline;
+}
+/* Cache le bouton menu sur mobile */
+.menuBtnDesktop {
+  display: flex;
+}
+
+/* ── TABLETTE (768px – 1024px) : sidebar icônes seulement ── */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .sidebar {
+    width: 66px !important;
+  }
+  .sidebarHeader {
+    justify-content: center !important;
+    padding: 22px 14px !important;
+  }
+  .sidebarSubtitle {
+    display: none;
+  }
+  .navItem {
+    justify-content: center !important;
+    padding: 10px 0 !important;
+  }
+  .navLabel {
+    display: none;
+  }
+  .navShortLabel {
+    display: none;
+  }
+  .activeDot {
+    display: none;
+  }
+  .logoutBtn {
+    justify-content: center !important;
+    padding: 10px 0 !important;
+  }
+  .logoutLabel {
+    display: none;
+  }
+}
+
+/* ── MOBILE ≤768px (iPhone 11 Pro Max inclus) : bottom nav ── */
+@media (max-width: 768px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100% !important;
+    height: auto;
+    flex-direction: row;
+    border-right: none;
+    border-top: 1px solid var(--border);
+    order: 2;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: var(--surface);
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.07);
+  }
+
+  .sidebarHeader {
+    display: none;
+  }
+
+  .nav {
+    flex-direction: row !important;
+    padding: 4px 2px !important;
+    gap: 0 !important;
+    flex: 1;
+    overflow-x: auto;
+    justify-content: space-around;
+    align-items: center;
+    /* Cache la scrollbar */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .navItem {
+    flex-direction: column !important;
+    gap: 3px !important;
+    padding: 7px 6px !important;
+    justify-content: center !important;
+    align-items: center !important;
+    min-width: 52px;
+    border-radius: 10px;
+    border: none !important;
+    background: transparent !important;
+  }
+  .navItemActive {
+    background: var(--rose-dim) !important;
+    border: none !important;
+  }
+
+  .navLabel {
+    display: none;
+  }
+  .navShortLabel {
+    display: block;
+    font-size: 9px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 54px;
+    text-align: center;
+  }
+  .activeDot {
+    display: none;
+  }
+
+  /* Logout compact en bas */
+  .logoutBtn {
+    flex-direction: column !important;
+    gap: 3px !important;
+    padding: 7px 6px !important;
+    justify-content: center !important;
+    align-items: center !important;
+    min-width: 52px;
+    border: none !important;
+    background: transparent !important;
+  }
+  .logoutLabel {
+    display: block;
+    font-size: 9px;
+    font-weight: 600;
+  }
+  .menuBtnDesktop {
+    display: none;
+  }
+
+  .main {
+    order: 1;
+    padding-bottom: 72px;
+  }
+
+  .content {
+    padding: 14px 12px;
+  }
+
+  .topbar {
+    padding: 0 14px;
+    height: 52px;
+  }
+
+  .pageTitle {
+    font-size: 1.15rem;
+  }
+}
