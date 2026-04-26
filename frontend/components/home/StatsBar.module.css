@@ -1,11 +1,22 @@
+/* =========================================================================
+   StatsBar.module.css — Responsive Premium
+   Breakpoints :
+     Desktop      : > 1024px
+     Tablette     : 769px – 1024px
+     iPhone 11 PM : 390px – 430px
+     Itel A70     : 340px – 389px
+     Très petits  : < 340px
+   ========================================================================= */
+
+/* ─── BASE & DESKTOP ─────────────────────────────────────────────────────── */
 .statsContainer {
-  background-color: var(--color-cream);
-  border-top: 1px solid var(--color-sand);
-  border-bottom: 1px solid var(--color-sand);
+  background-color: var(--color-cream, #fdfaf7);
+  border-top: 1px solid var(--color-sand, #e8e4df);
+  border-bottom: 1px solid var(--color-sand, #e8e4df);
   padding: 40px 0;
   display: flex;
   justify-content: center;
-  overflow: hidden; /* Empêche tout débordement pendant l'animation */
+  overflow: hidden;
 }
 
 .statsWrapper {
@@ -14,25 +25,22 @@
   display: flex;
   justify-content: space-around;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; /* Desktop : jamais de retour à la ligne */
   gap: 32px;
   padding: 0 40px;
 }
 
-/* --- ANIMATIONS DE BASE --- */
+/* ─── ANIMATIONS D'APPARITION ─────────────────────────────────────────────── */
 .statGroup {
   display: flex;
   align-items: center;
   gap: 40px;
   opacity: 0;
   transform: translateY(30px);
-  /* L'animation d'apparition douce */
   transition:
     opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
     transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
-/* L'état quand le composant entre dans l'écran */
 .visible .statGroup {
   opacity: 1;
   transform: translateY(0);
@@ -46,10 +54,10 @@
 }
 
 .statNumber {
-  font-family: var(--font-display);
+  font-family: var(--font-display, "Playfair Display", serif);
   font-size: 40px;
   font-weight: 600;
-  color: var(--color-black);
+  color: var(--color-black, #1a1a1a);
   line-height: 1;
   margin-bottom: 8px;
 }
@@ -58,19 +66,234 @@
   font-size: 11px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--color-taupe);
+  color: var(--color-taupe, #a09d9a);
   font-weight: 600;
+  white-space: nowrap;
 }
 
-/* Ligne de séparation subtile entre les items */
 .separator {
   width: 1px;
   height: 40px;
-  background-color: var(--color-sand);
+  background-color: var(--color-sand, #e8e4df);
+  flex-shrink: 0;
 }
 
-@media (max-width: 768px) {
+/* =========================================================================
+   TABLETTE  (769px – 1024px)
+   ========================================================================= */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .statsContainer {
+    padding: 32px 0;
+  }
+
+  .statsWrapper {
+    padding: 0 32px;
+    gap: 20px;
+    justify-content: space-between;
+  }
+
+  .statGroup {
+    gap: 20px;
+  }
+
+  .statNumber {
+    font-size: 34px;
+  }
+
+  .statLabel {
+    font-size: 10px;
+    letter-spacing: 0.13em;
+  }
+
+  .separator {
+    height: 34px;
+  }
+}
+
+/* =========================================================================
+   SMARTPHONE LARGE  (390px – 430px)
+   iPhone 11 Pro Max, iPhone 12/13/14 Pro Max, Pixel 7…
+   ========================================================================= */
+@media (min-width: 390px) and (max-width: 430px) {
+  .statsContainer {
+    padding: 28px 0;
+  }
+
+  .statsWrapper {
+    /* Grille 2×2 : les 4 stats sur deux rangées bien équilibrées */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 0;
+    padding: 0;
+    max-width: 100%;
+    justify-items: stretch;
+    align-items: stretch;
+  }
+
+  /* Chaque cellule de la grille */
+  .statGroup {
+    gap: 0;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 12px;
+    /* Bordures internes pour délimiter les cellules */
+    border: 0.5px solid var(--color-sand, #e8e4df);
+    transition:
+      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Retire la bordure extérieure pour éviter le double-bord */
+  .statGroup:nth-child(odd) {
+    border-left: none;
+  }
+  .statGroup:nth-child(even) {
+    border-right: none;
+  }
+  .statGroup:nth-child(1),
+  .statGroup:nth-child(2) {
+    border-top: none;
+  }
+  .statGroup:nth-child(3),
+  .statGroup:nth-child(4) {
+    border-bottom: none;
+  }
+
+  /* Le séparateur vertical est remplacé par les bordures de grille */
   .separator {
     display: none;
+  }
+
+  .statNumber {
+    font-size: 32px;
+    margin-bottom: 6px;
+  }
+
+  .statLabel {
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
+  }
+}
+
+/* =========================================================================
+   SMARTPHONE MOYEN  (340px – 389px)
+   Itel A70, Samsung A13, Redmi A1, Moto G10…
+   ========================================================================= */
+@media (min-width: 340px) and (max-width: 389px) {
+  .statsContainer {
+    padding: 24px 0;
+  }
+
+  .statsWrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 0;
+    padding: 0;
+    max-width: 100%;
+    justify-items: stretch;
+    align-items: stretch;
+  }
+
+  .statGroup {
+    gap: 0;
+    flex-direction: column;
+    align-items: center;
+    padding: 18px 10px;
+    border: 0.5px solid var(--color-sand, #e8e4df);
+    transition:
+      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .statGroup:nth-child(odd) {
+    border-left: none;
+  }
+  .statGroup:nth-child(even) {
+    border-right: none;
+  }
+  .statGroup:nth-child(1),
+  .statGroup:nth-child(2) {
+    border-top: none;
+  }
+  .statGroup:nth-child(3),
+  .statGroup:nth-child(4) {
+    border-bottom: none;
+  }
+
+  .separator {
+    display: none;
+  }
+
+  .statNumber {
+    font-size: 28px;
+    margin-bottom: 5px;
+  }
+
+  .statLabel {
+    font-size: 8.5px;
+    letter-spacing: 0.11em;
+  }
+}
+
+/* =========================================================================
+   TRÈS PETITS ÉCRANS  (< 340px)
+   iPhone SE 1G, vieux Android 320px…
+   ========================================================================= */
+@media (max-width: 339px) {
+  .statsContainer {
+    padding: 20px 0;
+  }
+
+  .statsWrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 0;
+    padding: 0;
+    max-width: 100%;
+    justify-items: stretch;
+    align-items: stretch;
+  }
+
+  .statGroup {
+    gap: 0;
+    flex-direction: column;
+    align-items: center;
+    padding: 14px 8px;
+    border: 0.5px solid var(--color-sand, #e8e4df);
+    transition:
+      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .statGroup:nth-child(odd) {
+    border-left: none;
+  }
+  .statGroup:nth-child(even) {
+    border-right: none;
+  }
+  .statGroup:nth-child(1),
+  .statGroup:nth-child(2) {
+    border-top: none;
+  }
+  .statGroup:nth-child(3),
+  .statGroup:nth-child(4) {
+    border-bottom: none;
+  }
+
+  .separator {
+    display: none;
+  }
+
+  .statNumber {
+    font-size: 24px;
+    margin-bottom: 4px;
+  }
+
+  .statLabel {
+    font-size: 7.5px;
+    letter-spacing: 0.1em;
   }
 }
