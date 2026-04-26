@@ -95,4 +95,7 @@ class Order(SQLModel, table=True):
     # Note interne de production
     planning_note: Optional[str] = Field(default=None)
 
+    acompte: Optional[int] = Field(default=0)    # ← NOUVEAU
+    progress: Optional[int] = Field(default=0)   # ← NOUVEAU
+
     created_at: datetime = Field(default_factory=datetime.utcnow)

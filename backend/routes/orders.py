@@ -71,6 +71,8 @@ class CreateOrderRequest(BaseModel):
 class PlanningStatusUpdate(BaseModel):
     planning_status: Optional[str] = None
     planning_note: Optional[str] = None
+    acompte: Optional[int] = None      
+    progress: Optional[int] = None     
 
 
 # ── Mapping synchronisation ────────────────────────────────────────────────
@@ -224,6 +226,12 @@ def update_planning_status(
 
     if body.planning_note is not None:
         order.planning_note = body.planning_note
+
+    if body.acompte is not None:          # ← NOUVEAU
+        order.acompte = body.acompte
+
+    if body.progress is not None:         # ← NOUVEAU
+        order.progress = body.progress
 
     # Synchronisation Orders ← Planning
     if body.planning_status in PLANNING_TO_STATUS:

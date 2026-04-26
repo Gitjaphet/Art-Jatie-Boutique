@@ -1203,7 +1203,12 @@ function OrderCard({
                   fontSize: 11,
                   fontWeight: 700,
                   transition: "all 0.15s",
-                  background: order.progress >= p ? "#e91e8c" : "#f3f4f6",
+                  background:
+                    order.progress >= p
+                      ? order.progress === p
+                        ? "#e91e8c"
+                        : "#f472b6"
+                      : "#f3f4f6",
                   color: order.progress >= p ? "#fff" : "#999",
                 }}
               >
@@ -1435,15 +1440,24 @@ export default function PlanningTab({ products }: PlanningTabProps) {
     }
   }
 
-  async function updateProgress(id: number, progress: number) {
+  async function updateProgress(id: number, p: number) {
+    const o = orders.find((x) => x.id === id);
+    if (!o) return;
+
+    // Clic sur le % déjà actif → annulation (retour à 0)
+    const newProgress = o.progress === p ? 0 : p;
+
     setOrders((prev) =>
-      prev.map((x) => (x.id === id ? { ...x, progress } : x)),
+      prev.map((x) => (x.id === id ? { ...x, progress: newProgress } : x)),
     );
     try {
       await fetch(`${API}/orders/${id}/planning-status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planning_status: "en_cours", progress }),
+        body: JSON.stringify({
+          planning_status: "en_cours",
+          progress: newProgress,
+        }),
       });
     } catch {
       /**/
