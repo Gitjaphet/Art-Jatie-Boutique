@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import styles from "./EditProductModal.module.css"; // ✅ son propre CSS
+import styles from "./EditProductModal.module.css";
 import Image from "next/image";
 
 const I = {
@@ -116,7 +116,7 @@ export default function EditProductModal({
   const [genre, setGenre] = useState("");
   const [tag, setTag] = useState("");
   const [status, setStatus] = useState("");
-  const [qty, setQty] = useState("");
+  const [qty, setQty] = useState(0); // ← number, pas string
   const [hot, setHot] = useState(false);
   const [cols, setCols] = useState<string[]>([]);
   const [sizes, setSizes] = useState<string[]>([]);
@@ -125,42 +125,41 @@ export default function EditProductModal({
   const [drag, setDrag] = useState(false);
 
   useEffect(() => {
-    if (productToEdit) {
-      setName(productToEdit.name);
-      setPrice(productToEdit.price_ar.toString());
-      setCat(productToEdit.category);
-      setGenre(productToEdit.genre);
-      setTag(productToEdit.tag || "");
-      setStatus(productToEdit.badge);
-      setQty((productToEdit.stock_quantity || 1).toString());
-      setHot(productToEdit.is_hot || productToEdit.hot || false);
-      setCols(
-        productToEdit.colors
-          ? productToEdit.colors.split(",").map((c) => c.trim())
-          : [],
-      );
-      setSizes(
-        productToEdit.sizes
-          ? productToEdit.sizes.split(",").map((s) => s.trim())
-          : [],
-      );
-      setPrev(productToEdit.image);
-    }
+    if (!productToEdit) return;
+    setName(productToEdit.name);
+    setPrice(productToEdit.price_ar.toString());
+    setCat(productToEdit.category);
+    setGenre(productToEdit.genre);
+    setTag(productToEdit.tag || "");
+    setStatus(productToEdit.badge);
+    setQty(productToEdit.stock_quantity ?? 0);
+    setHot(productToEdit.is_hot || productToEdit.hot || false);
+    setCols(
+      productToEdit.colors
+        ? productToEdit.colors.split(",").map((c) => c.trim())
+        : [],
+    );
+    setSizes(
+      productToEdit.sizes
+        ? productToEdit.sizes.split(",").map((s) => s.trim())
+        : [],
+    );
+    setPrev(productToEdit.image);
   }, [productToEdit]);
 
   const COLORS = useMemo(() => {
-    const val = settings?.available_colors;
-    return typeof val === "string" ? val.split(",").map((c) => c.trim()) : [];
+    const v = settings?.available_colors;
+    return typeof v === "string" ? v.split(",").map((c) => c.trim()) : [];
   }, [settings?.available_colors]);
 
   const SIZES = useMemo(() => {
-    const val = settings?.available_sizes;
-    return typeof val === "string" ? val.split(",").map((s) => s.trim()) : [];
+    const v = settings?.available_sizes;
+    return typeof v === "string" ? v.split(",").map((s) => s.trim()) : [];
   }, [settings?.available_sizes]);
 
   const CATS = useMemo(() => {
-    const val = settings?.available_categories;
-    return typeof val === "string" ? val.split(",").map((c) => c.trim()) : [];
+    const v = settings?.available_categories;
+    return typeof v === "string" ? v.split(",").map((c) => c.trim()) : [];
   }, [settings?.available_categories]);
 
   const tog = useCallback(
@@ -189,6 +188,12 @@ export default function EditProductModal({
     };
   }, [prev]);
 
+  // Couleur badge stock
+  const stockColor = qty === 0 ? "#ef4444" : qty <= 2 ? "#f97316" : "#16a34a";
+  const stockBg = qty === 0 ? "#fff5f5" : qty <= 2 ? "#fff7ed" : "#f0fdf4";
+  const stockLabel =
+    qty === 0 ? "Épuisé" : qty === 1 ? "1 pièce" : `${qty} pièces`;
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!cols.length || !sizes.length) {
@@ -206,7 +211,10 @@ export default function EditProductModal({
     formData.append("sizes", sizes.join(","));
     formData.append("badge", status);
     formData.append("on_order", status === "Sur commande" ? "true" : "false");
-    formData.append("stock_quantity", status === "Sur commande" ? "0" : qty);
+    formData.append(
+      "stock_quantity",
+      status === "Sur commande" ? "0" : String(qty),
+    );
     formData.append("is_hot", hot ? "true" : "false");
     if (img) formData.append("image", img);
 
@@ -224,7 +232,7 @@ export default function EditProductModal({
         toast(`Erreur: ${err.detail}`, "error");
       }
     } catch (err) {
-      console.error("Erreur détaillée :", err);
+      console.error(err);
       toast("Erreur réseau.", "error");
     } finally {
       setSub(false);
@@ -253,6 +261,7 @@ export default function EditProductModal({
         {/* ── BODY ── */}
         <div className={styles.body}>
           <form id="edit-form" onSubmit={submit}>
+            {/* Nom + Prix */}
             <div className={styles.grid}>
               <div className={styles.inputGroup}>
                 <label className={styles.label}>Nom *</label>
@@ -275,7 +284,8 @@ export default function EditProductModal({
               </div>
             </div>
 
-            <div className={styles.grid} style={{ marginTop: "16px" }}>
+            {/* Catégorie + Cible */}
+            <div className={styles.grid} style={{ marginTop: 16 }}>
               <div className={styles.inputGroup}>
                 <label className={styles.label}>Catégorie</label>
                 <select
@@ -306,9 +316,10 @@ export default function EditProductModal({
               </div>
             </div>
 
-            <div className={styles.inputGroup} style={{ marginTop: "16px" }}>
+            {/* Couleurs */}
+            <div className={styles.inputGroup} style={{ marginTop: 16 }}>
               <label className={styles.label}>Couleurs *</label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "7px" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
                 {COLORS.map((c) => (
                   <button
                     key={c}
@@ -322,9 +333,10 @@ export default function EditProductModal({
               </div>
             </div>
 
-            <div className={styles.inputGroup} style={{ marginTop: "16px" }}>
+            {/* Tailles */}
+            <div className={styles.inputGroup} style={{ marginTop: 16 }}>
               <label className={styles.label}>Tailles *</label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "7px" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
                 {SIZES.map((sz) => (
                   <button
                     key={sz}
@@ -338,7 +350,8 @@ export default function EditProductModal({
               </div>
             </div>
 
-            <div className={styles.grid} style={{ marginTop: "16px" }}>
+            {/* Statut + Stock ─── section principale */}
+            <div className={styles.grid} style={{ marginTop: 16 }}>
               <div className={styles.inputGroup}>
                 <label className={styles.label}>Statut</label>
                 <select
@@ -359,22 +372,67 @@ export default function EditProductModal({
                   ))}
                 </select>
               </div>
-              {status !== "Sur commande" && (
-                <div className={styles.inputGroup}>
-                  <label className={styles.label}>Quantité *</label>
-                  <input
-                    type="number"
-                    className={styles.input}
-                    value={qty}
-                    onChange={(e) => setQty(e.target.value)}
-                    min="0"
-                    required
-                  />
-                </div>
-              )}
+
+              {/* ── STOCK — toujours visible, désactivé en "Sur commande" ── */}
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>
+                  Stock{" "}
+                  <span
+                    className={styles.stockBadge}
+                    style={{ background: stockBg, color: stockColor }}
+                  >
+                    {stockLabel}
+                  </span>
+                </label>
+
+                {status === "Sur commande" ? (
+                  /* Sur commande → stock figé à 0 */
+                  <div
+                    style={{
+                      padding: "9px 12px",
+                      border: "1px solid var(--border)",
+                      borderRadius: 9,
+                      background: "#f9f9f9",
+                      fontSize: 13,
+                      color: "#aaa",
+                      fontWeight: 500,
+                    }}
+                  >
+                    Non applicable (sur commande)
+                  </div>
+                ) : (
+                  /* Contrôle − / champ / + */
+                  <div className={styles.stockRow}>
+                    <button
+                      type="button"
+                      className={styles.stockBtn}
+                      onClick={() => setQty((v) => Math.max(0, v - 1))}
+                    >
+                      −
+                    </button>
+                    <input
+                      type="number"
+                      className={styles.stockInput}
+                      value={qty}
+                      min={0}
+                      onChange={(e) =>
+                        setQty(Math.max(0, Number(e.target.value)))
+                      }
+                    />
+                    <button
+                      type="button"
+                      className={styles.stockBtn}
+                      onClick={() => setQty((v) => v + 1)}
+                    >
+                      +
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
-            <div className={styles.inputGroup} style={{ marginTop: "16px" }}>
+            {/* Tag / Matière */}
+            <div className={styles.inputGroup} style={{ marginTop: 16 }}>
               <label className={styles.label}>Tag / Matière</label>
               <input
                 className={styles.input}
@@ -383,7 +441,8 @@ export default function EditProductModal({
               />
             </div>
 
-            <div className={styles.inputGroup} style={{ marginTop: "16px" }}>
+            {/* Image */}
+            <div className={styles.inputGroup} style={{ marginTop: 16 }}>
               <label className={styles.label}>
                 Changer l&apos;image (Optionnel)
               </label>
@@ -411,7 +470,7 @@ export default function EditProductModal({
                       width: "100%",
                       height: "110px",
                       objectFit: "cover",
-                      borderRadius: "8px",
+                      borderRadius: 8,
                     }}
                   />
                 ) : (
@@ -421,9 +480,9 @@ export default function EditProductModal({
                     </div>
                     <span
                       style={{
-                        fontSize: "13px",
+                        fontSize: 13,
                         color: "var(--text-secondary)",
-                        fontWeight: "600",
+                        fontWeight: 600,
                       }}
                     >
                       Glisser ou{" "}
@@ -441,9 +500,10 @@ export default function EditProductModal({
               </div>
             </div>
 
+            {/* Coup de cœur */}
             <label
               onClick={() => setHot(!hot)}
-              style={{ marginTop: "16px", display: "flex" }}
+              style={{ marginTop: 16, display: "flex" }}
               className={`${styles.hotToggle} ${hot ? styles.hotToggleActive : ""}`}
             >
               <div
