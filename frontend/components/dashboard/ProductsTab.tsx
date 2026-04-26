@@ -182,10 +182,23 @@ function StockCell({
     }
     setSaving(true);
     try {
+      // Le backend PUT attend multipart/form-data avec tous les champs requis
+      const fd = new FormData();
+      fd.append("name", product.name);
+      fd.append("tag", product.tag || "");
+      fd.append("genre", product.genre);
+      fd.append("category", product.category);
+      fd.append("price_ar", String(product.price_ar));
+      fd.append("colors", product.colors || "");
+      fd.append("sizes", product.sizes || "");
+      fd.append("badge", product.badge);
+      fd.append("is_hot", String(product.is_hot ?? false));
+      fd.append("on_order", String(product.on_order ?? false));
+      fd.append("stock_quantity", String(value));
+
       const res = await fetch(`${API}/products/${product.id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stock_quantity: value }),
+        body: fd, // pas de Content-Type header, le browser le met automatiquement
       });
       if (!res.ok) throw new Error();
       toast("Stock mis à jour.", "success");
