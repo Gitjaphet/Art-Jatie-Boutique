@@ -155,7 +155,24 @@ function Badge({ b }: { b: string }) {
   );
 }
 
-// ── StockCell — édition inline du stock ───────────────────────────────
+// ── Helper partagé : construit le FormData complet pour PUT /products/:id ──
+function buildProductFormData(product: Product, newStock: number): FormData {
+  const fd = new FormData();
+  fd.append("name", product.name);
+  fd.append("tag", product.tag || "");
+  fd.append("genre", product.genre);
+  fd.append("category", product.category);
+  fd.append("price_ar", String(product.price_ar));
+  fd.append("colors", product.colors || "");
+  fd.append("sizes", product.sizes || "");
+  fd.append("badge", product.badge);
+  fd.append("is_hot", String(product.is_hot ?? false));
+  fd.append("on_order", String(product.on_order ?? false));
+  fd.append("stock_quantity", String(newStock));
+  return fd;
+}
+
+// ── StockCell — édition inline du stock (tableau desktop) ─────────────
 function StockCell({
   product,
   toast,
@@ -170,8 +187,6 @@ function StockCell({
   const [saving, setSaving] = useState(false);
 
   const qty = product.stock_quantity ?? 0;
-
-  // Couleur selon le stock
   const stockColor = qty === 0 ? "#ef4444" : qty <= 2 ? "#f97316" : "#16a34a";
   const stockBg = qty === 0 ? "#fff5f5" : qty <= 2 ? "#fff7ed" : "#f0fdf4";
 
@@ -182,30 +197,16 @@ function StockCell({
     }
     setSaving(true);
     try {
-      // Le backend PUT attend multipart/form-data avec tous les champs requis
-      const fd = new FormData();
-      fd.append("name", product.name);
-      fd.append("tag", product.tag || "");
-      fd.append("genre", product.genre);
-      fd.append("category", product.category);
-      fd.append("price_ar", String(product.price_ar));
-      fd.append("colors", product.colors || "");
-      fd.append("sizes", product.sizes || "");
-      fd.append("badge", product.badge);
-      fd.append("is_hot", String(product.is_hot ?? false));
-      fd.append("on_order", String(product.on_order ?? false));
-      fd.append("stock_quantity", String(value));
-
       const res = await fetch(`${API}/products/${product.id}`, {
         method: "PUT",
-        body: fd, // pas de Content-Type header, le browser le met automatiquement
+        body: buildProductFormData(product, value),
       });
       if (!res.ok) throw new Error();
       toast("Stock mis à jour.", "success");
       refresh();
     } catch {
       toast("Erreur lors de la mise à jour du stock.", "error");
-      setValue(qty); // rollback
+      setValue(qty);
     } finally {
       setSaving(false);
       setEditing(false);
@@ -215,7 +216,6 @@ function StockCell({
   if (editing) {
     return (
       <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-        {/* – */}
         <button
           onClick={() => setValue((v) => Math.max(0, v - 1))}
           style={{
@@ -233,7 +233,6 @@ function StockCell({
         >
           <I.Minus />
         </button>
-        {/* Input */}
         <input
           type="number"
           value={value}
@@ -259,7 +258,6 @@ function StockCell({
             fontFamily: "inherit",
           }}
         />
-        {/* + */}
         <button
           onClick={() => setValue((v) => v + 1)}
           style={{
@@ -277,7 +275,6 @@ function StockCell({
         >
           <I.Plus />
         </button>
-        {/* ✓ */}
         <button
           onClick={save}
           disabled={saving}
@@ -347,7 +344,6 @@ function StockCell({
       >
         {qty === 0 ? "Épuisé" : qty === 1 ? "pièce" : "pièces"}
       </span>
-      {/* Petit crayon discret */}
       <span style={{ opacity: 0.4, display: "flex" }}>
         <I.Pen />
       </span>
@@ -380,8 +376,7 @@ function StockCellMobile({
     try {
       const res = await fetch(`${API}/products/${product.id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stock_quantity: value }),
+        body: buildProductFormData(product, value), // ✅ FormData complet
       });
       if (!res.ok) throw new Error();
       toast("Stock mis à jour.", "success");
@@ -739,7 +734,7 @@ export default function ProductsTab({
                   </span>
                 </td>
 
-                {/* ── STOCK ── */}
+                {/* Stock */}
                 <td className={dashboardStyles.td}>
                   <StockCell product={p} toast={toast} refresh={refresh} />
                 </td>
@@ -829,9 +824,7 @@ export default function ProductsTab({
                   )}
                 </div>
               )}
-              {/* Stock mobile */}
               <StockCellMobile product={p} toast={toast} refresh={refresh} />
-
               <div className={styles.cardActions}>
                 <button
                   className={`${styles.cardBtn} ${styles.cardBtnEdit}`}
