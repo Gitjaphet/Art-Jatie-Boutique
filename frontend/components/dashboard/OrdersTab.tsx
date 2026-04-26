@@ -19,8 +19,18 @@ type Order = {
   selected_size: string;
   selected_color: string;
   status: string;
+  planning_status?: string | null;
   created_at: string;
-  cart_items_json?: string; //
+  cart_items_json?: string;
+  total_ar?: number;
+  subtotal_ar?: number;
+  delivery_label?: string;
+  delivery_cost?: number;
+  payment_method?: string;
+  mvola_phone?: string;
+  om_phone?: string;
+  payment_proof_text?: string;
+  payment_proof_image?: string;
 };
 
 const STATUS_OPTIONS = [
@@ -39,6 +49,21 @@ const STATUS_STYLE: Record<string, { bg: string; color: string; dot: string }> =
     Livrée: { bg: "#fdf4ff", color: "#7e22ce", dot: "#a855f7" },
     Annulée: { bg: "#fef2f2", color: "#b91c1c", dot: "#ef4444" },
   };
+
+// Badge planning visible sur la carte de commande
+const PLANNING_BADGE: Record<
+  string,
+  { label: string; color: string; bg: string }
+> = {
+  a_fabriquer: { label: "📋 À fabriquer", color: "#be185d", bg: "#fce7f3" },
+  en_cours: {
+    label: "⚡ En cours de fabrication",
+    color: "#1d4ed8",
+    bg: "#dbeafe",
+  },
+  pret_a_livrer: { label: "✅ Prêt à livrer", color: "#15803d", bg: "#dcfce7" },
+  livree: { label: "🚚 Livrée", color: "#7e22ce", bg: "#f3e8ff" },
+};
 
 const COLORS_MAP: Record<string, string> = {
   Beige: "#D4B896",
@@ -83,7 +108,7 @@ export default function OrdersTab({ toast }: Props) {
       const res = await fetch(`${API}/orders/`);
       if (!res.ok) throw new Error();
       const all = await res.json();
-      setOrders(all.filter((o: Order) => !o.cart_items_json)); // ✅ sur mesure seulement
+      setOrders(all);
     } catch {
       toast("Impossible de charger les commandes.", "error");
     } finally {
@@ -99,15 +124,23 @@ export default function OrdersTab({ toast }: Props) {
     try {
       const res = await fetch(
         `${API}/orders/${id}/status?status=${encodeURIComponent(status)}`,
-        {
-          method: "PATCH",
-        },
+        { method: "PATCH" },
       );
       if (!res.ok) throw new Error();
+      const updated = await res.json();
+      // Met à jour localement avec la réponse complète (incl. planning_status)
       setOrders((prev) =>
-        prev.map((o) => (o.id === id ? { ...o, status } : o)),
+        prev.map((o) => (o.id === id ? { ...o, ...updated } : o)),
       );
-      toast(`Statut mis à jour : ${status}`);
+
+      // Message contextuel selon le statut
+      if (status === "Confirmée") {
+        toast(`✅ Commande confirmée — ajoutée au Planning (À Fabriquer)`);
+      } else if (status === "Annulée") {
+        toast(`❌ Commande annulée — retirée du Planning`);
+      } else {
+        toast(`Statut mis à jour : ${status}`);
+      }
     } catch {
       toast("Erreur lors de la mise à jour.", "error");
     }
@@ -130,10 +163,11 @@ export default function OrdersTab({ toast }: Props) {
   const filtered = orders.filter((o) => {
     const matchStatus = filter === "Tous" || o.status === filter;
     const q = search.toLowerCase();
+    const name = o.product_name || o.client_name || "";
     const matchSearch =
       !q ||
       o.client_name.toLowerCase().includes(q) ||
-      o.product_name.toLowerCase().includes(q) ||
+      name.toLowerCase().includes(q) ||
       o.client_email.toLowerCase().includes(q);
     return matchStatus && matchSearch;
   });
@@ -250,6 +284,38 @@ export default function OrdersTab({ toast }: Props) {
           {filtered.map((order) => {
             const st = STATUS_STYLE[order.status] || STATUS_STYLE["En attente"];
             const isExpanded = expandedId === order.id;
+            const planningBadge = order.planning_status
+              ? PLANNING_BADGE[order.planning_status]
+              : null;
+
+            // Résolution du nom et du prix pour les commandes panier
+            let displayName = order.product_name || "Commande";
+            let displayPrice = order.product_price_ar || 0;
+            let cartItems: {
+              id: number;
+              name: string;
+              price: number;
+              quantity: number;
+              image: string;
+            }[] = [];
+
+            if (order.cart_items_json) {
+              try {
+                cartItems = JSON.parse(order.cart_items_json);
+                if (cartItems.length > 0) {
+                  displayName =
+                    cartItems.length === 1
+                      ? cartItems[0].name
+                      : `${cartItems[0].name} +${cartItems.length - 1} article${cartItems.length > 2 ? "s" : ""}`;
+                  displayPrice =
+                    order.total_ar ||
+                    order.subtotal_ar ||
+                    cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
+                }
+              } catch {
+                /* ignore */
+              }
+            }
 
             return (
               <div
@@ -266,35 +332,62 @@ export default function OrdersTab({ toast }: Props) {
                     <div className={styles.imgWrap}>
                       <Image
                         src={
-                          order.product_image || "/images/logo/art_jatie.png"
+                          order.product_image ||
+                          cartItems[0]?.image ||
+                          "/images/logo/art_jatie.png"
                         }
-                        alt={order.product_name}
+                        alt={displayName}
                         fill
                         sizes="60px"
                         style={{ objectFit: "cover" }}
                       />
                     </div>
                     <div>
-                      <p className={styles.productName}>{order.product_name}</p>
+                      <p className={styles.productName}>{displayName}</p>
                       <p className={styles.productPrice}>
-                        {formatAr(order.product_price_ar)}
+                        {formatAr(displayPrice)}
                       </p>
-                      <div className={styles.choices}>
-                        <span className={styles.chip}>
-                          {order.selected_size}
-                        </span>
-                        <span
-                          className={styles.colorChip}
+                      {order.selected_size && (
+                        <div className={styles.choices}>
+                          <span className={styles.chip}>
+                            {order.selected_size}
+                          </span>
+                          {order.selected_color && (
+                            <>
+                              <span
+                                className={styles.colorChip}
+                                style={{
+                                  background:
+                                    COLORS_MAP[order.selected_color] ?? "#ccc",
+                                }}
+                                title={order.selected_color}
+                              />
+                              <span className={styles.chipLabel}>
+                                {order.selected_color}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      )}
+                      {/* Badge Planning */}
+                      {planningBadge && (
+                        <div
                           style={{
-                            background:
-                              COLORS_MAP[order.selected_color] ?? "#ccc",
+                            marginTop: 6,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 4,
+                            fontSize: 11,
+                            fontWeight: 600,
+                            padding: "2px 8px",
+                            borderRadius: 20,
+                            background: planningBadge.bg,
+                            color: planningBadge.color,
                           }}
-                          title={order.selected_color}
-                        />
-                        <span className={styles.chipLabel}>
-                          {order.selected_color}
-                        </span>
-                      </div>
+                        >
+                          {planningBadge.label}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -313,6 +406,11 @@ export default function OrdersTab({ toast }: Props) {
                       {formatDate(order.created_at)}
                     </p>
                     <p className={styles.orderId}>#{order.id}</p>
+                    {order.delivery_label && (
+                      <p style={{ fontSize: 11, color: "#888", marginTop: 2 }}>
+                        🚚 {order.delivery_label}
+                      </p>
+                    )}
                   </div>
 
                   {/* Statut */}
@@ -349,6 +447,72 @@ export default function OrdersTab({ toast }: Props) {
                 {/* CARD EXPANDED */}
                 {isExpanded && (
                   <div className={styles.cardBody}>
+                    {/* Panier complet si multiple articles */}
+                    {cartItems.length > 1 && (
+                      <div
+                        className={styles.bodySection}
+                        style={{ marginBottom: 12 }}
+                      >
+                        <p className={styles.bodySectionTitle}>
+                          Articles commandés
+                        </p>
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 6,
+                          }}
+                        >
+                          {cartItems.map((item, i) => (
+                            <div
+                              key={i}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 10,
+                                padding: "6px 10px",
+                                background: "#fafafa",
+                                borderRadius: 8,
+                                fontSize: 13,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  position: "relative",
+                                  width: 36,
+                                  height: 36,
+                                  borderRadius: 6,
+                                  overflow: "hidden",
+                                  flexShrink: 0,
+                                }}
+                              >
+                                <Image
+                                  src={
+                                    item.image || "/images/logo/art_jatie.png"
+                                  }
+                                  alt={item.name}
+                                  fill
+                                  sizes="36px"
+                                  style={{ objectFit: "cover" }}
+                                />
+                              </div>
+                              <span style={{ flex: 1, fontWeight: 500 }}>
+                                {item.name}
+                              </span>
+                              <span style={{ color: "#888" }}>
+                                ×{item.quantity}
+                              </span>
+                              <span
+                                style={{ color: "#e91e8c", fontWeight: 600 }}
+                              >
+                                {formatAr(item.price * item.quantity)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     <div className={styles.bodyGrid}>
                       {/* Changer statut */}
                       <div className={styles.bodySection}>
@@ -384,10 +548,36 @@ export default function OrdersTab({ toast }: Props) {
                                   }}
                                 />
                                 {s}
+                                {s === "Confirmée" &&
+                                  order.status !== "Confirmée" && (
+                                    <span
+                                      style={{
+                                        marginLeft: 4,
+                                        fontSize: 10,
+                                        color: "#15803d",
+                                        fontWeight: 700,
+                                      }}
+                                    >
+                                      → Planning
+                                    </span>
+                                  )}
                               </button>
                             );
                           })}
                         </div>
+                        {/* Hint contextuel */}
+                        <p
+                          style={{
+                            marginTop: 8,
+                            fontSize: 11,
+                            color: "#9ca3af",
+                            fontStyle: "italic",
+                          }}
+                        >
+                          💡 Confirmer une commande l&apos;ajoute
+                          automatiquement dans le Planning (colonne &quot;À
+                          Fabriquer&quot;)
+                        </p>
                       </div>
 
                       {/* Message client */}
@@ -404,6 +594,48 @@ export default function OrdersTab({ toast }: Props) {
                             </span>
                           )}
                         </p>
+
+                        {/* Infos paiement */}
+                        {order.payment_method &&
+                          order.payment_method !== "whatsapp" && (
+                            <>
+                              <p
+                                className={styles.bodySectionTitle}
+                                style={{ marginTop: 12 }}
+                              >
+                                Paiement
+                              </p>
+                              <p style={{ fontSize: 13, color: "#555" }}>
+                                {order.payment_method === "mvola"
+                                  ? "📱 MVola"
+                                  : "🟠 Orange Money"}
+                                {order.mvola_phone && ` — ${order.mvola_phone}`}
+                                {order.om_phone && ` — ${order.om_phone}`}
+                              </p>
+                              {order.payment_proof_text && (
+                                <p
+                                  style={{
+                                    fontSize: 12,
+                                    color: "#888",
+                                    marginTop: 4,
+                                  }}
+                                >
+                                  Réf. :{" "}
+                                  <strong>{order.payment_proof_text}</strong>
+                                </p>
+                              )}
+                              {order.payment_proof_image && (
+                                <a
+                                  href={order.payment_proof_image}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{ fontSize: 12, color: "#e91e8c" }}
+                                >
+                                  Voir la preuve de paiement →
+                                </a>
+                              )}
+                            </>
+                          )}
                       </div>
                     </div>
 

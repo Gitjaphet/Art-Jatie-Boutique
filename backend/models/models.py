@@ -50,7 +50,6 @@ class Order(SQLModel, table=True):
     client_message: Optional[str] = None
 
     # Panier complet (JSON sérialisé)
-    # Format : '[{"id":1,"name":"Jupe Plage","price":25000,"quantity":1,"image":"...","category":"TENUES"}]'
     cart_items_json: Optional[str] = Field(default=None)
 
     # Infos livraison
@@ -72,25 +71,28 @@ class Order(SQLModel, table=True):
     selected_color: Optional[str] = Field(default=None)
 
     # ── PAIEMENT ───────────────────────────────────────────────────────────
-    payment_method: str = Field(default="whatsapp")   # "mvola" | "orange_money" | "whatsapp"
+    payment_method: str = Field(default="whatsapp")
 
-    # Infos compte MVola
     mvola_account_name: Optional[str] = Field(default=None)
     mvola_phone: Optional[str] = Field(default=None)
 
-    # Infos compte Orange Money
     om_account_name: Optional[str] = Field(default=None)
     om_phone: Optional[str] = Field(default=None)
 
-    # Preuve de paiement
-    payment_proof_text: Optional[str] = Field(default=None)   # Référence texte (ex: "123456")
-    payment_proof_image: Optional[str] = Field(default=None)  # URL image preuve uploadée
+    payment_proof_text: Optional[str] = Field(default=None)
+    payment_proof_image: Optional[str] = Field(default=None)
 
-    # Suivi MVola API (pour l'intégration future)
     mvola_correlation_id: Optional[str] = Field(default=None)
     mvola_transaction_ref: Optional[str] = Field(default=None)
-    mvola_status: Optional[str] = Field(default=None)         # PENDING | COMPLETED | FAILED
+    mvola_status: Optional[str] = Field(default=None)
 
-    # Statut général
+    # ── STATUT GÉNÉRAL ─────────────────────────────────────────────────────
     status: str = Field(default="En attente")
+
+    # ── PLANNING (NOUVEAU) ─────────────────────────────────────────────────
+    # Valeurs possibles : null | "a_fabriquer" | "en_cours" | "pret_a_livrer" | "livree"
+    planning_status: Optional[str] = Field(default=None)
+    # Note interne de production
+    planning_note: Optional[str] = Field(default=None)
+
     created_at: datetime = Field(default_factory=datetime.utcnow)

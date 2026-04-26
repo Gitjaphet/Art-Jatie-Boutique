@@ -1,6 +1,7 @@
 """
 routes/orders.py
 Gestion des commandes — supporte panier complet + MVola + Orange Money + WhatsApp
++ synchronisation Planning (planning_status)
 """
 
 import json
@@ -16,7 +17,7 @@ from models.models import Order, Product
 from database import get_session
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")  
+SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
 
 router = APIRouter()
 
@@ -33,47 +34,62 @@ class CartItemSchema(BaseModel):
 
 
 class CreateOrderRequest(BaseModel):
-    # Infos client
     client_name: str
     client_email: str
     client_whatsapp: str
     client_message: Optional[str] = None
 
-    # Panier
     cart_items: List[CartItemSchema]
 
-    # Livraison
     delivery_zone: str
     delivery_cost: int
     delivery_label: str
 
-    # Montants
     subtotal_ar: int
     discount_ar: int = 0
     total_ar: int
 
-    # Paiement
-    payment_method: str = "whatsapp"   # "mvola" | "orange_money" | "whatsapp"
+    payment_method: str = "whatsapp"
 
-    # Infos MVola
     mvola_account_name: Optional[str] = None
     mvola_phone: Optional[str] = None
 
-    # Infos Orange Money
     om_account_name: Optional[str] = None
     om_phone: Optional[str] = None
 
-    # Preuve de paiement
     payment_proof_text: Optional[str] = None
     payment_proof_image: Optional[str] = None
 
-    # Rétrocompatibilité produit unique
     product_id: Optional[int] = None
     product_name: Optional[str] = None
     product_image: Optional[str] = None
     product_price_ar: Optional[int] = None
     selected_size: Optional[str] = None
     selected_color: Optional[str] = None
+
+
+class PlanningStatusUpdate(BaseModel):
+    planning_status: Optional[str] = None
+    planning_note: Optional[str] = None
+
+
+# ── Mapping synchronisation ────────────────────────────────────────────────
+# Quand le planning_status change, le status général de la commande suit
+PLANNING_TO_STATUS: dict[str, str] = {
+    "a_fabriquer": "Confirmée",
+    "en_cours": "En cours",
+    "pret_a_livrer": "En cours",
+    "livree": "Livrée",
+}
+
+# Quand le status général change, le planning_status suit
+STATUS_TO_PLANNING: dict[str, Optional[str]] = {
+    "En attente": None,
+    "Confirmée": "a_fabriquer",
+    "En cours": "en_cours",
+    "Livrée": "livree",
+    "Annulée": None,
+}
 
 
 # ── Routes ─────────────────────────────────────────────────────────────────
@@ -84,16 +100,28 @@ def get_orders(session: Session = Depends(get_session)):
     return orders
 
 
+@router.get("/planning")
+def get_planning_orders(session: Session = Depends(get_session)):
+    """
+    Retourne toutes les commandes qui sont dans le planning
+    (planning_status non null — c'est-à-dire confirmées ou plus).
+    """
+    orders = session.exec(
+        select(Order)
+        .where(Order.planning_status != None)  # noqa: E711
+        .order_by(Order.created_at.desc())
+    ).all()
+    return orders
+
+
 @router.post("/")
 def create_order(body: CreateOrderRequest, session: Session = Depends(get_session)):
-    # Validation MVola
     if body.payment_method == "mvola":
         if not body.mvola_phone:
             raise HTTPException(status_code=422, detail="Le numéro MVola est requis.")
         if not body.mvola_account_name:
             raise HTTPException(status_code=422, detail="Le nom du compte MVola est requis.")
 
-    # Validation Orange Money
     if body.payment_method == "orange_money":
         if not body.om_phone:
             raise HTTPException(status_code=422, detail="Le numéro Orange Money est requis.")
@@ -119,7 +147,6 @@ def create_order(body: CreateOrderRequest, session: Session = Depends(get_sessio
         om_phone=body.om_phone,
         payment_proof_text=body.payment_proof_text,
         payment_proof_image=body.payment_proof_image,
-        # Rétrocompatibilité
         product_id=body.product_id,
         product_name=body.product_name,
         product_image=body.product_image,
@@ -144,15 +171,24 @@ def get_order(order_id: int, session: Session = Depends(get_session)):
 
 @router.patch("/{order_id}/status")
 def update_status(order_id: int, status: str, session: Session = Depends(get_session)):
+    """
+    Met à jour le status général de la commande.
+    Si le nouveau status a un équivalent planning, planning_status est aussi mis à jour.
+    """
     order = session.get(Order, order_id)
     if not order:
         raise HTTPException(status_code=404, detail="Commande introuvable.")
 
     old_status = order.status
     order.status = status
+
+    # Synchronisation Planning ← Orders
+    if status in STATUS_TO_PLANNING:
+        order.planning_status = STATUS_TO_PLANNING[status]
+
     session.add(order)
 
-    # Si on valide la commande → déduire le stock pour chaque article du panier
+    # Si on valide la commande → déduire le stock
     if status == "Confirmée" and old_status != "Confirmée":
         if order.cart_items_json:
             try:
@@ -163,9 +199,42 @@ def update_status(order_id: int, status: str, session: Session = Depends(get_ses
                         product.stock_quantity = max(0, product.stock_quantity - item.get("quantity", 1))
                         session.add(product)
             except Exception:
-                pass  # Ne pas bloquer si le JSON est malformé
+                pass
 
     session.commit()
+    session.refresh(order)
+    return order
+
+
+@router.patch("/{order_id}/planning-status")
+def update_planning_status(
+    order_id: int,
+    body: PlanningStatusUpdate,
+    session: Session = Depends(get_session),
+):
+    """
+    Met à jour le planning_status depuis le Planning.
+    Synchronise aussi le status général de la commande.
+    """
+    order = session.get(Order, order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Commande introuvable.")
+
+    order.planning_status = body.planning_status
+
+    if body.planning_note is not None:
+        order.planning_note = body.planning_note
+
+    # Synchronisation Orders ← Planning
+    if body.planning_status in PLANNING_TO_STATUS:
+        order.status = PLANNING_TO_STATUS[body.planning_status]
+    elif body.planning_status is None:
+        # Retrait du planning → repasse en attente
+        order.status = "En attente"
+
+    session.add(order)
+    session.commit()
+    session.refresh(order)
     return order
 
 
