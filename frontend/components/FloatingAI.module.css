@@ -1,55 +1,64 @@
+/* =========================================================================
+   FloatingAI.module.css — Responsive Premium
+   Breakpoints :
+     Desktop      : > 1024px
+     Tablette     : 769px – 1024px
+     iPhone 11 PM : 390px – 430px
+     Itel A70     : 340px – 389px
+     Très petits  : < 340px
+
+   ENJEU PRINCIPAL : le chatCard est fixed/absolut en bas à droite.
+   Sur mobile il doit devenir un bottom-sheet pleine largeur pour ne pas
+   écraser le contenu et rester utilisable avec le clavier virtuel.
+   ========================================================================= */
+
+/* ─── TOKENS ─────────────────────────────────────────────────────────────── */
 :root {
-  --brand-pink: #ff69b4; /* Rose exact de votre logo/bouton */
+  --brand-pink: #ff69b4;
   --brand-black: #1a1a1a;
   --brand-beige-bg: #fdfaf7;
   --gray-border: #e5e5e5;
   --glass-white: rgba(255, 255, 255, 0.7);
 }
 
+/* ─── WRAPPER ─────────────────────────────────────────────────────────────── */
 .wrapper {
   position: fixed;
-  bottom: 110px; /* Positionné pile au-dessus du bouton WhatsApp */
+  bottom: 110px;
   right: 30px;
   z-index: 9999;
   display: flex;
   flex-direction: column;
-  align-items: flex-end; /* Aligne la bulle et le bouton à droite */
+  align-items: flex-end;
   font-family: "Inter", sans-serif;
 }
 
-/* --- Nouvelle Bulle d'accroche --- */
+/* ─── BULLE D'ACCROCHE ────────────────────────────────────────────────────── */
 .hintBubble {
   background: var(--glass-white);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  color: #333; /* Texte gris très foncé pour lisibilité */
+  color: #333;
   padding: 10px 18px;
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 10px; /* Espace entre l'icône et le texte */
+  gap: 10px;
   white-space: nowrap;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  margin-bottom: 15px; /* Espace juste au-dessus du bouton */
+  margin-bottom: 15px;
   position: relative;
   border: 1px solid rgba(255, 255, 255, 0.3);
   cursor: pointer;
-
-  /* L'effet de lumière (Box Shadow Rose) comme sur l'image */
   box-shadow:
     0px 0px 15px rgba(255, 105, 180, 0.5),
     0px 0px 30px rgba(255, 105, 180, 0.3);
-
-  /* Animations de flottement et de battement de lumière */
   animation: hintPulse 2.5s infinite ease-in-out;
   transition:
     opacity 0.3s ease,
     transform 0.3s ease;
 }
-
-/* Petite pointe de la bulle (brillante aussi) */
 .hintBubble::after {
   content: "";
   position: absolute;
@@ -63,9 +72,8 @@
   border-bottom: 1px solid rgba(255, 182, 193, 0.4);
   border-right: 1px solid rgba(255, 182, 193, 0.4);
 }
-
 .hintIcon {
-  color: var(--brand-black); /* Icône ✨ reste NOIRE */
+  color: var(--brand-black);
 }
 
 @keyframes hintPulse {
@@ -98,12 +106,12 @@
   pointer-events: none;
 }
 
-/* --- Bouton d'activation principal (Noir Chic) --- */
+/* ─── BOUTON TRIGGER ──────────────────────────────────────────────────────── */
 .trigger {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: var(--brand-black); /* Noir pur Art Jatie */
+  background: var(--brand-black);
   color: white;
   border: none;
   cursor: pointer;
@@ -113,19 +121,15 @@
   box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
 }
-
 .trigger:hover {
   transform: scale(1.1);
   background: #333;
 }
-
 .active {
-  background: var(
-    --brand-pink
-  ); /* Devient rose seulement quand il est ouvert */
+  background: var(--brand-pink);
 }
 
-/* --- La carte de Chat Flottante (Noir & Rose) --- */
+/* ─── CARTE DE CHAT — Desktop ─────────────────────────────────────────────── */
 .chatCard {
   position: absolute;
   bottom: 85px;
@@ -141,7 +145,7 @@
   animation: slideIn 0.3s ease-out;
 }
 
-/* ... (Le reste du CSS : header, messages, footer est identique au précédent) ... */
+/* ─── HEADER ──────────────────────────────────────────────────────────────── */
 .header {
   padding: 15px;
   background: #1a1a1a;
@@ -151,6 +155,7 @@
   align-items: center;
   font-size: 0.9rem;
   font-weight: 500;
+  flex-shrink: 0;
 }
 .headerInfo {
   display: flex;
@@ -170,7 +175,20 @@
   color: white;
   cursor: pointer;
   font-size: 1.1rem;
+  /* Zone de tap confortable */
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s;
 }
+.closeBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ─── BODY MESSAGES ───────────────────────────────────────────────────────── */
 .chatBody {
   flex: 1;
   padding: 15px;
@@ -179,12 +197,24 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  /* Scrollbar discrète */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
 }
+.chatBody::-webkit-scrollbar {
+  width: 4px;
+}
+.chatBody::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+}
+
 .messagesContainer {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
+
 .message {
   max-width: 80%;
   padding: 10px 14px;
@@ -203,6 +233,8 @@
   background: var(--brand-pink);
   color: white;
 }
+
+/* ─── FOOTER INPUT ────────────────────────────────────────────────────────── */
 .footer {
   padding: 12px;
   background: white;
@@ -210,6 +242,7 @@
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-shrink: 0;
 }
 .inputArea {
   flex: 1;
@@ -218,23 +251,31 @@
   padding: 8px 15px;
   outline: none;
   font-size: 0.85rem;
+  transition: border-color 0.2s;
 }
+.inputArea:focus {
+  border-color: var(--brand-pink);
+}
+
 .sendBtn {
   background: #1a1a1a;
   color: white;
   border: none;
-  width: 35px;
-  height: 35px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.25s;
 }
 .sendBtn:hover {
-  background: #ff69b4;
+  background: var(--brand-pink);
 }
 
+/* ─── KEYFRAMES ───────────────────────────────────────────────────────────── */
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -243,5 +284,333 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================================================
+   TABLETTE  (769px – 1024px)
+   Le chatCard reste en position absolue mais légèrement plus large
+   ========================================================================= */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .wrapper {
+    bottom: 100px;
+    right: 24px;
+  }
+
+  .chatCard {
+    width: 340px;
+    height: 500px;
+    bottom: 80px;
+  }
+
+  /* Bulle un peu plus compacte */
+  .hintBubble {
+    font-size: 0.8rem;
+    padding: 9px 16px;
+  }
+}
+
+/* =========================================================================
+   SMARTPHONE LARGE  (390px – 430px)
+   iPhone 11 Pro Max, 12/13/14 PM…
+
+   STRATÉGIE : bottom-sheet pleine largeur.
+   Le chatCard sort du flux fixed du wrapper et prend tout le bas de l'écran.
+   Le wrapper reste en bas à droite pour le trigger et la bulle.
+   ========================================================================= */
+@media (min-width: 390px) and (max-width: 430px) {
+  .wrapper {
+    bottom: 88px;
+    right: 18px;
+  }
+
+  /* Bulle réduite, toujours lisible */
+  .hintBubble {
+    font-size: 0.78rem;
+    padding: 8px 14px;
+    gap: 8px;
+    margin-bottom: 12px;
+    /* Réduit le glow pour économiser le GPU */
+    box-shadow:
+      0px 0px 12px rgba(255, 105, 180, 0.45),
+      0px 0px 24px rgba(255, 105, 180, 0.25);
+  }
+  /* Rétrécit l'animation verticale */
+  @keyframes hintPulse {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-5px);
+    }
+  }
+
+  .trigger {
+    width: 54px;
+    height: 54px;
+  }
+
+  /* ── Bottom Sheet ──
+     Positionné en fixed depuis le bas de l'écran, pleine largeur,
+     hauteur dynamique respectant le clavier virtuel via dvh.
+  */
+  .chatCard {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    /* 70dvh = 70% de la hauteur visible même quand le clavier est ouvert */
+    height: 70dvh;
+    min-height: 380px;
+    max-height: 580px;
+    border-radius: 24px 24px 0 0;
+    /* Supprime l'ombre latérale desktop */
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.12);
+    animation: slideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    /* Passe sous le wrapper (z-index 9999) mais reste au-dessus du reste */
+    z-index: 9998;
+  }
+
+  /* Poignée de drag visuelle */
+  .header::before {
+    content: "";
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+  }
+  .header {
+    position: relative;
+    padding: 20px 15px 15px;
+  }
+
+  .message {
+    font-size: 0.88rem;
+  }
+  .inputArea {
+    font-size: 0.85rem;
+    padding: 10px 14px;
+  }
+
+  /* Zone de tap du bouton send plus grande */
+  .sendBtn {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* =========================================================================
+   SMARTPHONE MOYEN  (340px – 389px)
+   Itel A70, Samsung A13, Redmi A1…
+   ========================================================================= */
+@media (min-width: 340px) and (max-width: 389px) {
+  .wrapper {
+    bottom: 80px;
+    right: 14px;
+  }
+
+  .hintBubble {
+    font-size: 0.74rem;
+    padding: 7px 12px;
+    gap: 7px;
+    margin-bottom: 10px;
+    border-radius: 16px;
+    /* Glow allégé — GPU Itel A70 limité */
+    box-shadow:
+      0px 0px 10px rgba(255, 105, 180, 0.4),
+      0px 0px 20px rgba(255, 105, 180, 0.2);
+    /* Animation réduite */
+    animation: hintPulseLight 2.5s infinite ease-in-out;
+  }
+  @keyframes hintPulseLight {
+    0%,
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    50% {
+      transform: translateY(-4px);
+      opacity: 0.92;
+    }
+  }
+
+  .trigger {
+    width: 50px;
+    height: 50px;
+  }
+  .trigger svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* Bottom sheet encore plus haute pour compenser l'écran plus petit */
+  .chatCard {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    height: 75dvh;
+    min-height: 360px;
+    max-height: 540px;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -6px 32px rgba(0, 0, 0, 0.12);
+    animation: slideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 9998;
+  }
+
+  .header {
+    position: relative;
+    padding: 18px 13px 13px;
+    font-size: 0.85rem;
+  }
+  .header::before {
+    content: "";
+    position: absolute;
+    top: 7px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+  }
+
+  .message {
+    font-size: 0.84rem;
+    padding: 9px 12px;
+  }
+  .inputArea {
+    font-size: 0.82rem;
+    padding: 9px 13px;
+  }
+  .sendBtn {
+    width: 38px;
+    height: 38px;
+  }
+
+  .chatBody {
+    padding: 12px;
+  }
+  .footer {
+    padding: 10px;
+  }
+}
+
+/* =========================================================================
+   TRÈS PETITS ÉCRANS  (< 340px)
+   iPhone SE 1G (320px), vieux Android…
+   ========================================================================= */
+@media (max-width: 339px) {
+  .wrapper {
+    bottom: 72px;
+    right: 12px;
+  }
+
+  /* Sur 320px, la bulle "Discuter avec l'IA" prend trop de place :
+     on la simplifie en icône seule */
+  .hintBubble {
+    padding: 8px 10px;
+    font-size: 0; /* Cache le texte */
+    gap: 0;
+    margin-bottom: 8px;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    justify-content: center;
+    /* Retire la pointe de bulle */
+    animation: hintPulseLight 2.5s infinite ease-in-out;
+  }
+  .hintBubble::after {
+    display: none;
+  }
+
+  .hintIcon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .trigger {
+    width: 46px;
+    height: 46px;
+  }
+  .trigger svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .chatCard {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    /* Sur tout petits écrans on prend 80dvh car l'espace est précieux */
+    height: 80dvh;
+    min-height: 340px;
+    max-height: 520px;
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -4px 28px rgba(0, 0, 0, 0.12);
+    animation: slideUp 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 9998;
+  }
+
+  .header {
+    position: relative;
+    padding: 16px 12px 12px;
+    font-size: 0.82rem;
+  }
+  .header::before {
+    content: "";
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+  }
+
+  .message {
+    font-size: 0.82rem;
+    padding: 8px 11px;
+    max-width: 88%;
+  }
+
+  .inputArea {
+    font-size: 0.8rem;
+    padding: 8px 12px;
+  }
+
+  .sendBtn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .chatBody {
+    padding: 10px;
+    gap: 8px;
+  }
+  .footer {
+    padding: 8px 10px;
+    gap: 6px;
   }
 }
