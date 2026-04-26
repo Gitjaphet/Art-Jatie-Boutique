@@ -1,8 +1,16 @@
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=DM+Sans:wght@200;300;400;500&display=swap");
 
-/* =====================
-   VARIABLES & ROOT
-   ===================== */
+/* =========================================================================
+   BubbleGrid.module.css — Responsive Premium
+   Breakpoints :
+     Desktop      : > 1024px
+     Tablette     : 769px – 1024px
+     iPhone 11 PM : 390px – 430px
+     Itel A70     : 340px – 389px
+     Très petits  : < 340px
+   ========================================================================= */
+
+/* ─── VARIABLES & ROOT ────────────────────────────────────────────────────── */
 .root {
   --cream: #f8f4ef;
   --ink: #1a1714;
@@ -16,9 +24,7 @@
   padding: 80px 0 100px;
 }
 
-/* =====================
-   HEADER
-   ===================== */
+/* ─── HEADER ──────────────────────────────────────────────────────────────── */
 .header {
   text-align: center;
   margin-bottom: 72px;
@@ -36,7 +42,6 @@
   color: var(--taupe);
   margin-bottom: 20px;
 }
-
 .eyebrow::before {
   content: "";
   width: 28px;
@@ -53,16 +58,13 @@
   line-height: 1;
   letter-spacing: -0.02em;
 }
-
 .sectionTitle em {
   font-style: italic;
   font-weight: 400;
   color: var(--pink);
 }
 
-/* =====================
-   LIST
-   ===================== */
+/* ─── LIST ────────────────────────────────────────────────────────────────── */
 .list {
   max-width: 1140px;
   margin: 0 auto;
@@ -71,9 +73,7 @@
   flex-direction: column;
 }
 
-/* =====================
-   ROW — état initial caché
-   ===================== */
+/* ─── ROW ─────────────────────────────────────────────────────────────────── */
 .row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -82,8 +82,6 @@
   padding: 72px 0;
   border-top: 0.5px solid var(--rule);
   position: relative;
-
-  /* État initial : invisible et décalé vers le bas */
   opacity: 0;
   transform: translateY(50px);
   transition:
@@ -91,18 +89,15 @@
     transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
   transition-delay: var(--delay, 0s);
 }
-
-/* Classe ajoutée par l'IntersectionObserver */
 .row.visible {
   opacity: 1;
   transform: translateY(0);
 }
-
 .row:last-child {
   border-bottom: 0.5px solid var(--rule);
 }
 
-/* Zigzag */
+/* Zigzag desktop */
 .row:nth-child(even) .imgCol {
   order: 2;
 }
@@ -110,9 +105,7 @@
   order: 1;
 }
 
-/* =====================
-   WATERMARK NUMBER
-   ===================== */
+/* ─── WATERMARK ───────────────────────────────────────────────────────────── */
 .watermark {
   position: absolute;
   font-family: "Playfair Display", serif;
@@ -128,7 +121,6 @@
   transform: translateY(-50%);
   z-index: 0;
 }
-
 .row:nth-child(odd) .watermark {
   right: 49%;
 }
@@ -136,15 +128,12 @@
   left: 49%;
 }
 
-/* =====================
-   IMAGE COLUMN
-   ===================== */
+/* ─── IMAGE COLUMN ────────────────────────────────────────────────────────── */
 .imgCol {
   position: relative;
   z-index: 1;
   padding-right: 56px;
 }
-
 .row:nth-child(even) .imgCol {
   padding-right: 0;
   padding-left: 56px;
@@ -156,7 +145,6 @@
   aspect-ratio: 3 / 4;
   border-radius: 20px;
 }
-
 .frame::after {
   content: "";
   position: absolute;
@@ -169,7 +157,6 @@
   z-index: 0;
   transition: transform 0.6s ease;
 }
-
 .row:hover .frame::after {
   transform: scale(1.4);
 }
@@ -184,7 +171,6 @@
   position: relative;
   z-index: 1;
 }
-
 .row:hover .img {
   transform: scale(1.05);
 }
@@ -207,7 +193,6 @@
   align-items: center;
   gap: 6px;
 }
-
 .badge::before {
   content: "";
   width: 5px;
@@ -217,9 +202,7 @@
   flex-shrink: 0;
 }
 
-/* =====================
-   TEXT COLUMN
-   ===================== */
+/* ─── TEXT COLUMN ─────────────────────────────────────────────────────────── */
 .txtCol {
   position: relative;
   z-index: 1;
@@ -227,7 +210,6 @@
   display: flex;
   flex-direction: column;
 }
-
 .row:nth-child(even) .txtCol {
   padding-left: 0;
   padding-right: 56px;
@@ -269,7 +251,6 @@
   gap: 10px;
   margin-bottom: 24px;
 }
-
 .row:nth-child(even) .sep {
   flex-direction: row-reverse;
 }
@@ -281,7 +262,6 @@
   border-radius: 2px;
   transition: width 0.5s ease;
 }
-
 .row:hover .sepLine {
   width: 60px;
 }
@@ -302,7 +282,6 @@
   margin-bottom: 36px;
   max-width: 360px;
 }
-
 .row:nth-child(even) .desc {
   margin-left: auto;
 }
@@ -313,7 +292,6 @@
   gap: 24px;
   flex-wrap: wrap;
 }
-
 .row:nth-child(even) .bottom {
   flex-direction: row-reverse;
 }
@@ -344,7 +322,6 @@
     transform 0.25s ease,
     box-shadow 0.3s ease;
 }
-
 .btn:hover {
   background: var(--pink);
   transform: translateY(-2px);
@@ -355,18 +332,230 @@
   font-size: 14px;
   transition: transform 0.3s ease;
 }
-
 .btn:hover .arrow {
   transform: translateX(3px);
 }
 
-/* =====================
-   RESPONSIVE MOBILE
-   ===================== */
-@media (max-width: 860px) {
+/* =========================================================================
+   TABLETTE  (769px – 1024px)
+   iPad mini/Air, Samsung Tab, Surface Go…
+   Principe : on garde le zigzag 2 colonnes mais on serre les gaps et fontes
+   ========================================================================= */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .root {
+    padding: 60px 0 80px;
+  }
+
+  .header {
+    margin-bottom: 52px;
+    padding: 0 28px;
+  }
+
+  .list {
+    padding: 0 28px;
+  }
+
+  .row {
+    padding: 52px 0;
+    gap: 0;
+  }
+
+  /* Réduit le padding interne entre image et texte */
+  .imgCol {
+    padding-right: 36px;
+  }
+  .row:nth-child(even) .imgCol {
+    padding-right: 0;
+    padding-left: 36px;
+  }
+  .txtCol {
+    padding-left: 36px;
+  }
+  .row:nth-child(even) .txtCol {
+    padding-left: 0;
+    padding-right: 36px;
+  }
+
+  .name {
+    font-size: clamp(28px, 3.8vw, 40px);
+  }
+  .nameAccent {
+    font-size: clamp(22px, 3vw, 32px);
+    margin-bottom: 20px;
+  }
+
+  .desc {
+    font-size: 13px;
+    line-height: 1.75;
+    margin-bottom: 28px;
+  }
+
+  .price {
+    font-size: 22px;
+  }
+
+  .btn {
+    padding: 12px 22px;
+    font-size: 9.5px;
+  }
+
+  /* Le watermark serait trop grand sur tablette, on réduit */
+  .watermark {
+    font-size: clamp(70px, 11vw, 120px);
+    -webkit-text-stroke: 1px rgba(232, 107, 140, 0.08);
+  }
+}
+
+/* =========================================================================
+   SMARTPHONE LARGE  (390px – 430px)
+   iPhone 11 Pro Max (414px), 12/13/14/15 PM (430px), Pixel 7 (412px)…
+   Principe : stack vertical, image pleine largeur en haut,
+              texte en dessous aligné à gauche, zigzag supprimé
+   ========================================================================= */
+@media (min-width: 390px) and (max-width: 430px) {
+  .root {
+    padding: 48px 0 64px;
+  }
+
+  .header {
+    margin-bottom: 36px;
+    padding: 0 22px;
+  }
+
+  .sectionTitle {
+    font-size: clamp(32px, 9vw, 42px);
+  }
+
+  .list {
+    padding: 0 22px;
+  }
+
+  /* ── Stack vertical pour toutes les rows ── */
   .row,
   .row:nth-child(even) {
     grid-template-columns: 1fr;
+    padding: 40px 0;
+  }
+
+  /* Annule le zigzag */
+  .row:nth-child(even) .imgCol,
+  .row:nth-child(even) .txtCol {
+    order: unset;
+  }
+
+  /* Image toujours en premier, sans padding */
+  .imgCol,
+  .row:nth-child(even) .imgCol {
+    padding: 0;
+  }
+
+  /* Texte en dessous, aligné gauche */
+  .txtCol,
+  .row:nth-child(even) .txtCol {
+    padding: 28px 0 0;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  /* Réaligne les éléments qui étaient inversés sur pair */
+  .row:nth-child(even) .sep {
+    flex-direction: row;
+  }
+  .row:nth-child(even) .bottom {
+    flex-direction: row;
+  }
+  .row:nth-child(even) .desc {
+    margin-left: 0;
+  }
+
+  /* Image : ratio plus cinématique sur mobile */
+  .frame {
+    aspect-ratio: 4 / 3;
+    border-radius: 16px;
+  }
+  .img {
+    border-radius: 16px;
+  }
+
+  .num {
+    font-size: 10px;
+    margin-bottom: 12px;
+  }
+  .name {
+    font-size: clamp(26px, 7vw, 34px);
+    margin-bottom: 4px;
+  }
+  .nameAccent {
+    font-size: clamp(22px, 5.5vw, 28px);
+    margin-bottom: 18px;
+  }
+  .sep {
+    margin-bottom: 16px;
+  }
+  .desc {
+    font-size: 13px;
+    line-height: 1.75;
+    margin-bottom: 24px;
+    max-width: 100%;
+  }
+  .price {
+    font-size: 22px;
+  }
+
+  .btn {
+    padding: 13px 24px;
+    font-size: 9.5px;
+  }
+
+  /* Badge plus compact */
+  .badge {
+    top: 12px;
+    left: 12px;
+    font-size: 8px;
+    padding: 6px 12px;
+  }
+
+  /* Cache le watermark inutile sur mobile */
+  .watermark {
+    display: none;
+  }
+
+  /* Supprime l'orbe décorative qui déborde sur mobile */
+  .frame::after {
+    display: none;
+  }
+}
+
+/* =========================================================================
+   SMARTPHONE MOYEN  (340px – 389px)
+   Itel A70 (360px), Samsung A13 (360px), Redmi A1 (360px)…
+   ========================================================================= */
+@media (min-width: 340px) and (max-width: 389px) {
+  .root {
+    padding: 40px 0 56px;
+  }
+
+  .header {
+    margin-bottom: 28px;
+    padding: 0 18px;
+  }
+
+  .sectionTitle {
+    font-size: clamp(28px, 8.5vw, 36px);
+  }
+  .eyebrow {
+    font-size: 9px;
+    letter-spacing: 0.25em;
+  }
+
+  .list {
+    padding: 0 18px;
+  }
+
+  .row,
+  .row:nth-child(even) {
+    grid-template-columns: 1fr;
+    padding: 32px 0;
   }
 
   .row:nth-child(even) .imgCol,
@@ -381,7 +570,7 @@
 
   .txtCol,
   .row:nth-child(even) .txtCol {
-    padding: 32px 0 0;
+    padding: 22px 0 0;
     align-items: flex-start;
     text-align: left;
   }
@@ -396,17 +585,189 @@
     margin-left: 0;
   }
 
+  /* Image légèrement moins haute pour laisser de la place au texte */
+  .frame {
+    aspect-ratio: 4 / 3;
+    border-radius: 14px;
+  }
+  .img {
+    border-radius: 14px;
+  }
+
+  .num {
+    font-size: 9.5px;
+    margin-bottom: 10px;
+    letter-spacing: 0.2em;
+  }
+  .name {
+    font-size: clamp(22px, 6.5vw, 30px);
+    margin-bottom: 3px;
+  }
+  .nameAccent {
+    font-size: clamp(18px, 5vw, 24px);
+    margin-bottom: 14px;
+  }
+  .sep {
+    margin-bottom: 12px;
+  }
+  .sepLine {
+    width: 28px;
+  }
+  .desc {
+    font-size: 12.5px;
+    line-height: 1.7;
+    margin-bottom: 20px;
+    max-width: 100%;
+  }
+  .price {
+    font-size: 20px;
+  }
+
+  .btn {
+    padding: 12px 20px;
+    font-size: 9px;
+    letter-spacing: 0.13em;
+  }
+
+  .badge {
+    top: 10px;
+    left: 10px;
+    font-size: 7.5px;
+    padding: 5px 10px;
+  }
+
   .watermark {
     display: none;
   }
+  .frame::after {
+    display: none;
+  }
+}
 
-  .footer {
-    flex-direction: column;
-    gap: 10px;
-    text-align: center;
+/* =========================================================================
+   TRÈS PETITS ÉCRANS  (< 340px)
+   iPhone SE 1G (320px), vieux Android…
+   ========================================================================= */
+@media (max-width: 339px) {
+  .root {
+    padding: 32px 0 48px;
   }
 
-  .footerDot {
+  .header {
+    margin-bottom: 24px;
+    padding: 0 14px;
+  }
+
+  .sectionTitle {
+    font-size: clamp(24px, 8vw, 30px);
+  }
+  .eyebrow {
+    font-size: 8.5px;
+    letter-spacing: 0.2em;
+  }
+
+  .list {
+    padding: 0 14px;
+  }
+
+  .row,
+  .row:nth-child(even) {
+    grid-template-columns: 1fr;
+    padding: 26px 0;
+  }
+
+  .row:nth-child(even) .imgCol,
+  .row:nth-child(even) .txtCol {
+    order: unset;
+  }
+
+  .imgCol,
+  .row:nth-child(even) .imgCol {
+    padding: 0;
+  }
+
+  .txtCol,
+  .row:nth-child(even) .txtCol {
+    padding: 18px 0 0;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .row:nth-child(even) .sep {
+    flex-direction: row;
+  }
+  .row:nth-child(even) .bottom {
+    flex-direction: row;
+  }
+  .row:nth-child(even) .desc {
+    margin-left: 0;
+  }
+
+  .frame {
+    aspect-ratio: 5 / 3;
+    border-radius: 12px;
+  }
+  .img {
+    border-radius: 12px;
+  }
+
+  .num {
+    font-size: 9px;
+    margin-bottom: 8px;
+    letter-spacing: 0.18em;
+  }
+  .name {
+    font-size: clamp(20px, 6vw, 26px);
+    margin-bottom: 2px;
+  }
+  .nameAccent {
+    font-size: clamp(16px, 4.5vw, 21px);
+    margin-bottom: 12px;
+  }
+  .sep {
+    margin-bottom: 10px;
+  }
+  .sepLine {
+    width: 24px;
+  }
+  .desc {
+    font-size: 12px;
+    line-height: 1.65;
+    margin-bottom: 16px;
+    max-width: 100%;
+  }
+  .price {
+    font-size: 18px;
+  }
+
+  .btn {
+    padding: 11px 18px;
+    font-size: 8.5px;
+    letter-spacing: 0.12em;
+  }
+
+  .badge {
+    top: 8px;
+    left: 8px;
+    font-size: 7px;
+    padding: 4px 9px;
+  }
+
+  .watermark {
     display: none;
+  }
+  .frame::after {
+    display: none;
+  }
+
+  /* Sur tout petits écrans, bottom en colonne pour éviter le squeeze */
+  .bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .btn {
+    width: 100%;
+    justify-content: center;
   }
 }
