@@ -6,6 +6,8 @@ import styles from "./ProductsTab.module.css";
 import AddProductModal from "./AddProductModal";
 import EditProductModal from "./EditProductModal";
 
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 export type Product = {
   id: number;
   name: string;
@@ -107,6 +109,32 @@ const I = {
       <line x1="12" y1="17" x2="12.01" y2="17" />
     </svg>
   ),
+  Check: () => (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+    >
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  ),
+  Minus: () => (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+    >
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  ),
 };
 
 function Badge({ b }: { b: string }) {
@@ -127,13 +155,361 @@ function Badge({ b }: { b: string }) {
   );
 }
 
+// ── StockCell — édition inline du stock ───────────────────────────────
+function StockCell({
+  product,
+  toast,
+  refresh,
+}: {
+  product: Product;
+  toast: (m: string, t?: "success" | "error") => void;
+  refresh: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(product.stock_quantity ?? 0);
+  const [saving, setSaving] = useState(false);
+
+  const qty = product.stock_quantity ?? 0;
+
+  // Couleur selon le stock
+  const stockColor = qty === 0 ? "#ef4444" : qty <= 2 ? "#f97316" : "#16a34a";
+  const stockBg = qty === 0 ? "#fff5f5" : qty <= 2 ? "#fff7ed" : "#f0fdf4";
+
+  async function save() {
+    if (value === qty) {
+      setEditing(false);
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await fetch(`${API}/products/${product.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stock_quantity: value }),
+      });
+      if (!res.ok) throw new Error();
+      toast("Stock mis à jour.", "success");
+      refresh();
+    } catch {
+      toast("Erreur lors de la mise à jour du stock.", "error");
+      setValue(qty); // rollback
+    } finally {
+      setSaving(false);
+      setEditing(false);
+    }
+  }
+
+  if (editing) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+        {/* – */}
+        <button
+          onClick={() => setValue((v) => Math.max(0, v - 1))}
+          style={{
+            width: 24,
+            height: 24,
+            border: "1.5px solid #e5e7eb",
+            borderRadius: 6,
+            background: "#fff",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#666",
+          }}
+        >
+          <I.Minus />
+        </button>
+        {/* Input */}
+        <input
+          type="number"
+          value={value}
+          min={0}
+          onChange={(e) => setValue(Math.max(0, Number(e.target.value)))}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") save();
+            if (e.key === "Escape") {
+              setValue(qty);
+              setEditing(false);
+            }
+          }}
+          autoFocus
+          style={{
+            width: 52,
+            padding: "4px 7px",
+            border: "1.5px solid #e91e8c",
+            borderRadius: 7,
+            fontSize: 13,
+            fontWeight: 700,
+            textAlign: "center",
+            outline: "none",
+            fontFamily: "inherit",
+          }}
+        />
+        {/* + */}
+        <button
+          onClick={() => setValue((v) => v + 1)}
+          style={{
+            width: 24,
+            height: 24,
+            border: "1.5px solid #e5e7eb",
+            borderRadius: 6,
+            background: "#fff",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#666",
+          }}
+        >
+          <I.Plus />
+        </button>
+        {/* ✓ */}
+        <button
+          onClick={save}
+          disabled={saving}
+          style={{
+            width: 26,
+            height: 26,
+            border: "none",
+            borderRadius: 6,
+            background: "#e91e8c",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#fff",
+          }}
+        >
+          {saving ? (
+            <span
+              style={{
+                width: 10,
+                height: 10,
+                border: "2px solid #fff",
+                borderTopColor: "transparent",
+                borderRadius: "50%",
+                display: "inline-block",
+                animation: "spin 0.7s linear infinite",
+              }}
+            />
+          ) : (
+            <I.Check />
+          )}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      onClick={() => {
+        setValue(qty);
+        setEditing(true);
+      }}
+      title="Cliquer pour modifier le stock"
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "4px 10px",
+        borderRadius: 8,
+        background: stockBg,
+        cursor: "pointer",
+        border: `1px solid ${stockColor}22`,
+        transition: "opacity 0.15s",
+        userSelect: "none",
+      }}
+    >
+      <span style={{ fontSize: 13, fontWeight: 700, color: stockColor }}>
+        {qty}
+      </span>
+      <span
+        style={{
+          fontSize: 10,
+          color: stockColor,
+          fontWeight: 600,
+          opacity: 0.8,
+        }}
+      >
+        {qty === 0 ? "Épuisé" : qty === 1 ? "pièce" : "pièces"}
+      </span>
+      {/* Petit crayon discret */}
+      <span style={{ opacity: 0.4, display: "flex" }}>
+        <I.Pen />
+      </span>
+    </div>
+  );
+}
+
+// ── StockCellMobile — version compacte pour les cards ─────────────────
+function StockCellMobile({
+  product,
+  toast,
+  refresh,
+}: {
+  product: Product;
+  toast: (m: string, t?: "success" | "error") => void;
+  refresh: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(product.stock_quantity ?? 0);
+  const [saving, setSaving] = useState(false);
+  const qty = product.stock_quantity ?? 0;
+  const stockColor = qty === 0 ? "#ef4444" : qty <= 2 ? "#f97316" : "#16a34a";
+
+  async function save() {
+    if (value === qty) {
+      setEditing(false);
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await fetch(`${API}/products/${product.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stock_quantity: value }),
+      });
+      if (!res.ok) throw new Error();
+      toast("Stock mis à jour.", "success");
+      refresh();
+    } catch {
+      toast("Erreur.", "error");
+      setValue(qty);
+    } finally {
+      setSaving(false);
+      setEditing(false);
+    }
+  }
+
+  if (editing) {
+    return (
+      <div
+        style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 6 }}
+      >
+        <button
+          onClick={() => setValue((v) => Math.max(0, v - 1))}
+          style={{
+            width: 26,
+            height: 26,
+            border: "1.5px solid #e5e7eb",
+            borderRadius: 6,
+            background: "#fff",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <I.Minus />
+        </button>
+        <input
+          type="number"
+          value={value}
+          min={0}
+          onChange={(e) => setValue(Math.max(0, Number(e.target.value)))}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") save();
+          }}
+          autoFocus
+          style={{
+            width: 48,
+            padding: "4px 6px",
+            border: "1.5px solid #e91e8c",
+            borderRadius: 7,
+            fontSize: 13,
+            fontWeight: 700,
+            textAlign: "center",
+            outline: "none",
+            fontFamily: "inherit",
+          }}
+        />
+        <button
+          onClick={() => setValue((v) => v + 1)}
+          style={{
+            width: 26,
+            height: 26,
+            border: "1.5px solid #e5e7eb",
+            borderRadius: 6,
+            background: "#fff",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <I.Plus />
+        </button>
+        <button
+          onClick={save}
+          disabled={saving}
+          style={{
+            width: 28,
+            height: 28,
+            border: "none",
+            borderRadius: 7,
+            background: "#e91e8c",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#fff",
+          }}
+        >
+          {saving ? (
+            <span
+              style={{
+                width: 10,
+                height: 10,
+                border: "2px solid #fff",
+                borderTopColor: "transparent",
+                borderRadius: "50%",
+                display: "inline-block",
+                animation: "spin 0.7s linear infinite",
+              }}
+            />
+          ) : (
+            <I.Check />
+          )}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      onClick={() => {
+        setValue(qty);
+        setEditing(true);
+      }}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 5,
+        marginTop: 6,
+        padding: "3px 9px",
+        borderRadius: 7,
+        background: qty === 0 ? "#fff5f5" : qty <= 2 ? "#fff7ed" : "#f0fdf4",
+        cursor: "pointer",
+        border: `1px solid ${stockColor}22`,
+      }}
+    >
+      <span style={{ fontSize: 12, fontWeight: 700, color: stockColor }}>
+        Stock : {qty}
+      </span>
+      <span style={{ opacity: 0.4, display: "flex" }}>
+        <I.Pen />
+      </span>
+    </div>
+  );
+}
+
 export default function ProductsTab({
   products,
   refresh,
   toast,
   settings,
 }: ProductsTabProps) {
-  const [isSmallMobile, setIsSmallMobile] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
@@ -141,7 +517,7 @@ export default function ProductsTab({
   const [q, setQ] = useState("");
 
   const filt = products.filter(
-    (p: Product) =>
+    (p) =>
       p.name.toLowerCase().includes(q.toLowerCase()) ||
       p.category.toLowerCase().includes(q.toLowerCase()),
   );
@@ -150,10 +526,9 @@ export default function ProductsTab({
     if (!productToDelete) return;
     setIsDeleting(true);
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/products/${productToDelete.id}`,
-        { method: "DELETE" },
-      );
+      const res = await fetch(`${API}/products/${productToDelete.id}`, {
+        method: "DELETE",
+      });
       if (res.ok) {
         toast("Création supprimée avec succès.", "success");
         refresh();
@@ -162,7 +537,7 @@ export default function ProductsTab({
         toast(`Erreur : ${err.detail || "Impossible de supprimer."}`, "error");
       }
     } catch (err) {
-      console.error("Détail de l'erreur :", err);
+      console.error(err);
       toast("Erreur de connexion au serveur.", "error");
     } finally {
       setIsDeleting(false);
@@ -203,9 +578,7 @@ export default function ProductsTab({
         </button>
       </div>
 
-      {/* ══════════════════════════════════════════
-          TABLEAU — visible uniquement sur desktop
-      ══════════════════════════════════════════ */}
+      {/* ══ TABLEAU desktop ══ */}
       <div className={`${dashboardStyles.tableCard} ${styles.tableWrapper}`}>
         <table className={dashboardStyles.table}>
           <thead>
@@ -220,6 +593,7 @@ export default function ProductsTab({
                 "Catégorie",
                 "Couleurs",
                 "Prix",
+                "Stock",
                 "Statut",
                 "Actions",
               ].map((h, i) => (
@@ -230,7 +604,7 @@ export default function ProductsTab({
             </tr>
           </thead>
           <tbody>
-            {filt.map((p: Product, i: number) => (
+            {filt.map((p, i) => (
               <tr
                 key={p.id}
                 className={dashboardStyles.tr}
@@ -238,6 +612,7 @@ export default function ProductsTab({
                   animation: `fadeUp .35s var(--ease) ${i * 0.04}s both`,
                 }}
               >
+                {/* Création */}
                 <td className={dashboardStyles.td}>
                   <div
                     style={{
@@ -281,6 +656,8 @@ export default function ProductsTab({
                     </div>
                   </div>
                 </td>
+
+                {/* Catégorie */}
                 <td className={dashboardStyles.td}>
                   <span
                     style={{
@@ -296,12 +673,14 @@ export default function ProductsTab({
                     {p.category}
                   </span>
                 </td>
+
+                {/* Couleurs */}
                 <td className={dashboardStyles.td}>
                   <div
                     style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}
                   >
                     {p.colors &&
-                      p.colors.split(",").map((c: string) => (
+                      p.colors.split(",").map((c) => (
                         <span
                           key={c}
                           style={{
@@ -319,6 +698,8 @@ export default function ProductsTab({
                       ))}
                   </div>
                 </td>
+
+                {/* Prix */}
                 <td
                   className={dashboardStyles.td}
                   style={{ whiteSpace: "nowrap" }}
@@ -344,9 +725,18 @@ export default function ProductsTab({
                     Ar
                   </span>
                 </td>
+
+                {/* ── STOCK ── */}
+                <td className={dashboardStyles.td}>
+                  <StockCell product={p} toast={toast} refresh={refresh} />
+                </td>
+
+                {/* Statut */}
                 <td className={dashboardStyles.td}>
                   <Badge b={p.badge} />
                 </td>
+
+                {/* Actions */}
                 <td className={dashboardStyles.td}>
                   <div style={{ display: "flex", gap: "5px" }}>
                     <button
@@ -369,7 +759,7 @@ export default function ProductsTab({
             ))}
             {!filt.length && (
               <tr>
-                <td colSpan={6} className={styles.emptyState}>
+                <td colSpan={7} className={styles.emptyState}>
                   Aucun résultat trouvé
                 </td>
               </tr>
@@ -378,20 +768,17 @@ export default function ProductsTab({
         </table>
       </div>
 
-      {/* ══════════════════════════════════════════
-          CARDS — visible sur mobile & tablette
-      ══════════════════════════════════════════ */}
+      {/* ══ CARDS mobile ══ */}
       <div className={styles.cardGrid}>
         {filt.length === 0 && (
           <div className={styles.emptyState}>Aucun résultat trouvé</div>
         )}
-        {filt.map((p: Product, i: number) => (
+        {filt.map((p, i) => (
           <div
             key={p.id}
             className={styles.productCard}
             style={{ animationDelay: `${i * 0.05}s` }}
           >
-            {/* Image */}
             <div className={styles.cardImage}>
               <Image
                 src={p.image}
@@ -401,22 +788,17 @@ export default function ProductsTab({
                 style={{ objectFit: "cover" }}
               />
             </div>
-
-            {/* Contenu */}
             <div className={styles.cardBody}>
               <p className={styles.cardName}>{p.name}</p>
-
               <div className={styles.cardMeta}>
                 <span className={styles.cardGenre}>{p.genre}</span>
                 <span className={styles.cardCategory}>{p.category}</span>
                 <Badge b={p.badge} />
               </div>
-
               <p className={styles.cardPrice}>
                 {p.price_ar.toLocaleString("fr-FR")}
                 <span className={styles.cardPriceSub}>Ar</span>
               </p>
-
               {p.colors && (
                 <div className={styles.cardColors}>
                   {p.colors
@@ -434,6 +816,8 @@ export default function ProductsTab({
                   )}
                 </div>
               )}
+              {/* Stock mobile */}
+              <StockCellMobile product={p} toast={toast} refresh={refresh} />
 
               <div className={styles.cardActions}>
                 <button
