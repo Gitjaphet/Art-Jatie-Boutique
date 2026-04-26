@@ -29,9 +29,9 @@ type CheckoutStep = "form" | "mvola_pending" | "success";
 // ─────────────────────────────────────────────────────────────────────────────
 // ⚙️  À personnaliser : numéros de la boutique
 // ─────────────────────────────────────────────────────────────────────────────
-const BOUTIQUE_MVOLA = "034 XX XX XXX"; // ← ton vrai numéro MVola
-const BOUTIQUE_OM = "032 XX XX XXX"; // ← ton vrai numéro Orange Money
-const BOUTIQUE_NAME = "Art Jatie";
+const BOUTIQUE_MVOLA = "034 30 513 60"; // ← ton vrai numéro MVola
+const BOUTIQUE_OM = "032 02 251 70"; // ← ton vrai numéro Orange Money
+const BOUTIQUE_NAME = "Noeline";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Composant principal
@@ -359,7 +359,7 @@ function CheckoutContent() {
                 className={styles.input}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Ex: Marie Rakoto"
+                placeholder="Ex: Japhet Valeureux"
               />
             </div>
             <div className={styles.field}>
@@ -369,7 +369,7 @@ function CheckoutContent() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="marie@example.com"
+                placeholder="artjatie@example.com"
               />
             </div>
             <div className={`${styles.field} ${styles.fullWidth}`}>
@@ -378,7 +378,7 @@ function CheckoutContent() {
                 className={styles.input}
                 value={whatsapp}
                 onChange={(e) => setWhatsapp(e.target.value)}
-                placeholder="032 XX XX XXX"
+                placeholder="032 XX XXX XX"
               />
             </div>
             <div className={`${styles.field} ${styles.fullWidth}`}>
@@ -527,7 +527,7 @@ function CheckoutContent() {
                     className={styles.input}
                     value={mvolaPhone}
                     onChange={(e) => setMvolaPhone(e.target.value)}
-                    placeholder="034 XX XX XXX"
+                    placeholder="034 XX XXX XX"
                   />
                 </div>
                 <div className={`${styles.field} ${styles.fullWidth}`}>
@@ -612,7 +612,7 @@ function CheckoutContent() {
                     className={styles.input}
                     value={omPhone}
                     onChange={(e) => setOmPhone(e.target.value)}
-                    placeholder="032 XX XX XXX"
+                    placeholder="032 XX XXX XX"
                   />
                 </div>
                 <div className={`${styles.field} ${styles.fullWidth}`}>
