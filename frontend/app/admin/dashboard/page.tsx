@@ -13,6 +13,7 @@ import PosTab from "../../../components/dashboard/PosTab";
 import UsersTab from "../../../components/dashboard/UsersTab";
 import OrdersTab from "@/components/dashboard/OrdersTab";
 import CartOrdersTab from "@/components/dashboard/CartOrdersTab";
+import ClientsTab from "../../../components/dashboard/ClientsTab";
 
 type SettingsData = {
   exchange_rate_eur?: string | number;
@@ -183,6 +184,13 @@ const I = {
       <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
     </svg>
   ),
+  ContactBook: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+      <circle cx="12" cy="8" r="2" />
+      <path d="M15 13a3 3 0 1 0-6 0" />
+    </svg>
+  ),
 };
 
 type ToastProps = { message: string; type: string; onDone: () => void };
@@ -232,6 +240,7 @@ type Tab =
   | "planning"
   | "orders"
   | "cart_orders"
+  | "clients"
   | "users"
   | "settings";
 
@@ -255,6 +264,7 @@ const TABS: {
     shortLabel: "Planning",
     Icon: I.Calendar,
   },
+  { id: "clients", label: "Base Clients", shortLabel: "Clients", Icon: I.ContactBook },
   { id: "users", label: "Utilisateurs", shortLabel: "Users", Icon: I.Users },
   {
     id: "orders",
@@ -276,6 +286,7 @@ const TITLES: Record<Tab, string> = {
   pos: "Caisse (Point de vente)",
   products: "Gestion du catalogue",
   planning: "Planning des commandes",
+  clients: "CRM - Base Clients",
   users: "Gestion des utilisateurs",
   orders: "Commandes sur mesure",
   cart_orders: "Commandes panier",
@@ -532,7 +543,7 @@ export default function AdminDashboard() {
         </header>
 
         <div ref={contentRef} className={styles.content}>
-          {activeTab === "overview" && <OverviewTab products={products} />}
+          {activeTab === "overview" && <OverviewTab products={products} settings={settings} />}
           {activeTab === "pos" && <PosTab products={products} toast={toast} />}
           {activeTab === "products" && (
             <ProductsTab
@@ -546,7 +557,8 @@ export default function AdminDashboard() {
           {activeTab === "users" && <UsersTab toast={toast} />}
           {activeTab === "orders" && <OrdersTab toast={toast} />}
           {activeTab === "cart_orders" && <CartOrdersTab toast={toast} />}
-          {activeTab === "settings" && (
+          {activeTab === "clients" && <ClientsTab toast={toast} />}
+                    {activeTab === "settings" && (
             <SettingsTab
               initialSettings={settings}
               refreshSettings={fetchSettings}

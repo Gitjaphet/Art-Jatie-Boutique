@@ -10,7 +10,7 @@ import CartBadge from "./CartBadge";
 
 const NAV_LINKS = [
   { href: "/boutique", label: "Boutique" },
-  { href: "/commande", label: "Sur Commande" },
+  { href: "/commande", label: "Sur Mesure" },
   { href: "/histoire", label: "À propos" },
   { href: "/galerie", label: "Galerie" },
   { href: "/contact", label: "Contactez-nous" },

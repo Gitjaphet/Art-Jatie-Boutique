@@ -5,10 +5,35 @@ import Link from "next/link";
 import styles from "./CommandePage.module.css";
 
 import BoutiqueHeader from "../../components/Boutique/BoutiqueHeader";
-import SidebarFilters from "../../components/Boutique/SidebarFilters";
+import SidebarFilters, { SizeItem } from "../../components/Boutique/SidebarFilters";
 import ProductCard from "../../components/Boutique/ProductCard";
 import { getProducts, getSettings } from "../../lib/api";
 import type { Product } from "../boutique/page";
+
+
+
+
+function parseSizes(raw?: string): SizeItem[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      return parsed.map((item: any) => ({
+        nom: item.nom ?? item.name ?? "",
+        // ✅ Fallback sur ["Tous"] si genres est undefined/null/pas un tableau
+        genres: Array.isArray(item.genres) && item.genres.length > 0
+          ? item.genres
+          : item.genre
+          ? [item.genre]
+          : ["Tous"],
+      }));
+    }
+  } catch {
+    // Ancien format CSV simple
+    return raw.split(",").map(s => ({ nom: s.trim(), genres: ["Tous"] }));
+  }
+  return [];
+}
 
 // ─── Conversion API → Product (identique à boutique/page.tsx) ─────────────────
 function mapApiProduct(
@@ -80,7 +105,8 @@ export default function CommandePage() {
   const [loading, setLoading] = useState(true);
 
   const [availableColors, setAvailableColors] = useState<string[]>([]);
-  const [availableSizes, setAvailableSizes] = useState<string[]>([]);
+  const [availableSizes, setAvailableSizes] = useState<SizeItem[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<string>("TENUES, MAILLOTS, ACCESSOIRES");
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -103,12 +129,11 @@ export default function CommandePage() {
           );
         }
         if (settings.available_sizes) {
-          setAvailableSizes(
-            settings.available_sizes
-              .split(",")
-              .map((s: string) => s.trim())
-              .filter(Boolean),
-          );
+          setAvailableSizes(parseSizes(settings.available_sizes));
+        }
+
+        if (settings.available_categories) {
+          setAvailableCategories(settings.available_categories);
         }
 
         setAllProducts(
@@ -186,6 +211,7 @@ export default function CommandePage() {
           titre="SUR COMMANDE"
           activeCategory={filters.category}
           onCategoryChange={(cat) => updateFilter("category", cat)}
+          settingsCategories={availableCategories}
         />
 
         <nav className={styles.breadcrumbs}>

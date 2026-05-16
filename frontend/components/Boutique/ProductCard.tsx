@@ -169,6 +169,27 @@ export default function ProductCard({
                   ))}
                 </div>
               )}
+              {/* ✅ Stock affiché sous les tailles */}
+              {!product.on_order && product.stock_quantity !== undefined && (
+                <span
+                  className={styles.stockBadge}
+                  style={{
+                    color: product.stock_quantity === 0
+                      ? "#ef4444"
+                      : product.stock_quantity <= 2
+                      ? "#f97316"
+                      : "#16a34a",
+                    fontSize: 11,
+                    fontWeight: 600,
+                  }}
+                >
+                  {product.stock_quantity === 0
+                    ? "Épuisé"
+                    : product.stock_quantity === 1
+                    ? "● 1 pièce restante"
+                    : `● ${product.stock_quantity} en stock`}
+                </span>
+              )}
             </div>
           </div>
 

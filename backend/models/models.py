@@ -1,5 +1,5 @@
-from sqlmodel import SQLModel, Field
-from typing import Optional
+from sqlmodel import SQLModel, Field, Relationship
+from typing import List, Optional
 from datetime import datetime
 
 # --- CONFIGURATION (Taux de change) ---
@@ -9,7 +9,21 @@ class Settings(SQLModel, table=True):
     available_colors: str = Field(default="Beige,Blanc,Noir,Rose,Rouge,Bleu,Marron,Kaki,Multicolore")
     available_sizes: str = Field(default="XS,S,M,L,XL,Sur mesure,Unique")
     available_categories: str = Field(default="TENUES,ACCESSOIRES,MAISON")
+    available_genres: str = Field(default="Femme,Homme,Enfant,Unisexe")
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+# --- TABLE DE LIAISON ---
+class ProductColorLink(SQLModel, table=True):
+    product_id: Optional[int] = Field(default=None, foreign_key="product.id", primary_key=True)
+    color_id: Optional[int] = Field(default=None, foreign_key="color.id", primary_key=True)
+
+# --- TABLE COULEUR ---
+class Color(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(unique=True, index=True) 
+    hex_code: str = Field(default="#CCCCCC") # Ce code sera rempli automatiquement par le front
+    
+    products: List["Product"] = Relationship(back_populates="colors_list", link_model=ProductColorLink)
 
 
 # --- PRODUITS ---
@@ -23,6 +37,8 @@ class Product(SQLModel, table=True):
     old_price_ar: Optional[int] = None
     image: str
     colors: str
+    #  (on l'appelle colors_list pour ne pas avoir de conflit de nom)
+    colors_list: List[Color] = Relationship(back_populates="products", link_model=ProductColorLink)
     sizes: str
     badge: str = Field(default="Nouveau")
     is_hot: bool = Field(default=False)
@@ -37,6 +53,22 @@ class User(SQLModel, table=True):
     email: str = Field(unique=True, index=True)
     hashed_password: str
     is_admin: bool = Field(default=True)
+
+
+# --- CLIENTS (CRM) ---
+class Client(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    email: Optional[str] = None
+    whatsapp: str = Field(unique=True, index=True) # WhatsApp sera l'identifiant unique !
+    total_spent: int = Field(default=0) # Pour savoir combien il a dépensé au total
+    total_orders: int = Field(default=0) # Combien de commandes il a fait
+    favorite_categories: Optional[str] = Field(default="")
+    favorite_colors: Optional[str] = Field(default="")
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    # Relation avec les commandes
+    orders: List["Order"] = Relationship(back_populates="client")
 
 
 # --- COMMANDES PANIER (depuis le checkout) ---
@@ -99,3 +131,8 @@ class Order(SQLModel, table=True):
     progress: Optional[int] = Field(default=0)   # ← NOUVEAU
 
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+    # ── RELATION CRM ───────────────────────────────────────────────────────
+    client_id: Optional[int] = Field(default=None, foreign_key="client.id")
+    client: Optional[Client] = Relationship(back_populates="orders")

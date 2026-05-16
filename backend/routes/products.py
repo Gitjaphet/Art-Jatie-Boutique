@@ -4,8 +4,8 @@ from typing import List, Optional
 import os
 import uuid
 from supabase import create_client, Client
-
-from models.models import Product, Settings
+import json
+from models.models import Product, Settings, Color, ProductColorLink
 from database import get_session
 
 router = APIRouter()
@@ -33,8 +33,12 @@ def get_products(
     settings = session.exec(select(Settings)).first()
     rate = settings.exchange_rate_eur if settings else 4500.0
 
+    # 2. Construction de la requête avec "selectinload" pour charger les couleurs
+    # On utilise selectinload pour éviter le problème du "N+1 queries" (plus performant)
+    from sqlalchemy.orm import selectinload
+
     # 2. On récupère les produits
-    statement = select(Product)
+    statement = select(Product).options(selectinload(Product.colors_list))
     
     if on_order is not None:
         statement = statement.where(Product.on_order == on_order)
@@ -50,6 +54,16 @@ def get_products(
     for p in products:
         p_dict = p.model_dump() # Convertit l'objet SQL en dictionnaire classique
         p_dict["price_eur"] = round(p.price_ar / rate, 2)
+
+
+        # Injection des détails des couleurs au lieu de juste le texte
+        # Cela transformera colors_list en une liste d'objets JSON exploitables
+        p_dict["full_colors"] = [
+            {"id": c.id, "name": c.name, "hex_code": c.hex_code} 
+            for c in p.colors_list
+        ]
+
+
         result.append(p_dict)
         
     return result
@@ -63,6 +77,7 @@ async def create_product(
     category: str = Form(...),
     price_ar: int = Form(...),
     colors: str = Form(""),
+    color_ids: Optional[str] = Form(None), # Nouveau : "[1, 4, 12]"
     sizes: str = Form(""),
     badge: str = Form("Nouveau"),
     is_hot: bool = Form(False),
@@ -88,8 +103,15 @@ async def create_product(
             file_options={"content-type": image.content_type}
         )
         
-        # 3. Récupérer l'URL publique
         public_url = supabase.storage.from_("products").get_public_url(unique_filename)
+
+        # 2. Préparation des objets "Color" (La partie Many-to-Many)
+        actual_colors = []
+        if color_ids:
+            # On transforme la chaîne "[1,2]" en vraie liste Python [1,2]
+            ids = json.loads(color_ids)
+            # On va chercher les objets Color correspondants en base
+            actual_colors = session.exec(select(Color).where(Color.id.in_(ids))).all()
         
         # 4. Création de l'objet Produit
         new_product = Product(
@@ -99,6 +121,7 @@ async def create_product(
             category=category,
             price_ar=price_ar,
             colors=colors,
+            colors_list=actual_colors, # On remplit la nouvelle relation Many-to-Many
             sizes=sizes,
             badge=badge,
             is_hot=is_hot,
@@ -107,6 +130,10 @@ async def create_product(
             image=public_url
         )
         
+
+        if new_product.stock_quantity == 0:
+            new_product.badge = "Sur commande"
+            new_product.on_order = True
         # 5. Sauvegarde
         session.add(new_product)
         session.commit()
@@ -115,6 +142,7 @@ async def create_product(
         return new_product
         
     except Exception as e:
+        session.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -163,6 +191,7 @@ async def update_product(
     category: str = Form(...),
     price_ar: int = Form(...),
     colors: str = Form(""),
+    color_ids: Optional[str] = Form(None), # Ajoute ceci
     sizes: str = Form(""),
     badge: str = Form("Nouveau"),
     is_hot: bool = Form(False),
@@ -189,6 +218,13 @@ async def update_product(
     product.on_order = on_order
     product.stock_quantity = stock_quantity
 
+
+    # Mise à jour de la relation Many-to-Many
+    if color_ids is not None:
+        ids = json.loads(color_ids)
+        actual_colors = session.exec(select(Color).where(Color.id.in_(ids))).all()
+        product.colors_list = actual_colors # Magie de l'ORM : il gère la table de liaison seul
+
     # 2. Si l'utilisateur a envoyé une nouvelle image, on l'upload sur Supabase
     if image and image.filename:
         if not supabase:
@@ -210,6 +246,11 @@ async def update_product(
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Erreur d'upload : {str(e)}")
 
+
+    if product.stock_quantity == 0:
+        product.badge = "Sur commande"
+        product.on_order = True
+
     # 3. Sauvegarde en DB
     session.add(product)
     session.commit()
@@ -228,3 +269,16 @@ def delete_product(product_id: int, session: Session = Depends(get_session)):
     session.delete(product)
     session.commit()
     return {"message": "Produit supprimé avec succès"}
+
+@router.post("/fix-zero-stock")
+def fix_zero_stock(session: Session = Depends(get_session)):
+    products = session.exec(select(Product)).all()
+    count = 0
+    for p in products:
+        if p.stock_quantity == 0:
+            p.badge = "Sur commande"
+            p.on_order = True
+            session.add(p)
+            count += 1
+    session.commit()
+    return {"message": f"{count} produits mis à jour"}

@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 from supabase import create_client
 
-from models.models import Order, Product
+from models.models import Order, Product, Client
 from database import get_session
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
@@ -130,7 +130,11 @@ def create_order(body: CreateOrderRequest, session: Session = Depends(get_sessio
         if not body.om_account_name:
             raise HTTPException(status_code=422, detail="Le nom du compte Orange Money est requis.")
 
+
+    
+
     order = Order(
+        client_id=None,
         client_name=body.client_name,
         client_email=body.client_email,
         client_whatsapp=body.client_whatsapp,
@@ -203,6 +207,33 @@ def update_status(order_id: int, status: str, session: Session = Depends(get_ses
             except Exception:
                 pass
 
+        # 2. 👥 LOGIQUE CRM (Création ou mise à jour du client)
+        client = session.exec(select(Client).where(Client.whatsapp == order.client_whatsapp)).first()
+        
+        if not client:
+            # Création du client s'il n'existe pas encore
+            client = Client(
+                name=order.client_name,
+                email=order.client_email,
+                whatsapp=order.client_whatsapp,
+                total_spent=order.total_ar or 0,
+                total_orders=1
+            )
+            session.add(client)
+            session.flush() # Pour générer l'ID du client immédiatement
+        else:
+            # Si le client existe déjà, on ajoute cette nouvelle commande à ses stats
+            client.total_spent += (order.total_ar or 0)
+            client.total_orders += 1
+            if order.client_name:
+                client.name = order.client_name
+            if order.client_email:
+                client.email = order.client_email
+            session.add(client)
+
+        # On lie enfin la commande validée à la fiche du client !
+        order.client_id = client.id
+
     session.commit()
     session.refresh(order)
     return order
@@ -272,3 +303,55 @@ async def upload_proof(file: UploadFile = File(...)):
         return {"url": url}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Upload échoué: {str(e)}")
+
+
+@router.post("/migrate-clients")
+def migrate_existing_clients(session: Session = Depends(get_session)):
+    """
+    Route temporaire pour transformer les anciennes commandes en fiches Clients CRM.
+    """
+    # 1. On récupère toutes les commandes qui ne sont pas encore liées à un client
+    # (Si vous venez de créer la colonne, elles ont toutes client_id = None)
+    orders = session.exec(select(Order).where(Order.client_id == None)).all()
+    
+    clients_crees = 0
+    commandes_mises_a_jour = 0
+    
+    for order in orders:
+        if not order.client_whatsapp:
+            continue  # On ignore les commandes sans numéro (s'il y en a)
+            
+        # 2. Chercher si on a déjà créé ce client pendant la boucle
+        client = session.exec(select(Client).where(Client.whatsapp == order.client_whatsapp)).first()
+        
+        if not client:
+            # 3. Création du nouveau client
+            client = Client(
+                name=order.client_name,
+                email=order.client_email,
+                whatsapp=order.client_whatsapp,
+                total_spent=0,
+                total_orders=0
+            )
+            session.add(client)
+            session.commit()
+            session.refresh(client)
+            clients_crees += 1
+            
+        # 4. Mise à jour des statistiques du client
+        client.total_spent += (order.total_ar or 0)
+        client.total_orders += 1
+        session.add(client)
+        
+        # 5. On lie l'ancienne commande au client
+        order.client_id = client.id
+        session.add(order)
+        commandes_mises_a_jour += 1
+        
+        session.commit() # On sauvegarde les modifications
+        
+    return {
+        "message": "Migration CRM terminée avec succès !",
+        "clients_crees": clients_crees,
+        "commandes_mises_a_jour": commandes_mises_a_jour
+    }

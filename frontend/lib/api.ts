@@ -19,6 +19,7 @@ interface ApiProduct {
   colors?: string; // stocké sous forme "Rouge,Bleu"
   sizes?: string; // stocké sous forme "S,M,L"
   description?: string; // au cas où tu as une description
+  stock_quantity?: number;
 }
 
 export async function getProducts(onOrder?: boolean) {
@@ -54,6 +55,7 @@ export async function getProducts(onOrder?: boolean) {
     // Transformation des chaînes CSV en tableaux
     colorsArray: p.colors ? p.colors.split(",").map((c) => c.trim()) : [],
     sizesArray: p.sizes ? p.sizes.split(",").map((s) => s.trim()) : [],
+    stock_quantity: p.stock_quantity ?? 0,
   }));
 }
 

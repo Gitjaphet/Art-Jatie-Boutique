@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from database import create_db_and_tables
-from routes import products, settings, auth, users, orders, mvola  # ✅ mvola ajouté
+from routes import products, settings, auth, users, orders, mvola, colors, clients  # ✅ mvola ajouté
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,4 +34,6 @@ app.include_router(settings.router, prefix="/settings", tags=["Réglages"])
 app.include_router(auth.router,     prefix="/auth",     tags=["Authentification"])
 app.include_router(users.router,    prefix="/users",    tags=["Utilisateurs"])
 app.include_router(orders.router,   prefix="/orders",   tags=["Commandes"])
-app.include_router(mvola.router,    prefix="/mvola",    tags=["MVola"])  # ✅
+app.include_router(clients.router,  prefix="/clients",  tags=["Clients CRM"])
+app.include_router(mvola.router,    prefix="/mvola",    tags=["MVola"])  
+app.include_router(colors.router,   prefix="/colors",   tags=["Couleurs"])

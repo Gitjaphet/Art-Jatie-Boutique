@@ -4,3 +4,4 @@ frontend/.next/
 .env*
 backend/.env
 .venv/
+*.zip

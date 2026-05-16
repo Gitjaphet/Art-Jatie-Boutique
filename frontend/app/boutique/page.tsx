@@ -3,9 +3,8 @@
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import styles from "./BoutiquePage.module.css";
-
+import SidebarFilters, { SizeItem } from "../../components/Boutique/SidebarFilters";
 import BoutiqueHeader from "../../components/Boutique/BoutiqueHeader";
-import SidebarFilters from "../../components/Boutique/SidebarFilters";
 import ProductCard from "../../components/Boutique/ProductCard";
 import { getProducts, getSettings } from "../../lib/api";
 
@@ -26,8 +25,31 @@ export type Product = {
   badge?: string;
   is_hot?: boolean;
   on_order?: boolean;
+  stock_quantity?: number;
 };
 
+
+function parseSizes(raw?: string): SizeItem[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      return parsed.map((item: any) => ({
+        nom: item.nom ?? item.name ?? "",
+        // ✅ Fallback sur ["Tous"] si genres est undefined/null/pas un tableau
+        genres: Array.isArray(item.genres) && item.genres.length > 0
+          ? item.genres
+          : item.genre
+          ? [item.genre]
+          : ["Tous"],
+      }));
+    }
+  } catch {
+    // Ancien format CSV simple
+    return raw.split(",").map(s => ({ nom: s.trim(), genres: ["Tous"] }));
+  }
+  return [];
+}
 // ─── Conversion API → Product ─────────────────────────────────────────────────
 function mapApiProduct(
   raw: Record<string, unknown>,
@@ -35,6 +57,7 @@ function mapApiProduct(
   exchangeRate = 4800,
 ): Product {
   // getProducts() retourne déjà `price` comme "89 000 Ar"
+  console.log("stock_quantity reçu :", raw.stock_quantity, raw);
   const priceArDisplay = (raw.price as string) ?? "";
   const priceAr = Number(priceArDisplay.replace(/[^0-9]/g, "")) || 0;
   const priceEur = Math.round(priceAr / exchangeRate);
@@ -73,6 +96,7 @@ function mapApiProduct(
     badge: raw.badge ? String(raw.badge) : undefined,
     is_hot: Boolean(raw.hot),
     on_order: onOrder,
+    stock_quantity: Number(raw.stock_quantity) || 0,
   };
 }
 
@@ -104,7 +128,9 @@ export default function BoutiquePage() {
 
   // ── Settings dynamiques ──
   const [availableColors, setAvailableColors] = useState<string[]>([]);
-  const [availableSizes, setAvailableSizes] = useState<string[]>([]);
+  const [availableSizes, setAvailableSizes] = useState<SizeItem[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<string>("TENUES, MAILLOTS, ACCESSOIRES");
+  const [availableGenres, setAvailableGenres] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -130,12 +156,17 @@ export default function BoutiquePage() {
           );
         }
         if (settings.available_sizes) {
-          setAvailableSizes(
-            settings.available_sizes
-              .split(",")
-              .map((s: string) => s.trim())
-              .filter(Boolean),
+          setAvailableSizes(parseSizes(settings.available_sizes));
+        }
+
+        if (settings.available_genres) {
+          setAvailableGenres(
+            settings.available_genres.split(",").map((g: string) => g.trim()).filter(Boolean)
           );
+        }
+
+        if (settings.available_categories) {
+          setAvailableCategories(settings.available_categories);
         }
 
         const mapped = [
@@ -223,6 +254,7 @@ export default function BoutiquePage() {
         <BoutiqueHeader
           activeCategory={filters.category}
           onCategoryChange={(cat) => updateFilter("category", cat)}
+          settingsCategories={availableCategories}
         />
 
         <nav className={styles.breadcrumbs}>
@@ -245,6 +277,7 @@ export default function BoutiquePage() {
               // ↓ Nouvelles props dynamiques
               availableColors={availableColors}
               availableSizes={availableSizes}
+              availableGenres={availableGenres}
             />
           </aside>
 
