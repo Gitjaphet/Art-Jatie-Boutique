@@ -31,6 +31,7 @@ class CartItemSchema(BaseModel):
     quantity: int
     image: str
     category: Optional[str] = None
+    discount: Optional[int] = 0
 
 
 class CreateOrderRequest(BaseModel):
@@ -66,6 +67,17 @@ class CreateOrderRequest(BaseModel):
     product_price_ar: Optional[int] = None
     selected_size: Optional[str] = None
     selected_color: Optional[str] = None
+
+
+class PosOrderRequest(BaseModel):
+    client_name: str
+    client_whatsapp: str
+    note: Optional[str] = None
+    cart_items: List[CartItemSchema]
+    total_ar: int
+    payment_method: str
+    amount_tendered: int
+    change: int
 
 
 class PlanningStatusUpdate(BaseModel):
@@ -355,3 +367,71 @@ def migrate_existing_clients(session: Session = Depends(get_session)):
         "clients_crees": clients_crees,
         "commandes_mises_a_jour": commandes_mises_a_jour
     }
+
+
+
+@router.post("/pos")
+def create_pos_order(body: PosOrderRequest, session: Session = Depends(get_session)):
+    """
+    Route dédiée au Point de Vente (POS).
+    Valide la commande, déduit le stock, gère la monnaie et met à jour le CRM.
+    """
+    # 1. 👥 GESTION DU CRM (Client)
+    client = session.exec(select(Client).where(Client.whatsapp == body.client_whatsapp)).first()
+    
+    if not client:
+        # Création du nouveau client
+        client = Client(
+            name=body.client_name,
+            whatsapp=body.client_whatsapp,
+            total_spent=0,
+            total_orders=0
+        )
+        session.add(client)
+        session.flush() # Pour générer l'ID du client immédiatement
+        
+    # Mise à jour des stats du client
+    client.total_spent += body.total_ar
+    client.total_orders += 1
+    # On met à jour le nom si on a plus d'infos qu'avant
+    if body.client_name and client.name == "Client de passage":
+        client.name = body.client_name
+        
+    session.add(client)
+
+    # 2. 📦 DÉDUCTION DU STOCK
+    items = [item.model_dump() for item in body.cart_items]
+    for item in items:
+        product = session.get(Product, item.get("id"))
+        if product and product.stock_quantity is not None:
+            # On déduit la quantité achetée
+            product.stock_quantity = max(0, product.stock_quantity - item.get("quantity", 1))
+            session.add(product)
+
+    # 3. 🧾 CRÉATION DE LA COMMANDE POS
+    order = Order(
+        client_id=client.id,
+        client_name=body.client_name,
+        client_whatsapp=body.client_whatsapp,
+        client_message=body.note,
+        client_email="",
+        cart_items_json=json.dumps(items),
+        delivery_zone="Boutique (POS)",
+        delivery_cost=0,
+        delivery_label="Sur place",
+        subtotal_ar=body.total_ar,
+        total_ar=body.total_ar,
+        payment_method=body.payment_method,
+        status="Livrée", # Une vente en caisse est terminée immédiatement
+        
+        # Les nouveaux champs financiers !
+        is_pos=True,
+        amount_tendered=body.amount_tendered,
+        change_ar=body.change
+    )
+    
+    session.add(order)
+    session.commit()
+    session.refresh(order)
+    
+    return order

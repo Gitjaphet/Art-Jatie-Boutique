@@ -133,6 +133,11 @@ class Order(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
+    is_pos: bool = Field(default=False) # True = Vente en boutique, False = Web
+    amount_tendered: int = Field(default=0) # Montant donné par le client
+    change_ar: int = Field(default=0) # Monnaie rendue
+
+
     # ── RELATION CRM ───────────────────────────────────────────────────────
     client_id: Optional[int] = Field(default=None, foreign_key="client.id")
     client: Optional[Client] = Relationship(back_populates="orders")
