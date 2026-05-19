@@ -141,3 +141,21 @@ class Order(SQLModel, table=True):
     # ── RELATION CRM ───────────────────────────────────────────────────────
     client_id: Optional[int] = Field(default=None, foreign_key="client.id")
     client: Optional[Client] = Relationship(back_populates="orders")
+
+
+    # --- AGENT IA — Sessions de conversation ---
+class AgentSession(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    
+    # Lien avec le client (whatsapp = identifiant universel)
+    client_whatsapp: str = Field(index=True)
+    
+    # Historique complet de la conversation (JSON)
+    messages_json: str = Field(default="[]")
+    
+    # Métadonnées utiles
+    channel: str = Field(default="web")  # "web" | "facebook" | "whatsapp"
+    total_messages: int = Field(default=0)
+    
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)

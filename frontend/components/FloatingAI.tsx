@@ -2,80 +2,92 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import styles from "./FloatingAI.module.css";
+import { chatWithJatie } from "@/lib/api";
 
-// Définition du type pour les messages
+
+type ProductCard = {
+  id: number;
+  name: string;
+  price_ar: number;
+  image: string;
+  colors: string;
+  sizes: string;
+  stock: string;
+  category: string;
+};
+
 type Message = {
   sender: "bot" | "user";
   text: string;
+  products?: ProductCard[];
 };
 
-// Réponses statiques pour le simulateur (démo)
-const MOCK_ANSWERS: { [key: string]: string } = {
-  bonjour:
-    "Bonjour ! Bienvenue chez Art Jatie. Je suis votre assistant virtuel. ✨ Comment puis-je vous aider ?",
-  catalogue:
-    "Vous pouvez découvrir toutes nos créations (Sacs, Maillots, Tenues) dans la section Boutique de notre menu.",
-  "sur mesure":
-    "Absolument ! Nous adorons créer des pièces uniques. Pourriez-vous me décrire votre projet ou la pièce que vous souhaitez ?",
-  tarifs:
-    "Nos tarifs varient selon la pièce. Par exemple, un sac de notre collection Premium commence à 75.000 Ar.",
-  default:
-    "Désolé, je ne comprends pas tout à fait. N'hésitez pas à demander 'Catalogue', 'Sur mesure' ou 'Tarifs' pour des infos précises.",
-};
+
+// Identifiant unique par visiteur (persisté dans localStorage)
+function getClientId(): string {
+  if (typeof window === "undefined") return "anonymous";
+  let id = localStorage.getItem("jatie_client_id");
+  if (!id) {
+    id = "visitor_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+    localStorage.setItem("jatie_client_id", id);
+  }
+  return id;
+}
 
 export default function FloatingAI() {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [clientId] = useState<string>(() => getClientId());
   const [messages, setMessages] = useState<Message[]>([
     {
       sender: "bot",
-      text: "Bonjour ! Je suis l'IA de Art Jatie. ✨ Comment puis-je sublimer votre expérience aujourd'hui ?",
+      text: "Bonjour ! Je suis Jatie, votre assistante Art Jatie ✨ Comment puis-je vous aider aujourd'hui ?",
     },
   ]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll pour voir le dernier message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = () => {
-    if (inputValue.trim() === "") return;
+  const handleSend = async () => {
+    if (inputValue.trim() === "" || isLoading) return;
 
-    // 1. Ajouter le message de l'utilisateur
     const userText = inputValue.trim();
+    setInputValue("");
     setMessages((prev) => [...prev, { sender: "user", text: userText }]);
-    setInputValue(""); // Effacer la zone de saisie
+    setIsLoading(true);
 
-    // 2. Simuler une réponse du bot (avec un délai)
-    setTimeout(() => {
-      const lowerText = userText.toLowerCase();
-      let botResponse = MOCK_ANSWERS["default"];
+    try {
+      const result = await chatWithJatie(userText, clientId, "web");
+      setMessages((prev) => [...prev, { 
+        sender: "bot", 
+        text: result.response,
+        products: result.products,
+      }]);
 
-      if (lowerText.includes("bonjour")) botResponse = MOCK_ANSWERS["bonjour"];
-      else if (
-        lowerText.includes("catalogue") ||
-        lowerText.includes("boutique")
-      )
-        botResponse = MOCK_ANSWERS["catalogue"];
-      else if (lowerText.includes("mesure"))
-        botResponse = MOCK_ANSWERS["sur mesure"];
-      else if (lowerText.includes("tarif") || lowerText.includes("prix"))
-        botResponse = MOCK_ANSWERS["tarifs"];
-
-      setMessages((prev) => [...prev, { sender: "bot", text: botResponse }]);
-    }, 1000);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: "bot",
+          text: "Désolée, je rencontre un petit problème. Réessayez ou contactez-nous sur WhatsApp 😊",
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className={styles.wrapper}>
-      {/* --- Nouvelle Bulle d'accroche (brillante et flottante) --- */}
+      {/* Bulle d'accroche */}
       <div
         className={`${styles.hintBubble} ${isOpen ? styles.hintHidden : ""}`}
         onClick={() => setIsOpen(true)}
       >
-        {/* Icône Noire ✨ (Version SVG Premium) */}
         <svg
           className={styles.hintIcon}
           width="18"
@@ -89,22 +101,18 @@ export default function FloatingAI() {
           <path d="M18 16L19 19L22 20L19 21L18 24L17 21L14 20L17 19L18 16Z"></path>
           <path d="M5 4L6 7L9 8L6 9L5 12L4 9L1 8L4 7L5 4Z"></path>
         </svg>
-
-        <span className={styles.hintText}>Discuter avec l&apos;IA</span>
+        <span className={styles.hintText}>Discuter avec Jatie</span>
       </div>
 
-      {/* --- Fenêtre de Chat Flottante (Noir & Rose) --- */}
+      {/* Fenêtre de chat */}
       {isOpen && (
         <div className={styles.chatCard}>
           <div className={styles.header}>
             <div className={styles.headerInfo}>
               <div className={styles.statusDot} />
-              <span>Art Jatie AI</span>
+              <span>Jatie — Art Jatie AI</span>
             </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className={styles.closeBtn}
-            >
+            <button onClick={() => setIsOpen(false)} className={styles.closeBtn}>
               ✕
             </button>
           </div>
@@ -112,13 +120,36 @@ export default function FloatingAI() {
           <div className={styles.chatBody}>
             <div className={styles.messagesContainer}>
               {messages.map((msg, index) => (
-                <div
-                  key={index}
-                  className={`${styles.message} ${styles[msg.sender]}`}
-                >
-                  <p>{msg.text}</p>
+                <div key={index}>
+                  <div className={`${styles.message} ${styles[msg.sender]}`}>
+                    <p>{msg.text}</p>
+                  </div>
+                  {msg.products && msg.products.length > 0 && (
+                    <div className={styles.productCards}>
+                      {msg.products.map((p) => (
+                        <div key={p.id} className={styles.productCard}>
+                          <img src={p.image} alt={p.name} className={styles.productImage} />
+                          <div className={styles.productInfo}>
+                            <p className={styles.productName}>{p.name}</p>
+                            <p className={styles.productPrice}>
+                              {p.price_ar.toLocaleString("fr-FR")} Ar
+                            </p>
+                            <p className={styles.productStock}>{p.stock}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
+
+              {/* Indicateur de frappe */}
+              {isLoading && (
+                <div className={`${styles.message} ${styles.bot}`}>
+                  <p className={styles.typing}>Jatie écrit...</p>
+                </div>
+              )}
+
               <div ref={messagesEndRef} />
             </div>
           </div>
@@ -128,19 +159,17 @@ export default function FloatingAI() {
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()} // Utilisation de onKeyDown pour Enter
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
               placeholder="Posez votre question..."
               className={styles.inputArea}
+              disabled={isLoading}
             />
-            <button onClick={handleSend} className={styles.sendBtn}>
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
+            <button
+              onClick={handleSend}
+              className={styles.sendBtn}
+              disabled={isLoading}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9L22 2Z"></path>
               </svg>
             </button>
@@ -148,35 +177,19 @@ export default function FloatingAI() {
         </div>
       )}
 
-      {/* --- Bouton d'activation flottant (Noir Chic) --- */}
+      {/* Bouton flottant */}
       <button
         className={`${styles.trigger} ${isOpen ? styles.active : ""}`}
         onClick={() => setIsOpen(!isOpen)}
-        aria-label="Discuter avec l'IA"
+        aria-label="Discuter avec Jatie"
       >
         {isOpen ? (
-          // Icône Croix quand ouvert
-          <svg
-            width="26"
-            height="26"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-          >
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
         ) : (
-          // Icône Chatbot quand fermé (SVG)
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
           </svg>
         )}

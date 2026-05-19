@@ -109,3 +109,24 @@ export async function getProductBySlug(slug: string) {
     description: p.description || "Un magnifique article Art Jatie.",
   };
 }
+
+
+
+// --- AGENT IA JATIE ---
+export async function chatWithJatie(
+  message: string,
+  clientWhatsapp: string,
+  channel: string = "web"
+) {
+  const res = await fetch(`${API_URL}/api/agent/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      message,
+      client_whatsapp: clientWhatsapp,
+      channel,
+    }),
+  });
+  if (!res.ok) throw new Error("Erreur agent IA");
+  return res.json();
+}

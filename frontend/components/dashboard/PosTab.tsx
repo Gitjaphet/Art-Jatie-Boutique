@@ -249,12 +249,36 @@ export default function PosTab({ products, settings, toast }: PosTabProps) {
       if (btn === "Prix") { setNumpadMode("price");    setNumpadBuffer(""); return; }
 
       if (btn === "⌫") {
-        setNumpadBuffer((prev) => {
-          const next = prev.slice(0, -1);
-          if (next && selectedIdx !== null && selectedIdx < cart.length)
-            applyBuffer(next, selectedIdx, numpadMode);
-          return next;
-        });
+        // 1. Si on a tapé un chiffre (ex: on efface avec la touche retour)
+        if (numpadBuffer.length > 0) {
+          const nextBuffer = numpadBuffer.slice(0, -1);
+          setNumpadBuffer(nextBuffer);
+          if (nextBuffer && selectedIdx !== null && selectedIdx < cart.length) {
+            applyBuffer(nextBuffer, selectedIdx, numpadMode);
+          }
+          return;
+        }
+
+        // 2. Sinon, on décrémente le produit de 1 de manière ultra-sécurisée
+        if (selectedIdx !== null) {
+          setCart((prevCart) => {
+            if (selectedIdx >= prevCart.length) return prevCart;
+            
+            const nextCart = [...prevCart];
+            const currentItem = nextCart[selectedIdx];
+            
+            if (currentItem.qty > 1) {
+              // Le secret est ici : on DOIT recréer un objet avec { ...currentItem }
+              // Ça empêche React de s'emmêler les pinceaux et d'enlever 2 !
+              nextCart[selectedIdx] = { ...currentItem, qty: currentItem.qty - 1 };
+            } else {
+              // Si on arrive à 0, on supprime le produit du panier
+              nextCart.splice(selectedIdx, 1);
+              setTimeout(() => setSelectedIdx(null), 0);
+            }
+            return nextCart;
+          });
+        }
         return;
       }
 
@@ -267,13 +291,11 @@ export default function PosTab({ products, settings, toast }: PosTabProps) {
 
       if (selectedIdx === null || selectedIdx >= cart.length) return;
 
-      setNumpadBuffer((prev) => {
-        const newBuffer = prev + btn;
-        applyBuffer(newBuffer, selectedIdx, numpadMode);
-        return newBuffer;
-      });
+      const newBuffer = numpadBuffer + btn;
+      setNumpadBuffer(newBuffer);
+      applyBuffer(newBuffer, selectedIdx, numpadMode);
     },
-    [selectedIdx, cart.length, numpadMode, applyBuffer]
+    [selectedIdx, cart.length, numpadMode, numpadBuffer, applyBuffer]
   );
 
   // ── Numpad paiement ──
@@ -708,6 +730,7 @@ export default function PosTab({ products, settings, toast }: PosTabProps) {
                         {p.genre && (
                           <span className={styles.productGenre}>{p.genre}</span>
                         )}
+                        
                       </div>
 
                       {sizeList.length > 0 && (
@@ -717,11 +740,12 @@ export default function PosTab({ products, settings, toast }: PosTabProps) {
                               {s}
                             </span>
                           ))}
+                          
                         </div>
                       )}
 
-                      {colorList.length > 0 && (
-                        <div className={styles.productColors}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: "18px" }}>
+                        <div className={styles.productColors} style={{ marginTop: 0 }}>
                           {colorList.map((name) => (
                             <span
                               key={name}
@@ -731,13 +755,13 @@ export default function PosTab({ products, settings, toast }: PosTabProps) {
                             />
                           ))}
                         </div>
-                      )}
 
-                      {stockQty !== undefined && stockQty <= 3 && (
-                        <div className={styles.productStock}>
-                          +{stockQty} en stock
-                        </div>
-                      )}
+                        {stockQty !== undefined && stockQty <= 3 && (
+                          <div className={styles.productStock} style={{ marginTop: 0, textAlign: "right" }}>
+                            +{stockQty} en stock
+                          </div>
+                        )}
+                      </div>
 
                       <button
                         onClick={(e) => { e.stopPropagation(); addToCart(p); }}

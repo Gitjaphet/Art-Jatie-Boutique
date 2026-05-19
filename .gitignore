@@ -1,7 +1,26 @@
+# Python
 backend/venv/
-frontend/node_modules/
-frontend/.next/
+backend/.venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Base de données locale (SQLite résidu)
+backend/artjatie.db
+
+# Environnement
 .env*
 backend/.env
-.venv/
+
+# Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# Docker
 *.zip
+
+# macOS
+.DS_Store
+__MACOSX/

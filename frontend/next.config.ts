@@ -1,5 +1,7 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  output: "standalone",
   images: {
     remotePatterns: [
       {
@@ -9,12 +11,11 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "images.unsplash.com", // Au cas où tu as encore tes images de test
+        hostname: "images.unsplash.com",
         pathname: "/**",
       },
     ],
   },
 };
 
-module.exports = nextConfig;
-// (Note: Si ton fichier s'appelle next.config.mjs, la dernière ligne doit être `export default nextConfig;`)
+export default nextConfig;

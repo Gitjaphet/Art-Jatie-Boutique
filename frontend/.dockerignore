@@ -1,0 +1,12 @@
+node_modules
+.next
+out
+.env
+.env.*
+.DS_Store
+*.log
+npm-debug.log*
+.eslintcache
+Dockerfile
+.dockerignore
+

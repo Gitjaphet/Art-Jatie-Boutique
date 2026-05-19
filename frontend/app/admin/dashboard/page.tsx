@@ -14,6 +14,7 @@ import UsersTab from "../../../components/dashboard/UsersTab";
 import OrdersTab from "@/components/dashboard/OrdersTab";
 import CartOrdersTab from "@/components/dashboard/CartOrdersTab";
 import ClientsTab from "../../../components/dashboard/ClientsTab";
+import PosHistoryTab from "../../../components/dashboard/PosHistoryTab";
 
 type SettingsData = {
   exchange_rate_eur?: string | number;
@@ -190,7 +191,14 @@ const I = {
       <circle cx="12" cy="8" r="2" />
       <path d="M15 13a3 3 0 1 0-6 0" />
     </svg>
+  ),Receipt: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z" />
+      <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+      <path d="M12 17V7" />
+    </svg>
   ),
+
 };
 
 type ToastProps = { message: string; type: string; onDone: () => void };
@@ -240,6 +248,7 @@ type Tab =
   | "planning"
   | "orders"
   | "cart_orders"
+  | "pos_history"
   | "clients"
   | "users"
   | "settings";
@@ -257,6 +266,7 @@ const TABS: {
     Icon: I.Grid,
   },
   { id: "pos", label: "Point de vente", shortLabel: "Caisse", Icon: I.Monitor },
+  { id: "pos_history", label: "Historique Caisse", shortLabel: "Ventes", Icon: I.Receipt },
   { id: "products", label: "Catalogue", shortLabel: "Produits", Icon: I.Bag },
   {
     id: "planning",
@@ -284,6 +294,7 @@ const TABS: {
 const TITLES: Record<Tab, string> = {
   overview: "Vue d'ensemble",
   pos: "Caisse (Point de vente)",
+  pos_history: "Historique des ventes Boutique",
   products: "Gestion du catalogue",
   planning: "Planning des commandes",
   clients: "CRM - Base Clients",
@@ -544,7 +555,8 @@ export default function AdminDashboard() {
 
         <div ref={contentRef} className={styles.content}>
           {activeTab === "overview" && <OverviewTab products={products} settings={settings} />}
-          {activeTab === "pos" && <PosTab products={products} toast={toast} />}
+          {activeTab === "pos" && <PosTab products={products} settings={settings} toast={toast} />}
+          {activeTab === "pos_history" && <PosHistoryTab toast={toast} />}
           {activeTab === "products" && (
             <ProductsTab
               products={products}

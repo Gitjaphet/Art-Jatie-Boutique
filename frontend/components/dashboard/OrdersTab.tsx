@@ -31,6 +31,7 @@ type Order = {
   om_phone?: string;
   payment_proof_text?: string;
   payment_proof_image?: string;
+  is_pos?: boolean;
 };
 
 const STATUS_OPTIONS = [
@@ -108,7 +109,7 @@ export default function OrdersTab({ toast }: Props) {
       const res = await fetch(`${API}/orders/`);
       if (!res.ok) throw new Error();
       const all = await res.json();
-      setOrders(all);
+      setOrders(all.filter((o: Order) => !o.is_pos && !o.cart_items_json));
     } catch {
       toast("Impossible de charger les commandes.", "error");
     } finally {

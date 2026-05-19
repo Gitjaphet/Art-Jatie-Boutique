@@ -11,3 +11,10 @@ httpx
 gunicorn
 supabase
 bcrypt
+prometheus-fastapi-instrumentator
+langchain
+langchain-groq
+langchain-community
+langchain-core
+chromadb
+sentence-transformers
