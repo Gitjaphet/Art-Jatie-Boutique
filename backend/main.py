@@ -5,16 +5,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from database import create_db_and_tables
 from routes import products, settings, auth, users, orders, mvola, colors, clients
-from routes import agent
+
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # 1. Crée toutes les tables (dont AgentSession)
-    create_db_and_tables()
-
-   
-
+    # Initialisation sécurisée
+    try:
+        print("Tentative de création des tables...")
+        create_db_and_tables()
+        print("Tables vérifiées avec succès.")
+    except Exception as e:
+        print(f"Attention : Erreur lors de la création des tables : {e}")
+        # On ne bloque pas le démarrage ici pour permettre au serveur de monter
+        # et de voir les logs d'erreur précis
+    
     yield
 
 
@@ -60,5 +65,3 @@ app.include_router(clients.router,  prefix="/clients",   tags=["Clients CRM"])
 app.include_router(mvola.router,    prefix="/mvola",     tags=["MVola"])
 app.include_router(colors.router,   prefix="/colors",    tags=["Couleurs"])
 
-# ── Agent IA ────────────────────────────────────────────────────────────────
-app.include_router(agent.router)
