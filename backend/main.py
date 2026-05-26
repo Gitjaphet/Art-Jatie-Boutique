@@ -13,14 +13,7 @@ async def lifespan(app: FastAPI):
     # 1. Crée toutes les tables (dont AgentSession)
     create_db_and_tables()
 
-    # 2. Initialise le vectorstore RAG au démarrage
-    try:
-        from agent.vectorstore import build_vectorstore
-        build_vectorstore()
-        print("Agent Jatie — vectorstore RAG initialisé")
-    except Exception as e:
-        print(f"Agent Jatie — vectorstore non initialisé : {e}")
-        print("   L'agent fonctionnera en mode fallback (DB directe)")
+   
 
     yield
 

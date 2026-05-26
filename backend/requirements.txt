@@ -16,5 +16,4 @@ langchain
 langchain-groq
 langchain-community
 langchain-core
-chromadb
-sentence-transformers
+boto3

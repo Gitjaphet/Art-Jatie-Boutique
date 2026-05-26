@@ -10,17 +10,22 @@ services:
       - "8000:8000"
     env_file:
       - ./backend/.env
+    environment:
+      - TRANSFORMERS_OFFLINE=1
+      - HF_DATASETS_OFFLINE=1
+      - HF_HUB_OFFLINE=1
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
       - ./backend:/app:z
+      - /root/.cache/huggingface:/root/.cache/huggingface  # ← monte le cache host→container
     networks:
       - artjatie_net
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+      timeout: 15s
+      retries: 5
+      start_period: 120s
 
   frontend:
     build:
@@ -41,3 +46,7 @@ services:
 networks:
   artjatie_net:
     driver: bridge
+
+volumes:
+  hf_cache:      # cache HuggingFace — téléchargé 1 seule fois
+  chroma_data:   # ChromaDB — indexé 1 seule fois

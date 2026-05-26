@@ -91,12 +91,19 @@ async def create_product(
         raise HTTPException(status_code=500, detail="Supabase Storage n'est pas configuré.")
 
     try:
-        # 1. Préparer l'image avec un nom unique
-        file_extension = image.filename.split(".")[-1]
-        unique_filename = f"{uuid.uuid4()}.{file_extension}"
+        # 1. Préparer l'image avec un nom optimisé SEO
+        # On extrait le nom et l'extension proprement
+        base_name = os.path.splitext(image.filename)[0]
+        extension = os.path.splitext(image.filename)[1]
+        
+        # On nettoie le nom (espaces -> tirets) et on ajoute un suffixe court pour l'unicité
+        clean_base_name = base_name.replace(" ", "-")
+        short_uuid = uuid.uuid4().hex[:8]
+        unique_filename = f"{clean_base_name}-{short_uuid}{extension}"
+        
         file_bytes = await image.read()
         
-        # 2. Upload sur Supabase
+        # 2. Upload sur Supabase avec le nom optimisé
         res = supabase.storage.from_("products").upload(
             path=unique_filename,
             file=file_bytes,
@@ -105,23 +112,20 @@ async def create_product(
         
         public_url = supabase.storage.from_("products").get_public_url(unique_filename)
 
-        # 2. Préparation des objets "Color" (La partie Many-to-Many)
+        # 3. La suite de ton code reste inchangée...
         actual_colors = []
         if color_ids:
-            # On transforme la chaîne "[1,2]" en vraie liste Python [1,2]
             ids = json.loads(color_ids)
-            # On va chercher les objets Color correspondants en base
             actual_colors = session.exec(select(Color).where(Color.id.in_(ids))).all()
         
-        # 4. Création de l'objet Produit
         new_product = Product(
             name=name,
             tag=tag,
             genre=genre,
             category=category,
             price_ar=price_ar,
-            colors=colors,
-            colors_list=actual_colors, # On remplit la nouvelle relation Many-to-Many
+            colors=colors, # Vérifie si c'est bien la liste des couleurs ou juste la chaîne
+            colors_list=actual_colors,
             sizes=sizes,
             badge=badge,
             is_hot=is_hot,
@@ -130,11 +134,10 @@ async def create_product(
             image=public_url
         )
         
-
         if new_product.stock_quantity == 0:
             new_product.badge = "Sur commande"
             new_product.on_order = True
-        # 5. Sauvegarde
+            
         session.add(new_product)
         session.commit()
         session.refresh(new_product)
@@ -230,8 +233,18 @@ async def update_product(
         if not supabase:
             raise HTTPException(status_code=500, detail="Supabase Storage n'est pas configuré.")
         try:
-            file_extension = image.filename.split(".")[-1]
-            unique_filename = f"{uuid.uuid4()}.{file_extension}"
+            # 1. On récupère le nom sans l'extension
+            base_name = os.path.splitext(image.filename)[0]
+            # 2. On récupère l'extension (avec le point)
+            extension = os.path.splitext(image.filename)[1]
+            # 3. On génère un identifiant court (8 caractères suffisent pour l'unicité)
+            short_uuid = uuid.uuid4().hex[:8]
+            
+            # 4. On reconstruit le nom : "nom-original-a1b2c3d4.jpg"
+            # On remplace aussi les espaces par des tirets pour le SEO
+            clean_base_name = base_name.replace(" ", "-")
+            unique_filename = f"{clean_base_name}-{short_uuid}{extension}"
+            
             file_bytes = await image.read()
             
             supabase.storage.from_("products").upload(
@@ -241,7 +254,7 @@ async def update_product(
             )
             
             public_url = supabase.storage.from_("products").get_public_url(unique_filename)
-            product.image = public_url # On remplace l'ancienne image par la nouvelle
+            product.image = public_url
             
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Erreur d'upload : {str(e)}")
