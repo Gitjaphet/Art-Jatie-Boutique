@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import styles from "./GaleriePage.module.css";
 import { getAllProducts } from "../../lib/api";
 
@@ -12,46 +11,30 @@ type FilterValue =
   | "tenues"
   | "accessoires"
   | "maillots"
-  | "enfant"
-  | "surcommande";
+  | "enfant";
 
 interface GalerieItem {
-  id: number;
+  id: string; 
   src: string;
-  alt: string;
   filterKey: FilterValue;
-  title: string;
-  label: string;
-  badge?: string;
-  is_hot?: boolean;
-  on_order?: boolean;
 }
 
-// ─── NOUVEAU TYPE : Pour remplacer "any" ──────────────────────────────────────
-type RawProduct = {
+type ProductWithMultipleImages = {
   id: number;
-  image: string;
   name: string;
-  category: string;
-  genre: string;
-  tag: string;
-  badge: string;
-  is_hot: boolean;
-  on_order: boolean;
+  image: string;
+  imagesString?: string;
+  category?: string;
+  genre?: string;
 };
 
 // ─── Mapping category DB → filtre galerie ────────────────────────────────────
-function toFilterKey(
-  category: string,
-  genre: string,
-  onOrder: boolean,
-): FilterValue {
-  if (onOrder) return "surcommande";
+function toFilterKey(category: string | undefined, genre: string | undefined): FilterValue {
   if (genre === "Enfant") return "enfant";
   const cat = category?.toUpperCase();
   if (cat === "MAILLOTS") return "maillots";
   if (cat === "ACCESSOIRES") return "accessoires";
-  return "tenues"; // TENUES par défaut
+  return "tenues";
 }
 
 const FILTERS: { label: string; value: FilterValue }[] = [
@@ -60,12 +43,10 @@ const FILTERS: { label: string; value: FilterValue }[] = [
   { label: "Maillots", value: "maillots" },
   { label: "Accessoires", value: "accessoires" },
   { label: "Enfant", value: "enfant" },
-  { label: "Sur Commande", value: "surcommande" },
 ];
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 20;
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
 export default function GaleriePage() {
   const [activeFilter, setActiveFilter] = useState<FilterValue>("all");
   const [limit, setLimit] = useState(PAGE_SIZE);
@@ -73,32 +54,50 @@ export default function GaleriePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchAll = async () => {
+    const fetchAllImages = async () => {
       try {
         setLoading(true);
-        const raw = await getAllProducts();
+        const products = await getAllProducts();
 
-        // ─── CORRECTION ICI : Utilisation de RawProduct au lieu de any ───
-        const mapped: GalerieItem[] = raw.map((p: RawProduct) => ({
-          id: p.id,
-          src: p.image,
-          alt: p.name,
-          filterKey: toFilterKey(p.category, p.genre, p.on_order),
-          title: p.name,
-          label: `${p.tag} · ${p.genre}`,
-          badge: p.badge,
-          is_hot: p.is_hot,
-          on_order: p.on_order,
-        }));
+        const allExtractedImages: GalerieItem[] = [];
 
-        setItems(mapped);
+        products.forEach((p: ProductWithMultipleImages) => {
+          const filterKey = toFilterKey(p.category, p.genre);
+
+          // 1. Image principale
+          if (p.image && p.image.trim() !== "") {
+            allExtractedImages.push({
+              id: `${p.id}-main`,
+              src: p.image,
+              filterKey: filterKey,
+            });
+          }
+
+          // 2. Éclatement de la chaîne d'images secondaires
+          if (p.imagesString && typeof p.imagesString === "string" && p.imagesString.trim() !== "") {
+            const secondaryImages = p.imagesString
+              .split(",")
+              .map((url) => url.trim())
+              .filter(Boolean);
+
+            secondaryImages.forEach((imgUrl, index) => {
+              allExtractedImages.push({
+                id: `${p.id}-secondary-${index}`,
+                src: imgUrl,
+                filterKey: filterKey,
+              });
+            });
+          }
+        });
+
+        setItems(allExtractedImages);
       } catch (err) {
-        console.error("Erreur chargement galerie :", err);
+        console.error("Erreur chargement images galerie :", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchAll();
+    fetchAllImages();
   }, []);
 
   const filtered = useMemo(
@@ -117,15 +116,30 @@ export default function GaleriePage() {
     setLimit(PAGE_SIZE);
   };
 
+  // 📥 Fonction de téléchargement forcé via la route dédiée du Backend
+  const downloadImage = (imageUrl: string, uniqueId: string) => {
+    try {
+      // On cible l'API de téléchargement de ton backend (localhost:8000 en dev)
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      
+      // On construit l'URL de redirection vers notre endpoint de téléchargement forcé
+      const downloadUrl = `${backendUrl}/download-image?url=${encodeURIComponent(imageUrl)}`;
+      
+      // On utilise une méthode native ultra-rapide qui lance le flux de téléchargement directement
+      window.location.href = downloadUrl;
+    } catch (error) {
+      console.error("Échec du téléchargement via le backend :", error);
+      // Repli au cas où : ouverture brute dans le navigateur
+      window.open(imageUrl, "_blank");
+    }
+  };
   return (
     <div className={styles.page}>
       {/* ── HERO ── */}
       <header className={styles.hero}>
         <p className={styles.heroEyebrow}>Art Jatie · Madagascar</p>
-        <h1 className={styles.heroTitle}>Galerie</h1>
-        <p className={styles.heroSub}>
-          Collections Artisanales &amp; Sur Mesure
-        </p>
+        <h1 className={styles.heroTitle}>Galerie d'Inspirations</h1>
+        <p className={styles.heroSub}>Explorez et téléchargez toutes nos créations en un clic</p>
 
         <div className={styles.filterRow}>
           {FILTERS.map((f) => (
@@ -142,73 +156,49 @@ export default function GaleriePage() {
         </div>
       </header>
 
-      {/* ── STATS ── */}
-      <div className={styles.statsBar}>
-        <div className={styles.stat}>
-          <span className={styles.statNum}>{items.length}+</span>
-          <span className={styles.statLabel}>Créations</span>
-        </div>
-        <div className={styles.stat}>
-          <span className={styles.statNum}>100%</span>
-          <span className={styles.statLabel}>Fait main</span>
-        </div>
-        <div className={styles.stat}>
-          <span className={styles.statNum}>Sur mesure</span>
-          <span className={styles.statLabel}>Disponible</span>
-        </div>
-        <div className={styles.stat}>
-          <span className={styles.statNum}>Livraison</span>
-          <span className={styles.statLabel}>Internationale</span>
-        </div>
-      </div>
-
-      {/* ── GALERIE ── */}
+      {/* ── GRID SANS TEXTE NI BOUTONS DE COMPOSANT ── */}
       <section className={styles.galleryWrap}>
         {loading ? (
-          <div className={styles.emptyState}>Chargement des créations…</div>
+          <div className={styles.emptyState}>Chargement de la galerie...</div>
         ) : visible.length === 0 ? (
-          <div className={styles.emptyState}>
-            Aucune création dans cette catégorie pour le moment.
-          </div>
+          <div className={styles.emptyState}>Aucune photo disponible pour le moment.</div>
         ) : (
           <div className={styles.masonry}>
             {visible.map((item, index) => (
               <div key={item.id} className={styles.card}>
-                {/* Badges */}
-                {item.is_hot && (
-                  <span className={styles.badgeHot}>♥ Coup de cœur</span>
-                )}
-                {item.on_order && (
-                  <span className={styles.badgeOrder}>Sur commande</span>
-                )}
-                {!item.is_hot &&
-                  !item.on_order &&
-                  item.badge &&
-                  item.badge !== "Rupture" && (
-                    <span className={styles.badgeNew}>{item.badge}</span>
-                  )}
-
-                {/* Image */}
+                
                 <Image
                   src={item.src}
-                  alt={item.alt}
-                  width={600}
-                  height={800}
+                  alt="Création Art Jatie"
+                  width={500}
+                  height={700}
                   className={styles.cardImg}
-                  priority={index < 6}
+                  priority={index < 8}
                 />
 
-                {/* Overlay */}
-                <div className={styles.overlay}>
-                  <span className={styles.overlayCategory}>{item.label}</span>
-                  <p className={styles.overlayTitle}>{item.title}</p>
-                  <Link
-                    href={item.on_order ? `/commande` : `/produit/${item.id}`}
-                    className={styles.overlayBtn}
+                <div className={styles.overlayPure}>
+                  <button 
+                    onClick={() => downloadImage(item.src, item.id)}
+                    className={styles.downloadIconBtn}
+                    title="Télécharger cette image"
                   >
-                    Voir les détails →
-                  </Link>
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2.5" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      className={styles.dlSvg}
+                    >
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                  </button>
                 </div>
+
               </div>
             ))}
           </div>
@@ -220,7 +210,7 @@ export default function GaleriePage() {
               className={styles.loadMoreBtn}
               onClick={() => setLimit((prev) => prev + PAGE_SIZE)}
             >
-              Afficher plus de créations ({filtered.length - limit} restantes)
+              Plus de photos ({filtered.length - limit} restantes)
             </button>
           </div>
         )}

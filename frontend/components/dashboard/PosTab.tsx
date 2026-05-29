@@ -26,6 +26,7 @@ type PosProduct = {
   badge: string;
   on_order: boolean;
   image: string;
+  description?: string; // ✅ Ajouté ici
   sizes?: string | string[];
   colors?: string | string[];
   stock_quantity?: number;
@@ -71,12 +72,14 @@ const BADGE_STYLE: Record<string, { bg: string; color: string }> = {
   "En stock": { bg: "#16a34a", color: "#fff" },
   Nouveau:    { bg: "#8b5cf6", color: "#fff" },
   Derniers:   { bg: "#f97316", color: "#fff" },
+  Promo:      { bg: "#e91e8c", color: "#fff" },
 };
 
 const BADGE_LABEL: Record<string, string> = {
   "En stock": "EN STOCK",
   Nouveau:    "NOUVEAU",
   Derniers:   "DERNIERS",
+  Promo:      "PROMO",
 };
 
 const PAYMENT_METHODS = [
@@ -173,11 +176,13 @@ export default function PosTab({ products, settings, toast }: PosTabProps) {
 
   // ── Filtrage ──
   const availableProducts = safeProducts.filter((p) => {
-    const isEnStock = ["En stock", "Nouveau", "Derniers"].includes(p.badge);
+    // ✅ On ne filtre plus par le texte du badge, on regarde juste si c'est "sur commande" !
     const matchSearch = (p.name || "").toLowerCase().includes(search.toLowerCase());
     const matchCat = activeCat === "TOUT" || p.category === activeCat;
     const matchGenre = activeGenre === "TOUT" || p.genre === activeGenre;
-    return isEnStock && !p.on_order && matchSearch && matchCat && matchGenre;
+    
+    // S'il n'est pas sur commande, il s'affiche en caisse.
+    return !p.on_order && matchSearch && matchCat && matchGenre;
   });
 
   // ── Total ──
@@ -694,14 +699,6 @@ export default function PosTab({ products, settings, toast }: PosTabProps) {
                       inCart ? styles.productCardInCart : ""
                     }`}
                   >
-                    {/* Badge statut */}
-                    <div
-                      className={styles.productBadge}
-                      style={{ backgroundColor: badge.bg, color: badge.color }}
-                    >
-                      {BADGE_LABEL[p.badge] ?? p.badge.toUpperCase()}
-                    </div>
-
                     {/* Bulle quantité panier */}
                     {inCart && (
                       <div className={styles.productCartBubble}>{inCart.qty}</div>
@@ -709,6 +706,16 @@ export default function PosTab({ products, settings, toast }: PosTabProps) {
 
                     {/* Image */}
                     <div className={styles.productImageWrapper}>
+                      {/* ✅ NOUVEAU : Ruban incliné dynamique avec tes couleurs BADGE_STYLE */}
+                      {p.badge && (
+                        <div 
+                          className={styles.badgeRibbon}
+                          style={{ backgroundColor: badge.bg, color: badge.color }}
+                        >
+                          {BADGE_LABEL[p.badge] ?? p.badge.toUpperCase()}
+                        </div>
+                      )}
+
                       {p.image ? (
                         <img src={p.image} alt={p.name} />
                       ) : (
@@ -722,15 +729,30 @@ export default function PosTab({ products, settings, toast }: PosTabProps) {
                         <div className={styles.productBrand}>{p.brand}</div>
                       )}
                       <div className={styles.productName}>{p.name}</div>
+                      
+                      {/* ✅ NOUVEAU : Description (Limitée à 2 lignes) */}
+                      {p.description && (
+                        <div className={styles.productDescription}>
+                          {p.description}
+                        </div>
+                      )}
 
-                      <div className={styles.productPriceRow}>
+                      <div className={styles.productPriceRow} style={{ alignItems: "flex-start" }}>
                         <span className={styles.productPrice}>
                           {p.price_ar.toLocaleString("fr-FR")} Ar
                         </span>
-                        {p.genre && (
-                          <span className={styles.productGenre}>{p.genre}</span>
-                        )}
                         
+                        {/* ✅ NOUVEAU : On regroupe le Genre et le Stock à droite */}
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "4px" }}>
+                          {p.genre && (
+                            <span className={styles.productGenre}>{p.genre}</span>
+                          )}
+                          {stockQty !== undefined && (
+                            <span className={`${styles.posStockBadge} ${stockQty > 0 ? styles.posStockIn : styles.posStockOut}`}>
+                              Stock : {stockQty}
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       {sizeList.length > 0 && (
@@ -755,12 +777,6 @@ export default function PosTab({ products, settings, toast }: PosTabProps) {
                             />
                           ))}
                         </div>
-
-                        {stockQty !== undefined && stockQty <= 3 && (
-                          <div className={styles.productStock} style={{ marginTop: 0, textAlign: "right" }}>
-                            +{stockQty} en stock
-                          </div>
-                        )}
                       </div>
 
                       <button

@@ -14,6 +14,7 @@ interface ApiProduct {
   badge: string;
   tag: string;
   image: string;
+  images?: string;
   is_hot: boolean;
   on_order: boolean;
   colors?: string; // stocké sous forme "Rouge,Bleu"
@@ -51,11 +52,13 @@ export async function getProducts(onOrder?: boolean) {
     tag: p.tag,
     color: "#f5ead9",
     image: p.image,
+    imagesString: p.images || "",
     hot: p.is_hot,
     // Transformation des chaînes CSV en tableaux
     colorsArray: p.colors ? p.colors.split(",").map((c) => c.trim()) : [],
     sizesArray: p.sizes ? p.sizes.split(",").map((s) => s.trim()) : [],
     stock_quantity: p.stock_quantity ?? 0,
+    description: p.description,
   }));
 }
 
@@ -74,6 +77,7 @@ export async function getAllProducts() {
     id: p.id,
     name: p.name,
     image: p.image,
+    imagesString: p.images,
     category: p.category,
     genre: p.genre,
     tag: p.tag,

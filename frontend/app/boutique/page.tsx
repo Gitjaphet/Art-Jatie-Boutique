@@ -26,6 +26,7 @@ export type Product = {
   is_hot?: boolean;
   on_order?: boolean;
   stock_quantity?: number;
+  description?: string;
 };
 
 
@@ -97,6 +98,7 @@ function mapApiProduct(
     is_hot: Boolean(raw.hot),
     on_order: onOrder,
     stock_quantity: Number(raw.stock_quantity) || 0,
+    description: (raw.description as string) || (raw.desc as string) || (raw.note as string) || undefined,
   };
 }
 

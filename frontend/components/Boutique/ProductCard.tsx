@@ -117,6 +117,13 @@ export default function ProductCard({
           <span className={styles.tag}>{product.tag}</span>
           <h3 className={styles.name}>{product.name}</h3>
 
+          {/* ✅ NOUVEAU : La description s'affiche proprement ici sous le nom */}
+          {product.description && (
+            <p className={styles.description}>
+              {product.description}
+            </p>
+          )}
+
           <div className={styles.infoBottom}>
             <div className={styles.infoLeft}>
               <div className={styles.priceBlock}>
@@ -142,7 +149,7 @@ export default function ProductCard({
               </div>
               {product.colors.length > 0 && (
                 <div className={styles.colorDots}>
-                  {product.colors.map((c) => (
+                  {product.colors.map((c: string) => (
                     <span
                       key={c}
                       className={styles.colorDot}
@@ -162,7 +169,7 @@ export default function ProductCard({
               )}
               {product.sizes && product.sizes.length > 0 && (
                 <div className={styles.sizesRow}>
-                  {product.sizes.map((s) => (
+                  {product.sizes.map((s: string) => (
                     <span key={s} className={styles.sizeChip}>
                       {s}
                     </span>

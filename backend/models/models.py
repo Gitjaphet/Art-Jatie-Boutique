@@ -36,6 +36,8 @@ class Product(SQLModel, table=True):
     price_ar: int
     old_price_ar: Optional[int] = None
     image: str
+    images: str = Field(default="")  
+    description: Optional[str] = Field(default=None)  # ← NOUVEAU
     colors: str
     #  (on l'appelle colors_list pour ne pas avoir de conflit de nom)
     colors_list: List[Color] = Relationship(back_populates="products", link_model=ProductColorLink)

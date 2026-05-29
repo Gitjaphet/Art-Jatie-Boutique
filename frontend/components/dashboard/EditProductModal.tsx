@@ -72,17 +72,21 @@ type ProductType = {
   id: number;
   name: string;
   price_ar: number;
+  old_price_ar?: number;   // ✅ Ajouté
+  description?: string;    // ✅ Ajouté
   category: string;
   genre: string;
   tag?: string;
   badge: string;
+  on_order?: boolean;      // ✅ Ajouté
   stock_quantity?: number;
   is_hot?: boolean;
   hot?: boolean;
   colors?: string;
-  full_colors?: Color[]; // Si le backend renvoie déjà les objets complets
+  full_colors?: Color[]; 
   sizes?: string;
   image: string;
+  images?: string;         // ✅ Ajouté pour multi-images
 };
 
 type EditProductModalProps = {
@@ -91,7 +95,7 @@ type EditProductModalProps = {
   onSuccess: () => void;
   toast: (msg: string, type?: "success" | "error") => void;
   settings: Record<string, unknown> | null;
-};
+}
 
 export default function EditProductModal({
   productToEdit,
@@ -103,15 +107,21 @@ export default function EditProductModal({
   const [sub, setSub] = useState(false);
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
+  const [oldPrice, setOldPrice] = useState("");      // ✅ Ajouté
+  const [description, setDescription] = useState("");// ✅ Ajouté
   const [cat, setCat] = useState("");
   const [genre, setGenre] = useState("");
   const [tag, setTag] = useState("");
-  const [status, setStatus] = useState("");
+  
+  const [onOrder, setOnOrder] = useState("false");   // ✅ Séparé
+  const [badge, setBadge] = useState("");            // ✅ Séparé
+  
   const [qty, setQty] = useState(0);
   const [hot, setHot] = useState(false);
   const [sizes, setSizes] = useState<string[]>([]);
-  const [img, setImg] = useState<File | null>(null);
-  const [prev, setPrev] = useState<string | null>(null);
+  
+  const [imgs, setImgs] = useState<File[]>([]);      // ✅ Multi-images
+  const [prevs, setPrevs] = useState<string[]>([]);  // ✅ Multi-images
   const [drag, setDrag] = useState(false);
 
   // ── ÉTATS POUR LES COULEURS ──
@@ -149,19 +159,30 @@ export default function EditProductModal({
   }, []);
 
   // Initialisation des données du produit
+  // Initialisation des données du produit
   useEffect(() => {
     if (!productToEdit) return;
     setName(productToEdit.name);
     setPrice(productToEdit.price_ar.toString());
+    setOldPrice(productToEdit.old_price_ar ? productToEdit.old_price_ar.toString() : ""); // ✅
+    setDescription(productToEdit.description || ""); // ✅
     setCat(productToEdit.category);
     setGenre(productToEdit.genre);
     setTag(productToEdit.tag || "");
-    setStatus(productToEdit.badge);
+    
+    setOnOrder(productToEdit.on_order ? "true" : "false"); // ✅
+    setBadge(productToEdit.badge || "");                   // ✅
+    
     setQty(productToEdit.stock_quantity ?? 0);
     setHot(productToEdit.is_hot || productToEdit.hot || false);
-    
     setSizes(productToEdit.sizes ? productToEdit.sizes.split(",").map((s) => s.trim()) : []);
-    setPrev(productToEdit.image);
+    
+    // ✅ Charger les images existantes
+    const existingImages = productToEdit.images 
+      ? productToEdit.images.split(",").map(s => s.trim()).filter(Boolean)
+      : productToEdit.image ? [productToEdit.image] : [];
+    setPrevs(existingImages);
+    setImgs([]); // Pas de nouveaux fichiers au départ
     
     // ── SYNC DES COULEURS ──
     // Si le backend nous envoie déjà "full_colors", c'est parfait
@@ -242,16 +263,30 @@ export default function EditProductModal({
   
   const isExactMatch = allColors.some(c => c.name.toLowerCase() === colorInput.trim().toLowerCase());
 
-  const onFile = (f: File) => {
-    if (!f || !f.type.startsWith("image/")) return;
-    setImg(f);
-    if (prev && prev.startsWith("blob:")) URL.revokeObjectURL(prev);
-    setPrev(URL.createObjectURL(f));
+  const onFiles = (files: FileList | File[]) => {
+    const fileArray = Array.from(files);
+    const validFiles = fileArray.filter(f => f.type.startsWith("image/"));
+    if (validFiles.length === 0) return;
+
+    const newPrevs = validFiles.map(f => URL.createObjectURL(f));
+    setImgs(prev => [...prev, ...validFiles]);
+    setPrevs(prev => [...prev, ...newPrevs]);
+  };
+
+  const removeImage = (index: number) => {
+    const urlToRemove = prevs[index];
+    if (urlToRemove.startsWith("blob:")) {
+      URL.revokeObjectURL(urlToRemove);
+      // Supprimer le bon fichier dans `imgs` (qui ne contient que les nouveaux)
+      const remoteCount = prevs.slice(0, index).filter(p => !p.startsWith("blob:")).length;
+      setImgs(prev => prev.filter((_, i) => i !== (index - remoteCount)));
+    }
+    setPrevs(prev => prev.filter((_, i) => i !== index));
   };
 
   useEffect(() => {
-    return () => { if (prev && prev.startsWith("blob:")) URL.revokeObjectURL(prev); };
-  }, [prev]);
+    return () => { prevs.forEach(p => { if (p.startsWith("blob:")) URL.revokeObjectURL(p); }); };
+  }, [prevs]);
 
   const stockColor = qty === 0 ? "#ef4444" : qty <= 2 ? "#f97316" : "#16a34a";
   const stockBg = qty === 0 ? "#fff5f5" : qty <= 2 ? "#fff7ed" : "#f0fdf4";
@@ -267,15 +302,26 @@ export default function EditProductModal({
     const formData = new FormData();
     formData.append("name", name);
     formData.append("price_ar", price);
+    if (oldPrice) formData.append("old_price_ar", oldPrice);
+    if (description) formData.append("description", description);
+    
     formData.append("category", cat);
     formData.append("genre", currentGenre);
     formData.append("tag", tag);
     formData.append("sizes", sizes.join(","));
-    formData.append("badge", status);
-    formData.append("on_order", status === "Sur commande" ? "true" : "false");
-    formData.append("stock_quantity", status === "Sur commande" ? "0" : String(qty));
+    
+    if (badge) formData.append("badge", badge);
+    formData.append("on_order", onOrder);
+    formData.append("stock_quantity", onOrder === "true" ? "0" : String(qty));
     formData.append("is_hot", hot ? "true" : "false");
-    if (img) formData.append("image", img);
+    
+    imgs.forEach(imgFile => {
+      formData.append("images", imgFile);
+    });
+    
+    // Si ton backend supporte la conservation d'images partielles, tu peux envoyer les URLs gardées ici.
+    const retainedImages = prevs.filter(p => !p.startsWith("blob:"));
+    formData.append("retained_images", retainedImages.join(","));
 
     // Envoi des couleurs
     formData.append("colors", selectedColors.map(c => c.name).join(","));
@@ -330,6 +376,14 @@ export default function EditProductModal({
                 <label className={styles.label}>Prix (Ar) *</label>
                 <input type="number" className={styles.input} value={price} onChange={(e) => setPrice(e.target.value)} required />
               </div>
+              {/* ── NOUVEAU : ANCIEN PRIX ── */}
+            <div className={styles.inputGroup} style={{ marginTop: 16 }}>
+              <label className={styles.label}>
+                Ancien prix (Ar)
+                <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "400", marginLeft: "8px" }}>Optionnel</span>
+              </label>
+              <input type="number" className={styles.input} value={oldPrice} onChange={(e) => setOldPrice(e.target.value)} />
+            </div>
             </div>
 
             {/* Catégorie + Cible */}
@@ -444,28 +498,36 @@ export default function EditProductModal({
             {/* Statut + Stock */}
             <div className={styles.grid} style={{ marginTop: 16 }}>
               <div className={styles.inputGroup}>
-                <label className={styles.label}>Statut</label>
-                <select className={styles.input} value={status} onChange={(e) => setStatus(e.target.value)}>
-                  {["En stock", "Nouveau", "Derniers", "Sur commande", "Rupture"].map((s) => <option key={s} value={s}>{s}</option>)}
+                <label className={styles.label}>Disponibilité</label>
+                <select className={styles.input} value={onOrder} onChange={(e) => setOnOrder(e.target.value)}>
+                  <option value="false">En stock</option>
+                  <option value="true">Sur commande</option>
                 </select>
               </div>
 
-              <div className={styles.inputGroup}>
-                <label className={styles.label}>
-                  Stock <span className={styles.stockBadge} style={{ background: stockBg, color: stockColor }}>{stockLabel}</span>
-                </label>
-                {status === "Sur commande" ? (
-                  <div style={{ padding: "9px 12px", border: "1px solid var(--border)", borderRadius: 9, background: "#f9f9f9", fontSize: 13, color: "#aaa", fontWeight: 500 }}>
-                    Non applicable (sur commande)
-                  </div>
-                ) : (
+              {onOrder === "false" && (
+                <div className={styles.inputGroup}>
+                  <label className={styles.label}>
+                    Stock <span className={styles.stockBadge} style={{ background: stockBg, color: stockColor }}>{stockLabel}</span>
+                  </label>
                   <div className={styles.stockRow}>
                     <button type="button" className={styles.stockBtn} onClick={() => setQty((v) => Math.max(0, v - 1))}>−</button>
                     <input type="number" className={styles.stockInput} value={qty} min={0} onChange={(e) => setQty(Math.max(0, Number(e.target.value)))} />
                     <button type="button" className={styles.stockBtn} onClick={() => setQty((v) => v + 1)}>+</button>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
+            </div>
+
+            {/* Badge */}
+            <div className={styles.inputGroup} style={{ marginTop: 16 }}>
+              <label className={styles.label}>Badge Visuel (Optionnel)</label>
+              <select className={styles.input} value={badge} onChange={(e) => setBadge(e.target.value)}>
+                <option value="">Aucun badge</option>
+                <option value="Nouveau">Nouveau</option>
+                <option value="Derniers">Dernières pièces</option>
+                <option value="Promo">Promo</option>
+              </select>
             </div>
 
             {/* Tag / Matière */}
@@ -474,27 +536,43 @@ export default function EditProductModal({
               <input className={styles.input} value={tag} onChange={(e) => setTag(e.target.value)} />
             </div>
 
-            {/* Image */}
+            {/* Description */}
             <div className={styles.inputGroup} style={{ marginTop: 16 }}>
-              <label className={styles.label}>Changer l&apos;image (Optionnel)</label>
+              <label className={styles.label}>Description <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "400", marginLeft: "8px" }}>Optionnel</span></label>
+              <textarea className={styles.input} value={description} onChange={(e) => setDescription(e.target.value)} rows={3} style={{ resize: "vertical", fontFamily: "inherit", lineHeight: "1.5" }} />
+            </div>
+
+            {/* Images */}
+            <div className={styles.inputGroup} style={{ marginTop: 16 }}>
+              <label className={styles.label}>Images</label>
               <div
                 onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
                 onDragLeave={() => setDrag(false)}
-                onDrop={(e) => { e.preventDefault(); setDrag(false); onFile(e.dataTransfer.files[0]); }}
+                onDrop={(e) => { e.preventDefault(); setDrag(false); onFiles(e.dataTransfer.files); }}
                 onClick={() => document.getElementById("editImgI")?.click()}
-                className={`${styles.dropZone} ${drag ? styles.dropZoneActive : prev ? styles.dropZoneHasFile : ""}`}
+                className={`${styles.dropZone} ${drag ? styles.dropZoneActive : prevs.length > 0 ? styles.dropZoneHasFile : ""}`}
               >
-                {prev ? (
-                  <Image src={prev} alt="Aperçu" width={500} height={500} style={{ width: "100%", height: "110px", objectFit: "cover", borderRadius: 8 }} />
-                ) : (
-                  <>
-                    <div style={{ color: "var(--text-muted)" }}><I.Upload /></div>
-                    <span style={{ fontSize: 13, color: "var(--text-secondary)", fontWeight: 600 }}>Glisser ou <span style={{ color: "var(--rose)" }}>parcourir</span></span>
-                  </>
-                )}
-                <input id="editImgI" type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => e.target.files && onFile(e.target.files[0])} />
+                <div style={{ color: "var(--text-muted)" }}><I.Upload /></div>
+                <span style={{ fontSize: 13, color: "var(--text-secondary)", fontWeight: 600 }}>Ajouter de <span style={{ color: "var(--rose)" }}>nouvelles images</span></span>
+                <input id="editImgI" type="file" accept="image/*" multiple style={{ display: "none" }} onChange={(e) => e.target.files && onFiles(e.target.files)} />
               </div>
+
+              {prevs.length > 0 && (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))", gap: "10px", marginTop: "12px" }}>
+                  {prevs.map((src, i) => (
+                    <div key={i} style={{ position: "relative", borderRadius: "8px", overflow: "hidden", aspectRatio: "1" }}>
+                      <Image src={src} alt={`Aperçu ${i}`} width={90} height={90} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      {i === 0 && <span style={{ position: "absolute", bottom: "4px", left: "4px", backgroundColor: "rgba(0,0,0,0.6)", color: "white", fontSize: "9px", fontWeight: "700", padding: "2px 6px", borderRadius: "4px" }}>PRINCIPALE</span>}
+                      <button type="button" onClick={(e) => { e.stopPropagation(); removeImage(i); }} style={{ position: "absolute", top: "4px", right: "4px", backgroundColor: "rgba(0,0,0,0.55)", color: "white", border: "none", borderRadius: "50%", width: "22px", height: "22px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <I.X />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
+
+            
 
             {/* Coup de cœur */}
             <label onClick={() => setHot(!hot)} style={{ marginTop: 16, display: "flex" }} className={`${styles.hotToggle} ${hot ? styles.hotToggleActive : ""}`}>

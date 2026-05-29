@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import styles from "./AddProductModal.module.css";
 import Image from "next/image";
 
-// 1. Ajout du type Color
 type Color = {
   id: number;
   name: string;
@@ -13,7 +12,6 @@ type SizeItem = {
   nom: string;
   genres: string[];
 };
-
 
 function parseSizes(raw?: unknown): SizeItem[] {
   if (typeof raw !== "string" || !raw) return [];
@@ -83,25 +81,32 @@ export default function AddProductModal({
   const [sub, setSub] = useState(false);
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
+  // ✅ NOUVEAU : ancien prix (affiché barré sur la boutique)
+  const [oldPrice, setOldPrice] = useState("");
+  // ✅ NOUVEAU : description du produit
+  const [description, setDescription] = useState("");
   const [cat, setCat] = useState("");
   const [genre, setGenre] = useState("");
   const [tag, setTag] = useState("");
-  const [status, setStatus] = useState("En stock");
+  const [onOrder, setOnOrder] = useState("false"); 
+  const [badge, setBadge] = useState("");
   const [qty, setQty] = useState("1");
   const [hot, setHot] = useState(false);
   const [sizes, setSizes] = useState<string[]>([]);
-  const [img, setImg] = useState<File | null>(null);
-  const [prev, setPrev] = useState<string | null>(null);
+
+  // ✅ NOUVEAU : on remplace "img" (1 fichier) par "imgs" (plusieurs fichiers)
+  // "imgs" = tableau de fichiers sélectionnés
+  // "prevs" = tableau d'URLs de prévisualisation
+  const [imgs, setImgs] = useState<File[]>([]);
+  const [prevs, setPrevs] = useState<string[]>([]);
   const [drag, setDrag] = useState(false);
 
-  // Nouveaux états pour la gestion des couleurs "Odoo-style"
   const [allColors, setAllColors] = useState<Color[]>([]);
   const [selectedColors, setSelectedColors] = useState<Color[]>([]);
   const [colorInput, setColorInput] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
 
-  // Fermer le menu des couleurs si on clique en dehors
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -112,7 +117,6 @@ export default function AddProductModal({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Fetch des couleurs depuis l'API au chargement du modal
   useEffect(() => {
     const fetchColors = async () => {
       try {
@@ -128,7 +132,6 @@ export default function AddProductModal({
     fetchColors();
   }, []);
 
-  
   const CATS = useMemo(() => {
     const val = settings?.available_categories;
     return typeof val === "string" ? val.split(",").map((c) => c.trim()) : [];
@@ -140,10 +143,8 @@ export default function AddProductModal({
   }, [settings?.available_genres]);
 
   const currentCat = cat || CATS[0] || "";
-
   const currentGenre = genre || GENRES[0] || "Femme";
 
-  // Remplacez le useMemo SIZES existant :
   const SIZES = useMemo(() => {
     const allSizes = parseSizes(settings?.available_sizes as string);
     if (!currentGenre) return allSizes;
@@ -152,13 +153,8 @@ export default function AddProductModal({
     );
   }, [settings?.available_sizes, currentGenre]);
 
-
   const tog = useCallback(
-    (
-      item: string,
-      list: string[],
-      setList: React.Dispatch<React.SetStateAction<string[]>>,
-    ) => {
+    (item: string, list: string[], setList: React.Dispatch<React.SetStateAction<string[]>>) => {
       setList((prev) =>
         prev.includes(item) ? prev.filter((x) => x !== item) : [...prev, item],
       );
@@ -173,24 +169,21 @@ export default function AddProductModal({
   const handleCreateNewColor = async () => {
     const newName = colorInput.trim();
     if (!newName) return;
-
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/colors/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newName, hex_code: "#CCCCCC" }) 
+        body: JSON.stringify({ name: newName, hex_code: "#CCCCCC" })
       });
-
       if (res.ok) {
         const newColor = await res.json();
-        setAllColors([...allColors, newColor]); 
-        setSelectedColors([...selectedColors, newColor]); 
-        setColorInput(""); 
-        setIsDropdownOpen(false); 
+        setAllColors([...allColors, newColor]);
+        setSelectedColors([...selectedColors, newColor]);
+        setColorInput("");
+        setIsDropdownOpen(false);
       } else {
         const err = await res.json();
-        // CORRECTION DE L'ERREUR [object Object] ICI
-        const errorMessage = typeof err.detail === 'string' ? err.detail : JSON.stringify(err.detail);
+        const errorMessage = typeof err.detail === "string" ? err.detail : JSON.stringify(err.detail);
         toast(`Erreur: ${errorMessage}`, "error");
       }
     } catch (error) {
@@ -202,28 +195,46 @@ export default function AddProductModal({
     c.name.toLowerCase().includes(colorInput.toLowerCase()) &&
     !selectedColors.some(sc => sc.id === c.id)
   );
-  
-  const isExactMatch = allColors.some(c => 
+
+  const isExactMatch = allColors.some(c =>
     c.name.toLowerCase() === colorInput.trim().toLowerCase()
   );
 
-  const onFile = (f: File) => {
-    if (!f || !f.type.startsWith("image/")) return;
-    setImg(f);
-    if (prev) URL.revokeObjectURL(prev);
-    setPrev(URL.createObjectURL(f));
+  // ✅ NOUVEAU : fonction qui ajoute des fichiers au tableau imgs[]
+  // Elle vérifie que c'est bien une image avant d'ajouter
+  const onFiles = (files: FileList | File[]) => {
+    const fileArray = Array.from(files);
+    const validFiles = fileArray.filter(f => f.type.startsWith("image/"));
+    if (validFiles.length === 0) return;
+
+    // On crée les URLs de prévisualisation pour chaque nouvelle image
+    const newPrevs = validFiles.map(f => URL.createObjectURL(f));
+
+    setImgs(prev => [...prev, ...validFiles]);
+    setPrevs(prev => [...prev, ...newPrevs]);
   };
 
+  // ✅ NOUVEAU : supprimer une image de la liste (par son index)
+  const removeImage = (index: number) => {
+    // On libère l'URL de prévisualisation pour éviter les fuites mémoire
+    URL.revokeObjectURL(prevs[index]);
+    setImgs(prev => prev.filter((_, i) => i !== index));
+    setPrevs(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Nettoyage des URLs quand le composant se ferme
   useEffect(() => {
     return () => {
-      if (prev) URL.revokeObjectURL(prev);
+      prevs.forEach(p => URL.revokeObjectURL(p));
     };
-  }, [prev]);
+  }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!img) {
-      toast("Sélectionnez une image", "error");
+
+    // ✅ MODIFIÉ : on vérifie qu'il y a au moins 1 image
+    if (imgs.length === 0) {
+      toast("Sélectionnez au moins une image", "error");
       return;
     }
     if (!selectedColors.length || !sizes.length) {
@@ -235,17 +246,35 @@ export default function AddProductModal({
     const formData = new FormData();
     formData.append("name", name);
     formData.append("price_ar", price);
+
+    // ✅ NOUVEAU : on envoie old_price_ar seulement si rempli
+    if (oldPrice) {
+      formData.append("old_price_ar", oldPrice);
+    }
+
+    // ✅ NOUVEAU : on envoie description seulement si rempli
+    if (description) {
+      formData.append("description", description);
+    }
+
     formData.append("category", currentCat);
     formData.append("genre", currentGenre);
     formData.append("tag", tag);
     formData.append("sizes", sizes.join(","));
-    formData.append("badge", status);
-    formData.append("on_order", status === "Sur commande" ? "true" : "false");
-    formData.append("stock_quantity", status === "Sur commande" ? "0" : qty);
+    if (badge) {
+      formData.append("badge", badge);
+    }
+    formData.append("on_order", onOrder);
+    formData.append("stock_quantity", onOrder === "true" ? "0" : qty);
     formData.append("is_hot", hot ? "true" : "false");
-    formData.append("image", img);
     formData.append("colors", selectedColors.map(c => c.name).join(","));
     formData.append("color_ids", JSON.stringify(selectedColors.map(c => c.id)));
+
+    // ✅ MODIFIÉ : on envoie toutes les images avec le champ "images" (au pluriel)
+    // Le backend attend : images: List[UploadFile]
+    imgs.forEach(img => {
+      formData.append("images", img);
+    });
 
     try {
       const res = await fetch(
@@ -258,7 +287,7 @@ export default function AddProductModal({
         onClose();
       } else {
         const err = await res.json();
-        const errorMessage = typeof err.detail === 'string' ? err.detail : JSON.stringify(err.detail);
+        const errorMessage = typeof err.detail === "string" ? err.detail : JSON.stringify(err.detail);
         toast(`Erreur: ${errorMessage}`, "error");
       }
     } catch (err) {
@@ -286,7 +315,7 @@ export default function AddProductModal({
         {/* ── BODY ── */}
         <div className={styles.body}>
           <form id="pf" onSubmit={submit}>
-            
+
             {/* ── LIGNE 1 : NOM ET PRIX ── */}
             <div className={styles.grid}>
               <div className={styles.inputGroup}>
@@ -312,6 +341,24 @@ export default function AddProductModal({
               </div>
             </div>
 
+            {/* ── ✅ NOUVEAU : ANCIEN PRIX ── */}
+            {/* Affiché barré sur la boutique pour montrer une réduction */}
+            <div className={styles.inputGroup}>
+              <label className={styles.label}>
+                Ancien prix (Ar)
+                <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "400", marginLeft: "8px" }}>
+                  Optionnel — affiché barré si renseigné
+                </span>
+              </label>
+              <input
+                type="number"
+                className={styles.input}
+                value={oldPrice}
+                onChange={(e) => setOldPrice(e.target.value)}
+                placeholder="220 000"
+              />
+            </div>
+
             {/* ── LIGNE 2 : CATEGORIE ET CIBLE ── */}
             <div className={styles.grid}>
               <div className={styles.inputGroup}>
@@ -328,87 +375,66 @@ export default function AddProductModal({
               </div>
             </div>
 
-            {/* ── LIGNE 3 : COULEURS FAÇON ODOO ── */}
+            {/* ── LIGNE 3 : COULEURS ── */}
             <div className={styles.inputGroup} ref={dropdownRef}>
               <label className={styles.label}>Couleurs *</label>
-              
               <div style={{
-                display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px", 
-                border: "1px solid var(--border-color, #e5e7eb)", borderRadius: "8px", 
+                display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px",
+                border: "1px solid var(--border-color, #e5e7eb)", borderRadius: "8px",
                 padding: "8px", minHeight: "45px", backgroundColor: "#fff", position: "relative"
               }}>
                 {selectedColors.map((color) => (
-                  <span
-                    key={color.id}
-                    style={{
-                      display: "flex", alignItems: "center", gap: "6px",
-                      backgroundColor: "var(--bg-accent, #fce7f3)", color: "var(--text-accent, #9d174d)",
-                      fontSize: "13px", fontWeight: "500", padding: "4px 10px", borderRadius: "9999px"
-                    }}
-                  >
+                  <span key={color.id} style={{
+                    display: "flex", alignItems: "center", gap: "6px",
+                    backgroundColor: "var(--bg-accent, #fce7f3)", color: "var(--text-accent, #9d174d)",
+                    fontSize: "13px", fontWeight: "500", padding: "4px 10px", borderRadius: "9999px"
+                  }}>
                     <span style={{ width: "12px", height: "12px", borderRadius: "50%", backgroundColor: color.hex_code || "#ccc", border: "1px solid rgba(0,0,0,0.1)" }}></span>
                     {color.name}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveColor(color.id)}
-                      style={{ background: "none", border: "none", cursor: "pointer", color: "inherit", opacity: 0.6, display: "flex", alignItems: "center", padding: 0, marginLeft: "2px" }}
-                    >
+                    <button type="button" onClick={() => handleRemoveColor(color.id)}
+                      style={{ background: "none", border: "none", cursor: "pointer", color: "inherit", opacity: 0.6, display: "flex", alignItems: "center", padding: 0, marginLeft: "2px" }}>
                       <I.X />
                     </button>
                   </span>
                 ))}
-
                 <input
                   type="text"
                   value={colorInput}
-                  onChange={(e) => {
-                    setColorInput(e.target.value);
-                    setIsDropdownOpen(true);
-                  }}
+                  onChange={(e) => { setColorInput(e.target.value); setIsDropdownOpen(true); }}
                   onFocus={() => setIsDropdownOpen(true)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
-                      e.preventDefault(); 
+                      e.preventDefault();
                       if (colorInput.trim() !== "" && !isExactMatch) handleCreateNewColor();
                     }
                   }}
                   placeholder={selectedColors.length === 0 ? "Rechercher ou créer..." : ""}
                   style={{ flex: 1, minWidth: "140px", border: "none", outline: "none", background: "transparent", fontSize: "14px" }}
                 />
-
                 {isDropdownOpen && (
                   <div style={{
                     position: "absolute", top: "100%", left: 0, right: 0,
                     backgroundColor: "white", border: "1px solid #e5e7eb",
                     borderRadius: "6px", marginTop: "4px", zIndex: 50,
-                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)", maxHeight: "200px", overflowY: "auto"
+                    boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", maxHeight: "200px", overflowY: "auto"
                   }}>
                     {availableFiltered.map(c => (
-                      <div 
-                        key={c.id} 
-                        onClick={() => {
-                          setSelectedColors([...selectedColors, c]);
-                          setColorInput("");
-                          setIsDropdownOpen(false);
-                        }} 
+                      <div key={c.id}
+                        onClick={() => { setSelectedColors([...selectedColors, c]); setColorInput(""); setIsDropdownOpen(false); }}
                         style={{ padding: "8px 12px", cursor: "pointer", borderBottom: "1px solid #f3f4f6", display: "flex", alignItems: "center", gap: "8px", fontSize: "14px" }}
                         onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#f9fafb"}
                         onMouseOut={(e) => e.currentTarget.style.backgroundColor = "white"}
                       >
-                        <span style={{width:"12px", height:"12px", borderRadius:"50%", backgroundColor: c.hex_code, border: "1px solid rgba(0,0,0,0.1)"}}></span>
+                        <span style={{ width: "12px", height: "12px", borderRadius: "50%", backgroundColor: c.hex_code, border: "1px solid rgba(0,0,0,0.1)" }}></span>
                         {c.name}
                       </div>
                     ))}
-
                     {colorInput.trim() !== "" && !isExactMatch && (
-                      <div 
-                        onClick={handleCreateNewColor} 
-                        style={{ padding: "10px 12px", cursor: "pointer", color: "var(--text-accent, #9d174d)", fontWeight: "600", fontSize: "14px", backgroundColor: "#fdf2f8" }}
-                      >
+                      <div onClick={handleCreateNewColor}
+                        style={{ padding: "10px 12px", cursor: "pointer", color: "var(--text-accent, #9d174d)", fontWeight: "600", fontSize: "14px", backgroundColor: "#fdf2f8" }}>
                         Créer "{colorInput.trim()}"
                       </div>
                     )}
-
                     {availableFiltered.length === 0 && colorInput.trim() === "" && (
                       <div style={{ padding: "8px 12px", color: "#9ca3af", fontSize: "13px" }}>Aucune autre couleur disponible</div>
                     )}
@@ -422,26 +448,26 @@ export default function AddProductModal({
               <label className={styles.label}>Tailles *</label>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "7px" }}>
                 {SIZES.map((sz) => (
-                  <button
-                    key={sz.nom}
-                    type="button"
+                  <button key={sz.nom} type="button"
                     onClick={() => tog(sz.nom, sizes, setSizes)}
-                    className={`${styles.tagBtn} ${styles.tagBtnSize} ${sizes.includes(sz.nom) ? styles.tagBtnSizeActive : ""}`}
-                  >
+                    className={`${styles.tagBtn} ${styles.tagBtnSize} ${sizes.includes(sz.nom) ? styles.tagBtnSizeActive : ""}`}>
                     {sz.nom}
                   </button>
                 ))}
               </div>
             </div>
 
+            {/* ── LIGNE 5 : DISPONIBILITÉ ET QUANTITÉ ── */}
             <div className={styles.grid}>
               <div className={styles.inputGroup}>
-                <label className={styles.label}>Statut</label>
-                <select className={styles.input} value={status} onChange={(e) => setStatus(e.target.value)}>
-                  {["En stock", "Nouveau", "Derniers", "Sur commande"].map((s) => <option key={s} value={s}>{s}</option>)}
+                <label className={styles.label}>Disponibilité</label>
+                <select className={styles.input} value={onOrder} onChange={(e) => setOnOrder(e.target.value)}>
+                  <option value="false">En stock</option>
+                  <option value="true">Sur commande</option>
                 </select>
               </div>
-              {status !== "Sur commande" && (
+              
+              {onOrder === "false" && (
                 <div className={styles.inputGroup}>
                   <label className={styles.label}>Quantité *</label>
                   <input type="number" className={styles.input} value={qty} onChange={(e) => setQty(e.target.value)} min="1" required />
@@ -449,31 +475,127 @@ export default function AddProductModal({
               )}
             </div>
 
+            {/* ── LIGNE 6 : BADGE VISUEL (Optionnel) ── */}
+            <div className={styles.inputGroup}>
+              <label className={styles.label}>
+                Badge Visuel
+                <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "400", marginLeft: "8px" }}>
+                  Optionnel — s'affiche comme un ruban sur la photo
+                </span>
+              </label>
+              <select className={styles.input} value={badge} onChange={(e) => setBadge(e.target.value)}>
+                <option value="">Aucun badge</option>
+                <option value="Nouveau">Nouveau</option>
+                <option value="Derniers">Dernières pièces</option>
+                <option value="Promo">Promo</option>
+              </select>
+            </div>
+
             <div className={styles.inputGroup}>
               <label className={styles.label}>Tag / Matière</label>
               <input className={styles.input} value={tag} onChange={(e) => setTag(e.target.value)} placeholder="100% Raphia naturel" />
             </div>
 
+            {/* ── ✅ NOUVEAU : DESCRIPTION ── */}
             <div className={styles.inputGroup}>
-              <label className={styles.label}>Image *</label>
+              <label className={styles.label}>
+                Description
+                <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "400", marginLeft: "8px" }}>
+                  Optionnel
+                </span>
+              </label>
+              <textarea
+                className={styles.input}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Décrivez le produit : matière, coupe, occasion..."
+                rows={3}
+                style={{ resize: "vertical", fontFamily: "inherit", lineHeight: "1.5" }}
+              />
+            </div>
+
+            {/* ── ✅ MODIFIÉ : UPLOAD MULTIPLE IMAGES ── */}
+            <div className={styles.inputGroup}>
+              <label className={styles.label}>
+                Images *
+                <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "400", marginLeft: "8px" }}>
+                  Plusieurs photos autorisées — la 1ère sera l'image principale
+                </span>
+              </label>
+
+              {/* Zone de drop : on peut glisser ou cliquer pour ajouter des images */}
               <div
                 onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
                 onDragLeave={() => setDrag(false)}
-                onDrop={(e) => { e.preventDefault(); setDrag(false); onFile(e.dataTransfer.files[0]); }}
+                onDrop={(e) => { e.preventDefault(); setDrag(false); onFiles(e.dataTransfer.files); }}
                 onClick={() => document.getElementById("imgI")?.click()}
-                className={`${styles.dropZone} ${drag ? styles.dropZoneActive : prev ? styles.dropZoneHasFile : ""}`}
+                className={`${styles.dropZone} ${drag ? styles.dropZoneActive : imgs.length > 0 ? styles.dropZoneHasFile : ""}`}
               >
-                {prev ? (
-                  <Image src={prev} alt="Aperçu" width={500} height={500} style={{ width: "100%", height: "110px", objectFit: "cover", borderRadius: "8px" }} />
-                ) : (
-                  <>
-                    <div style={{ color: "var(--text-muted)" }}><I.Upload /></div>
-                    <span style={{ fontSize: "13px", color: "var(--text-secondary)", fontWeight: "600" }}>Glisser ou <span style={{ color: "var(--rose)" }}>parcourir</span></span>
-                    <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "500" }}>PNG · JPG · WEBP</span>
-                  </>
-                )}
-                <input id="imgI" type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => e.target.files && onFile(e.target.files[0])} />
+                <div style={{ color: "var(--text-muted)" }}><I.Upload /></div>
+                <span style={{ fontSize: "13px", color: "var(--text-secondary)", fontWeight: "600" }}>
+                  Glisser ou <span style={{ color: "var(--rose)" }}>parcourir</span>
+                </span>
+                <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "500" }}>
+                  PNG · JPG · WEBP — {imgs.length} image{imgs.length > 1 ? "s" : ""} sélectionnée{imgs.length > 1 ? "s" : ""}
+                </span>
+
+                {/* ✅ IMPORTANT : multiple={true} pour permettre la sélection de plusieurs fichiers */}
+                <input
+                  id="imgI"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  style={{ display: "none" }}
+                  onChange={(e) => e.target.files && onFiles(e.target.files)}
+                />
               </div>
+
+              {/* ✅ NOUVEAU : grille de prévisualisation des images sélectionnées */}
+              {prevs.length > 0 && (
+                <div style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))",
+                  gap: "10px",
+                  marginTop: "12px"
+                }}>
+                  {prevs.map((src, i) => (
+                    <div key={i} style={{ position: "relative", borderRadius: "8px", overflow: "hidden", aspectRatio: "1" }}>
+                      {/* Aperçu de l'image */}
+                      <Image
+                        src={src}
+                        alt={`Aperçu ${i + 1}`}
+                        width={90}
+                        height={90}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                      {/* Badge "Principale" sur la 1ère image */}
+                      {i === 0 && (
+                        <span style={{
+                          position: "absolute", bottom: "4px", left: "4px",
+                          backgroundColor: "rgba(0,0,0,0.6)", color: "white",
+                          fontSize: "9px", fontWeight: "700", padding: "2px 6px",
+                          borderRadius: "4px", letterSpacing: "0.5px"
+                        }}>
+                          PRINCIPALE
+                        </span>
+                      )}
+                      {/* Bouton ✕ pour supprimer cette image */}
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); removeImage(i); }}
+                        style={{
+                          position: "absolute", top: "4px", right: "4px",
+                          backgroundColor: "rgba(0,0,0,0.55)", color: "white",
+                          border: "none", borderRadius: "50%", width: "22px", height: "22px",
+                          cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center"
+                        }}
+                      >
+                        <I.X />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <label onClick={() => setHot(!hot)} className={`${styles.hotToggle} ${hot ? styles.hotToggleActive : ""}`}>

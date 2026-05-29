@@ -1,23 +1,14 @@
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from sqlmodel import Session, select
 from typing import List, Optional
-import os
-import uuid
-from supabase import create_client, Client
 import json
 from models.models import Product, Settings, Color, ProductColorLink
 from database import get_session
+from utils.r2 import upload_image_to_r2  # ← on importe notre fonction R2
 
 router = APIRouter()
 
-# --- Configuration Supabase Storage ---
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-# On initialise le client Supabase uniquement si les clés sont présentes
-supabase: Client = None
-if SUPABASE_URL and SUPABASE_KEY:
-    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 @router.get("/")
@@ -76,74 +67,67 @@ async def create_product(
     genre: str = Form(...),
     category: str = Form(...),
     price_ar: int = Form(...),
+    old_price_ar: Optional[int] = Form(None),
+    description: Optional[str] = Form(None),
     colors: str = Form(""),
-    color_ids: Optional[str] = Form(None), # Nouveau : "[1, 4, 12]"
+    color_ids: Optional[str] = Form(None),
     sizes: str = Form(""),
     badge: str = Form("Nouveau"),
     is_hot: bool = Form(False),
     on_order: bool = Form(False),
     stock_quantity: int = Form(1),
-    image: UploadFile = File(...),
+    images: List[UploadFile] = File(default=[]),     # ← uniquement celui-ci, pas d'autre image
     session: Session = Depends(get_session)
 ):
-    """Crée un nouveau produit et upload son image sur Supabase Storage"""
-    if not supabase:
-        raise HTTPException(status_code=500, detail="Supabase Storage n'est pas configuré.")
-
+    """Crée un nouveau produit et upload ses images sur Cloudflare R2"""
     try:
-        # 1. Préparer l'image avec un nom optimisé SEO
-        # On extrait le nom et l'extension proprement
-        base_name = os.path.splitext(image.filename)[0]
-        extension = os.path.splitext(image.filename)[1]
-        
-        # On nettoie le nom (espaces -> tirets) et on ajoute un suffixe court pour l'unicité
-        clean_base_name = base_name.replace(" ", "-")
-        short_uuid = uuid.uuid4().hex[:8]
-        unique_filename = f"{clean_base_name}-{short_uuid}{extension}"
-        
-        file_bytes = await image.read()
-        
-        # 2. Upload sur Supabase avec le nom optimisé
-        res = supabase.storage.from_("products").upload(
-            path=unique_filename,
-            file=file_bytes,
-            file_options={"content-type": image.content_type}
-        )
-        
-        public_url = supabase.storage.from_("products").get_public_url(unique_filename)
+        # 1. Upload toutes les images vers R2
+        image_urls = []
+        for img in images:
+            if img.filename:
+                url = await upload_image_to_r2(img)
+                image_urls.append(url)
 
-        # 3. La suite de ton code reste inchangée...
+        # 2. Première image = colonne "image" (compatibilité ancienne)
+        #    Toutes les images = colonne "images" (séparées par virgule)
+        first_image = image_urls[0] if image_urls else ""
+        all_images  = ",".join(image_urls)           # "url1,url2,url3"
+
+        # 3. Couleurs
         actual_colors = []
         if color_ids:
             ids = json.loads(color_ids)
             actual_colors = session.exec(select(Color).where(Color.id.in_(ids))).all()
-        
+
+        # 4. Créer le produit
         new_product = Product(
             name=name,
             tag=tag,
             genre=genre,
             category=category,
             price_ar=price_ar,
-            colors=colors, # Vérifie si c'est bien la liste des couleurs ou juste la chaîne
+            old_price_ar=old_price_ar,    # ← ajouter
+            description=description,
+            colors=colors,
             colors_list=actual_colors,
             sizes=sizes,
             badge=badge,
             is_hot=is_hot,
             on_order=on_order,
             stock_quantity=stock_quantity,
-            image=public_url
+            image=first_image,
+            images=all_images,
         )
-        
         if new_product.stock_quantity == 0:
             new_product.badge = "Sur commande"
             new_product.on_order = True
-            
+
         session.add(new_product)
         session.commit()
         session.refresh(new_product)
-        
+
         return new_product
-        
+
     except Exception as e:
         session.rollback()
         raise HTTPException(status_code=500, detail=str(e))
@@ -193,6 +177,8 @@ async def update_product(
     genre: str = Form(...),
     category: str = Form(...),
     price_ar: int = Form(...),
+    old_price_ar: Optional[int] = Form(None),
+    description: Optional[str] = Form(None),
     colors: str = Form(""),
     color_ids: Optional[str] = Form(None), # Ajoute ceci
     sizes: str = Form(""),
@@ -200,7 +186,7 @@ async def update_product(
     is_hot: bool = Form(False),
     on_order: bool = Form(False),
     stock_quantity: int = Form(1),
-    image: Optional[UploadFile] = File(None), # Optionnel lors d'une modification
+    images: List[UploadFile] = File([]), # Optionnel lors d'une modification
     session: Session = Depends(get_session)
 ):
     """Modifie un produit existant (et son image si une nouvelle est fournie)"""
@@ -214,6 +200,8 @@ async def update_product(
     product.genre = genre
     product.category = category
     product.price_ar = price_ar
+    product.old_price_ar = old_price_ar
+    product.description = description
     product.colors = colors
     product.sizes = sizes
     product.badge = badge
@@ -228,36 +216,17 @@ async def update_product(
         actual_colors = session.exec(select(Color).where(Color.id.in_(ids))).all()
         product.colors_list = actual_colors # Magie de l'ORM : il gère la table de liaison seul
 
-    # 2. Si l'utilisateur a envoyé une nouvelle image, on l'upload sur Supabase
-    if image and image.filename:
-        if not supabase:
-            raise HTTPException(status_code=500, detail="Supabase Storage n'est pas configuré.")
-        try:
-            # 1. On récupère le nom sans l'extension
-            base_name = os.path.splitext(image.filename)[0]
-            # 2. On récupère l'extension (avec le point)
-            extension = os.path.splitext(image.filename)[1]
-            # 3. On génère un identifiant court (8 caractères suffisent pour l'unicité)
-            short_uuid = uuid.uuid4().hex[:8]
-            
-            # 4. On reconstruit le nom : "nom-original-a1b2c3d4.jpg"
-            # On remplace aussi les espaces par des tirets pour le SEO
-            clean_base_name = base_name.replace(" ", "-")
-            unique_filename = f"{clean_base_name}-{short_uuid}{extension}"
-            
-            file_bytes = await image.read()
-            
-            supabase.storage.from_("products").upload(
-                path=unique_filename,
-                file=file_bytes,
-                file_options={"content-type": image.content_type}
-            )
-            
-            public_url = supabase.storage.from_("products").get_public_url(unique_filename)
-            product.image = public_url
-            
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Erreur d'upload : {str(e)}")
+    # 3. Si de nouvelles images sont envoyées → on les upload vers R2
+    #    Sinon → on garde les images existantes
+    new_image_urls = []
+    for img in images:
+        if img.filename:
+            url = await upload_image_to_r2(img)
+            new_image_urls.append(url)
+
+    if new_image_urls:
+        product.image  = new_image_urls[0]              # première image
+        product.images = ",".join(new_image_urls)       # toutes les images
 
 
     if product.stock_quantity == 0:

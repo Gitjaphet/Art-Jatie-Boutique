@@ -1094,6 +1094,68 @@
   margin-top: 3px;
 }
 
+
+
+/* 🎀 Style pour le ruban incliné sur la photo */
+.badgeRibbon {
+  position: absolute;
+  top: 10px;
+  left: -28px;
+  padding: 4px 30px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transform: rotate(-45deg);
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  text-align: center;
+}
+
+/* ✂️ TRÈS IMPORTANT : Le conteneur de l'image doit cacher ce qui dépasse du ruban */
+.productImageWrapper {
+  position: relative;
+  overflow: hidden;
+  /* (Ne touche pas à tes autres propriétés existantes pour cette classe) */
+}
+
+/* 📝 Style de la description sous le nom du produit */
+.productDescription {
+  font-size: 11px;
+  color: var(--text-muted, #6b7280);
+  margin-top: 3px;
+  line-height: 1.3;
+  /* Astuce pour couper le texte avec "..." s'il dépasse 2 lignes */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Badge de stock de base */
+.posStockBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  /* 🚀 Déplacement visuel ultra-fluide qui ne fait pas ramer le PC */
+  transform: translateY(12px); 
+}
+
+/* Version : En Stock (Vert) */
+.posStockIn {
+  color: #16a34a;
+  background-color: #f0fdf4;
+  border: 1px solid rgba(22, 163, 74, 0.2);
+}
+
+/* Version : Épuisé (Rouge) */
+.posStockOut {
+  color: #ef4444;
+  background-color: #fef2f2;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
 /* ── PRINT ─────────────────────────────────────────────────────── */
 @media print {
   body * {

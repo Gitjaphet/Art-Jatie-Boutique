@@ -1,0 +1,15 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copie uniquement les fichiers de dépendances en premier
+COPY package.json package-lock.json* ./
+
+# Installe les dépendances
+RUN npm install
+
+# Copie le reste du code
+COPY . .
+
+# Démarre le serveur en mode développement
+CMD sh -c "npm install && npm run dev"
