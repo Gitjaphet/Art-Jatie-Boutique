@@ -216,7 +216,7 @@ function AddToCartSection({ product, isSurMesure }: { product: any; isSurMesure:
         {showModal && (
           <CommandeModal
             product={product}
-            initialQty={qty} // ◄ On passe la quantité à la modale
+            
             onClose={() => setShowModal(false)}
             onSuccess={() => {
               setAdded(true);
