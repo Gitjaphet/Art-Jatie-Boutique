@@ -1,12 +1,16 @@
 // frontend/lib/api.ts
 
 // Utilisation de la variable d'environnement Vercel (avec localhost en secours)
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// api.ts
+const API_URL = typeof window === "undefined"
+  ? (process.env.API_URL || "http://backend:8000")        // ← serveur Docker
+  : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"); // ← navigateur
 
 // 1. Définition de l'interface brute venant de la base de données (Backend)
 interface ApiProduct {
   id: number;
   name: string;
+  slug: string;
   category: string;
   genre: string;
   price_ar: number;
@@ -36,6 +40,7 @@ export async function getProducts(onOrder?: boolean) {
   return data.map((p: ApiProduct) => ({
     id: p.id,
     name: p.name,
+    slug: p.slug,
     subtitle: `${p.category} · ${p.genre}`,
 
     // --- Valeurs mathématiques ---
@@ -77,6 +82,7 @@ export async function getAllProducts() {
     id: p.id,
     name: p.name,
     image: p.image,
+    slug: p.slug,
     imagesString: p.images,
     category: p.category,
     genre: p.genre,
@@ -96,6 +102,7 @@ export async function getProductBySlug(slug: string) {
   return {
     id: p.id,
     name: p.name,
+    slug: p.slug,
     subtitle: `${p.category} · ${p.genre}`,
     rawPrice: p.price_ar,
     rawOldPrice: p.old_price_ar,
@@ -107,7 +114,10 @@ export async function getProductBySlug(slug: string) {
     tag: p.tag,
     color: "#f5ead9",
     image: p.image,
+    imagesString: p.images || "",   // ← AJOUTER CETTE LIGNE
     hot: p.is_hot,
+    on_order: p.on_order,           // ← aussi absent, à ajouter
+    stock_quantity: p.stock_quantity ?? 0,  // ← aussi absent
     colorsArray: p.colors ? p.colors.split(",").map((c) => c.trim()) : [],
     sizesArray: p.sizes ? p.sizes.split(",").map((s) => s.trim()) : [],
     description: p.description || "Un magnifique article Art Jatie.",

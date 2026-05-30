@@ -61,13 +61,13 @@ export default function ProductCard({
   const getGenreIcon = (genre: string) => {
     switch (genre) {
       case "Femme":
-        return "♀";
+        return "";
       case "Homme":
-        return "♂";
+        return "";
       case "Enfant":
-        return "🧒";
+        return "";
       default:
-        return "✨";
+        return "";
     }
   };
 
@@ -87,7 +87,10 @@ export default function ProductCard({
         onMouseLeave={() => setHovered(false)}
       >
         {/* Image */}
-        <div className={styles.imageWrapper}>
+        <Link 
+          href={`/produit/${product.slug}${commandeMode ? "?mode=sur-mesure" : ""}`} 
+          className={styles.imageWrapper}
+        >
           <Image
             src={product.image}
             alt={product.name}
@@ -106,11 +109,11 @@ export default function ProductCard({
           <div
             className={`${styles.overlay} ${hovered ? styles.overlayVisible : ""}`}
           >
-            <Link href={`/produit/${product.id}`} className={styles.btnDetails}>
+            <span className={styles.btnDetails}>
               Voir les détails
-            </Link>
+            </span>
           </div>
-        </div>
+        </Link>
 
         {/* Infos */}
         <div className={styles.info}>

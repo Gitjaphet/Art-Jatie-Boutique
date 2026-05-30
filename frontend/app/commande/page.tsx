@@ -36,6 +36,7 @@ function parseSizes(raw?: string): SizeItem[] {
 }
 
 // ─── Conversion API → Product (identique à boutique/page.tsx) ─────────────────
+// ─── Conversion API → Product ─────────────────────────────────────────────────
 function mapApiProduct(
   raw: Record<string, unknown>,
   exchangeRate = 4800,
@@ -59,6 +60,8 @@ function mapApiProduct(
   return {
     id: Number(raw.id),
     name: (raw.name as string) ?? "",
+    slug: (raw.slug as string) ?? "", // ✅ LE SLUG MANQUANT EST AJOUTÉ ICI
+    description: (raw.description as string) ?? undefined, // ✅ Utile pour l'affichage
     tag: (raw.tag as string) ?? "",
     genre: ((raw.genre as string) ?? "Femme") as Product["genre"],
     category: ((raw.category as string) ?? "TENUES") as Product["category"],

@@ -1,37 +1,73 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import type { Product } from "../../app/boutique/page";
 import styles from "./CommandeModal.module.css";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 type Props = {
-  product: Product;
+  product: any; // On utilise 'any' pour accepter sereinement les différences entre Boutique et Sur-mesure
   onClose: () => void;
   onSuccess: () => void;
 };
 
 export default function CommandeModal({ product, onClose, onSuccess }: Props) {
+  // 1. Récupération sécurisée du prix (corrige le bug "NaN")
+  const priceAr = product.priceAr || product.rawPrice || product.price_ar || 0;
+  const priceEur = product.priceEur || Math.round(priceAr / 4800) || 0;
+
+  // 2. Récupération des tailles et couleurs par défaut
+  const defaultSizes: string[] = product.sizesArray || (typeof product.sizes === 'string' ? product.sizes.split(',').map((s: string) => s.trim()) : (product.sizes || []));
+  const defaultColors: string[] = product.colorsArray || (typeof product.colors === 'string' ? product.colors.split(',').map((c: string) => c.trim()) : (product.colors || []));
+
+  // États du formulaire
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [message, setMessage] = useState("");
-  const [size, setSize] = useState("");
-  const [color, setColor] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // États pour les étiquettes (Tags) de tailles et couleurs
+  const [sizes, setSizes] = useState<string[]>([...defaultSizes]);
+  const [sizeInput, setSizeInput] = useState("");
+  
+  const [colors, setColors] = useState<string[]>([...defaultColors]);
+  const [colorInput, setColorInput] = useState("");
+
+  // Vérification des modifications pour afficher les avertissements
+  const isSizeChanged = JSON.stringify(sizes) !== JSON.stringify(defaultSizes);
+  const isColorChanged = JSON.stringify(colors) !== JSON.stringify(defaultColors);
+
+  // --- Gestion des Tailles ---
+  const handleAddSize = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && sizeInput.trim()) {
+      e.preventDefault();
+      if (!sizes.includes(sizeInput.trim())) setSizes([...sizes, sizeInput.trim()]);
+      setSizeInput("");
+    }
+  };
+  const removeSize = (s: string) => setSizes(sizes.filter((x) => x !== s));
+
+  // --- Gestion des Couleurs ---
+  const handleAddColor = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && colorInput.trim()) {
+      e.preventDefault();
+      if (!colors.includes(colorInput.trim())) setColors([...colors, colorInput.trim()]);
+      setColorInput("");
+    }
+  };
+  const removeColor = (c: string) => setColors(colors.filter((x) => x !== c));
+
+  // --- Soumission ---
   const handleSubmit = async () => {
-    if (!name || !email || !whatsapp || !size || !color) {
-      setError("Veuillez remplir tous les champs obligatoires.");
+    if (!name || !email || !whatsapp || sizes.length === 0 || colors.length === 0) {
+      setError("Veuillez remplir tous les champs obligatoires (incluant au moins 1 taille et 1 couleur).");
       return;
     }
     if (!agreed) {
-      setError(
-        "Veuillez accepter les conditions de paiement avant de confirmer.",
-      );
+      setError("Veuillez accepter les conditions de paiement avant de confirmer.");
       return;
     }
     setLoading(true);
@@ -48,9 +84,9 @@ export default function CommandeModal({ product, onClose, onSuccess }: Props) {
           product_id: product.id,
           product_name: product.name,
           product_image: product.image,
-          product_price_ar: product.priceAr,
-          selected_size: size,
-          selected_color: color,
+          product_price_ar: priceAr,
+          selected_size: sizes.join(", "), // On rassemble les tags en texte pour votre backend
+          selected_color: colors.join(", "), // Idem ici
         }),
       });
       if (res.ok) {
@@ -67,17 +103,32 @@ export default function CommandeModal({ product, onClose, onSuccess }: Props) {
     }
   };
 
-  // Fermer seulement si on clique exactement sur l'overlay
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) onClose();
   };
 
-  const advance = Math.round(product.priceAr * 0.5);
-  const formatAr = (n: number) =>
-    new Intl.NumberFormat("fr-FR").format(n) + " Ar";
+  const advance = Math.round(priceAr * 0.5);
+  const formatAr = (n: number) => new Intl.NumberFormat("fr-FR").format(n) + " Ar";
+
+  // --- Styles CSS en ligne pour les "Chips" (Étiquettes) ---
+  const chipContainerStyle: React.CSSProperties = {
+    display: "flex", flexWrap: "wrap", gap: "6px", padding: "8px", 
+    border: "1px solid #d1d5db", borderRadius: "4px", backgroundColor: "#fff", alignItems: "center"
+  };
+  const chipStyle: React.CSSProperties = {
+    display: "inline-flex", alignItems: "center", backgroundColor: "#f3f4f6", 
+    padding: "4px 10px", borderRadius: "16px", fontSize: "13px", color: "#374151"
+  };
+  const chipBtnStyle: React.CSSProperties = {
+    border: "none", background: "none", marginLeft: "6px", cursor: "pointer", 
+    fontWeight: "bold", color: "#9ca3af", padding: "0 2px"
+  };
+  const warningStyle: React.CSSProperties = {
+    marginTop: "6px", padding: "8px 12px", backgroundColor: "#fffbeb", 
+    borderLeft: "3px solid #f59e0b", color: "#b45309", fontSize: "12px", borderRadius: "0 4px 4px 0"
+  };
 
   return (
-    // ✅ Pas de backdrop-filter — juste un fond semi-transparent léger
     <div className={styles.overlay} onClick={handleOverlayClick}>
       <div className={styles.modal}>
         {/* HEADER */}
@@ -94,21 +145,13 @@ export default function CommandeModal({ product, onClose, onSuccess }: Props) {
               <p className={styles.productTag}>{product.tag}</p>
               <h3 className={styles.productName}>{product.name}</h3>
               <p className={styles.productPrice}>
-                {product.priceArDisplay}
-                <span> ≈ {product.priceEur} €</span>
+                {formatAr(priceAr)}
+                <span> ≈ {priceEur} €</span>
               </p>
             </div>
           </div>
           <button onClick={onClose} className={styles.closeBtn}>
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -118,33 +161,54 @@ export default function CommandeModal({ product, onClose, onSuccess }: Props) {
         <div className={styles.body}>
           <p className={styles.sectionTitle}>Votre sélection</p>
 
-          {/* TAILLE — input libre */}
-          <div className={styles.grid2}>
-            <div className={styles.field}>
-              <label className={styles.label}>
-                Taille *{" "}
-                <span className={styles.hint}>XS, S, M, L, XL, 38, 40…</span>
-              </label>
+          {/* TAILLE — Système de tags */}
+          <div className={styles.field}>
+            <label className={styles.label}>Taille *</label>
+            <div style={chipContainerStyle}>
+              {sizes.map((s) => (
+                <span key={s} style={chipStyle}>
+                  {s}
+                  <button type="button" onClick={() => removeSize(s)} style={chipBtnStyle}>×</button>
+                </span>
+              ))}
               <input
-                className={styles.input}
-                value={size}
-                onChange={(e) => setSize(e.target.value)}
-                placeholder="Ex : M, 40, Sur mesure…"
+                value={sizeInput}
+                onChange={(e) => setSizeInput(e.target.value)}
+                onKeyDown={handleAddSize}
+                placeholder={sizes.length === 0 ? "Tapez une taille et Entrée..." : "Ajouter..."}
+                style={{ border: "none", outline: "none", flexGrow: 1, minWidth: "120px", fontSize: "14px" }}
               />
             </div>
+            {isSizeChanged && (
+              <div style={warningStyle}>
+                ⚠️ <strong>Attention :</strong> Si vous changez ou ajoutez une taille personnalisée, il se pourrait que le tarif change en fonction de votre choix. Nous vous enverrons le prix exact via WhatsApp ou email.
+              </div>
+            )}
+          </div>
 
-            {/* COULEUR — input libre */}
-            <div className={styles.field}>
-              <label className={styles.label}>
-                Couleur * <span className={styles.hint}>Soyez précis(e)</span>
-              </label>
+          {/* COULEUR — Système de tags */}
+          <div className={styles.field} style={{ marginTop: "16px" }}>
+            <label className={styles.label}>Couleur *</label>
+            <div style={chipContainerStyle}>
+              {colors.map((c) => (
+                <span key={c} style={chipStyle}>
+                  {c}
+                  <button type="button" onClick={() => removeColor(c)} style={chipBtnStyle}>×</button>
+                </span>
+              ))}
               <input
-                className={styles.input}
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
-                placeholder="Ex : Rouge vif, Beige rosé…"
+                value={colorInput}
+                onChange={(e) => setColorInput(e.target.value)}
+                onKeyDown={handleAddColor}
+                placeholder={colors.length === 0 ? "Tapez une couleur et Entrée..." : "Ajouter..."}
+                style={{ border: "none", outline: "none", flexGrow: 1, minWidth: "120px", fontSize: "14px" }}
               />
             </div>
+            {isColorChanged && (
+              <div style={warningStyle}>
+                💡 <strong>Personnalisation :</strong> Vous avez modifié les couleurs. Veuillez décrire dans le champ "Message" ci-dessous quelle couleur par défaut vous souhaitez remplacer (ou contactez-nous pour en discuter).
+              </div>
+            )}
           </div>
 
           <div className={styles.divider} />
@@ -180,34 +244,26 @@ export default function CommandeModal({ product, onClose, onSuccess }: Props) {
                 className={styles.input}
                 value={whatsapp}
                 onChange={(e) => setWhatsapp(e.target.value)}
-                placeholder="+261 34 00 000 00"
+                placeholder="Exemple: 034 30 513 60"
               />
             </div>
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>Message (optionnel)</label>
+            <label className={styles.label}>Message (optionnel mais recommandé si modifications)</label>
             <textarea
               className={styles.textarea}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Précisions sur votre commande, mensurations, délai souhaité…"
+              placeholder="Précisions sur votre commande, vos modifications de couleurs, mensurations…"
               rows={3}
             />
           </div>
 
-          {/* ✅ CLAUSE 50% AVANCE */}
+          {/* CLAUSE 50% AVANCE */}
           <div className={styles.paymentNotice}>
             <div className={styles.paymentHeader}>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <circle cx="12" cy="12" r="10" />
                 <line x1="12" y1="8" x2="12" y2="12" />
                 <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -216,32 +272,19 @@ export default function CommandeModal({ product, onClose, onSuccess }: Props) {
             </div>
             <ul className={styles.paymentList}>
               <li>
-                Une avance de <strong>50% ({formatAr(advance)})</strong> est
-                requise pour lancer la fabrication de votre commande.
+                Une avance de <strong>50% ({formatAr(advance)})</strong> est requise pour lancer la fabrication de votre commande.
               </li>
               <li>
-                En cas d&apos;annulation après confirmation, seulement
-                <strong> 50% de votre avance</strong> vous sera remboursée — les
-                50% restants couvrent les frais de fabrication engagés.
+                En cas d&apos;annulation après confirmation, seulement <strong> 50% de votre avance</strong> vous sera remboursée — les 50% restants couvrent les frais de fabrication engagés.
               </li>
               <li>
-                Notre équipe vous contactera via WhatsApp pour les modalités de
-                paiement de l&apos;avance.
+                Notre équipe vous contactera via WhatsApp pour les modalités de paiement de l&apos;avance.
               </li>
             </ul>
 
-            {/* Checkbox accord */}
             <label className={styles.agreeRow}>
-              <input
-                type="checkbox"
-                checked={agreed}
-                onChange={(e) => setAgreed(e.target.checked)}
-                className={styles.checkbox}
-              />
-              <span>
-                J&apos;ai lu et j&apos;accepte les conditions de paiement
-                ci-dessus.
-              </span>
+              <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className={styles.checkbox} />
+              <span>J&apos;ai lu et j&apos;accepte les conditions de paiement ci-dessus.</span>
             </label>
           </div>
 
@@ -250,21 +293,9 @@ export default function CommandeModal({ product, onClose, onSuccess }: Props) {
 
         {/* FOOTER */}
         <div className={styles.footer}>
-          <button onClick={onClose} className={styles.btnCancel}>
-            Annuler
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={loading || !agreed}
-            className={styles.btnConfirm}
-          >
-            {loading ? (
-              <>
-                <span className={styles.spinner} /> Envoi…
-              </>
-            ) : (
-              "✓ Confirmer la commande"
-            )}
+          <button onClick={onClose} className={styles.btnCancel}>Annuler</button>
+          <button onClick={handleSubmit} disabled={loading || !agreed} className={styles.btnConfirm}>
+            {loading ? <><span className={styles.spinner} /> Envoi…</> : "✓ Confirmer la commande"}
           </button>
         </div>
       </div>

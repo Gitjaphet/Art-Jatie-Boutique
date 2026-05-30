@@ -31,6 +31,7 @@ class Product(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     tag: str
+    slug: Optional[str] = Field(default=None, unique=True, index=True)
     genre: str
     category: str
     price_ar: int

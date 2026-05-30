@@ -10,6 +10,7 @@ import { getProducts, getSettings } from "../../lib/api";
 
 export type Product = {
   id: number;
+  slug: string;
   name: string;
   tag: string;
   genre: "Femme" | "Homme" | "Enfant";
@@ -58,6 +59,8 @@ function mapApiProduct(
   exchangeRate = 4800,
 ): Product {
   // getProducts() retourne déjà `price` comme "89 000 Ar"
+  console.log("RAW COMPLET =", raw)  // ← ajoute ça
+  console.log("slug =", raw.slug)
   console.log("stock_quantity reçu :", raw.stock_quantity, raw);
   const priceArDisplay = (raw.price as string) ?? "";
   const priceAr = Number(priceArDisplay.replace(/[^0-9]/g, "")) || 0;
@@ -78,6 +81,7 @@ function mapApiProduct(
 
   return {
     id: Number(raw.id),
+    slug: (raw.slug as string) ?? "",
     name: (raw.name as string) ?? "",
     tag: (raw.tag as string) ?? "",
 

@@ -1,6 +1,5 @@
 /* ============================================
    Art Jatie — GaleriePage.module.css
-   Thème : Artisanat Luxe / Crème & Rose
    ============================================ */
 
 /* ---- LAYOUT RACINE ---- */
@@ -8,86 +7,6 @@
   background: #fdf9f6;
   min-height: 100vh;
   font-family: "Cormorant Garamond", "Times New Roman", Georgia, serif;
-}
-
-/* ============================================
-   NAVIGATION
-   ============================================ */
-.nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px 48px;
-  background: rgba(253, 249, 246, 0.92);
-  border-bottom: 0.5px solid rgba(180, 130, 110, 0.18);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.logo {
-  font-family: "Cormorant Garamond", "Times New Roman", Georgia, serif;
-  font-size: 24px;
-  font-weight: 400;
-  color: #1a0f0a;
-  letter-spacing: 1px;
-  text-decoration: none;
-}
-
-.logoAccent {
-  color: #c05a7a;
-}
-
-.navLinks {
-  display: flex;
-  gap: 32px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.navLinks a {
-  font-family: "Jost", "Helvetica Neue", sans-serif;
-  font-size: 10px;
-  letter-spacing: 2.5px;
-  text-transform: uppercase;
-  color: #6b5045;
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.navLinks a:hover {
-  color: #c05a7a;
-}
-
-.navLinkActive {
-  color: #c05a7a !important;
-  border-bottom: 1.5px solid #c05a7a;
-  padding-bottom: 2px;
-}
-
-.navCta {
-  font-family: "Jost", "Helvetica Neue", sans-serif;
-  font-size: 10px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: #c05a7a;
-  border: 0.5px solid #c05a7a;
-  padding: 9px 20px;
-  border-radius: 2px;
-  cursor: pointer;
-  background: transparent;
-  text-decoration: none;
-  transition:
-    background 0.25s ease,
-    color 0.25s ease;
-}
-
-.navCta:hover {
-  background: #c05a7a;
-  color: #fff;
 }
 
 /* ============================================
@@ -190,259 +109,26 @@
 }
 
 /* ============================================
-   BARRE STATISTIQUES
-   ============================================ */
-.statsBar {
-  display: flex;
-  justify-content: center;
-  gap: 56px;
-  padding: 26px 40px;
-  border-top: 0.5px solid rgba(180, 130, 110, 0.15);
-  border-bottom: 0.5px solid rgba(180, 130, 110, 0.15);
-  background: #fff;
-}
-
-.stat {
-  text-align: center;
-}
-
-.statNum {
-  font-family: "Cormorant Garamond", Georgia, serif;
-  font-size: 22px;
-  font-weight: 500;
-  color: #1a0f0a;
-  display: block;
-}
-
-.statLabel {
-  font-family: "Jost", "Helvetica Neue", sans-serif;
-  font-size: 9px;
-  letter-spacing: 2.5px;
-  text-transform: uppercase;
-  color: #9b7060;
-  display: block;
-  margin-top: 3px;
-}
-
-/* ============================================
    GRILLE MASONRY
    ============================================ */
 .galleryWrap {
-  padding: 56px 36px 80px;
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 56px 36px 80px;
 }
 
 .masonry {
-  columns: 3;
-  column-gap: 18px;
+  column-count: 4;
+  column-gap: 20px;
+  width: 100%;
 }
 
 /* ============================================
    CARTE IMAGE
    ============================================ */
 .card {
+  position: relative;
   break-inside: avoid;
-  margin-bottom: 18px;
-  position: relative;
-  overflow: hidden;
-  border-radius: 6px;
-  background: #f0e8e0;
-  cursor: crosshair;
-  display: block;
-}
-
-.cardImg {
-  width: 100% !important;
-  height: auto !important;
-  display: block;
-  transition: transform 0.75s cubic-bezier(0.165, 0.84, 0.44, 1);
-}
-
-.card:hover .cardImg {
-  transform: scale(1.06);
-}
-
-/* ---- OVERLAY ---- */
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(26, 15, 10, 0.72) 0%,
-    rgba(26, 15, 10, 0.1) 55%,
-    transparent 100%
-  );
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 22px;
-}
-
-.card:hover .overlay {
-  opacity: 1;
-}
-
-.overlayCategory {
-  font-family: "Jost", "Helvetica Neue", sans-serif;
-  font-size: 9px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.6);
-  margin-bottom: 4px;
-}
-
-.overlayTitle {
-  font-family: "Cormorant Garamond", Georgia, serif;
-  font-size: 16px;
-  font-weight: 400;
-  color: #fff;
-  margin-bottom: 12px;
-  line-height: 1.3;
-}
-
-.overlayBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-family: "Jost", "Helvetica Neue", sans-serif;
-  font-size: 9px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: #fff;
-  border: 0.5px solid rgba(255, 255, 255, 0.5);
-  padding: 8px 16px;
-  border-radius: 2px;
-  width: fit-content;
-  transition:
-    background 0.25s ease,
-    border-color 0.25s ease;
-  cursor: pointer;
-  background: transparent;
-}
-
-.card:hover .overlayBtn {
-  background: rgba(192, 90, 122, 0.75);
-  border-color: #c05a7a;
-}
-
-/* ---- BADGE NOUVEAU ---- */
-.badgeNew {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  font-family: "Jost", "Helvetica Neue", sans-serif;
-  font-size: 8px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  background: #c05a7a;
-  color: #fff;
-  padding: 4px 11px;
-  border-radius: 2px;
-  z-index: 2;
-}
-
-/* ============================================
-   BOUTON CHARGER PLUS
-   ============================================ */
-.loadMoreWrap {
-  text-align: center;
-  padding: 24px 0 40px;
-}
-
-.loadMoreBtn {
-  background: transparent;
-  border: 0.5px solid #1a0f0a;
-  padding: 17px 52px;
-  font-family: "Jost", "Helvetica Neue", sans-serif;
-  font-size: 10px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: #1a0f0a;
-  cursor: pointer;
-  border-radius: 2px;
-  transition:
-    background 0.3s ease,
-    color 0.3s ease;
-}
-
-.loadMoreBtn:hover {
-  background: #1a0f0a;
-  color: #fdf9f6;
-}
-
-/* ============================================
-   FOOTER STRIP
-   ============================================ */
-.footerStrip {
-  background: #1a0f0a;
-  color: rgba(255, 255, 255, 0.5);
-  text-align: center;
-  padding: 26px 40px;
-  font-family: "Jost", "Helvetica Neue", sans-serif;
-  font-size: 10px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-}
-
-.footerAccent {
-  color: #c05a7a;
-}
-
-/* ============================================
-   ÉTAT VIDE (filtre sans résultats)
-   ============================================ */
-.emptyState {
-  text-align: center;
-  padding: 80px 20px;
-  color: #9b7060;
-  font-family: "Jost", "Helvetica Neue", sans-serif;
-  font-size: 12px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-}
-
-
-
-/* frontend/app/galerie/GaleriePage.module.css */
-
-.page {
-  width: 100%;
-  min-height: 100vh;
-  background-color: #fcfbfa;
-}
-
-/* Mosaïque style Pinterest */
-.galleryWrap {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px 60px 20px;
-}
-
-.masonry {
-  column-count: 4; /* Nombre de colonnes par défaut sur grand écran */
-  column-gap: 20px;
-  width: 100%;
-}
-
-@media (max-width: 992px) {
-  .masonry {
-    column-count: 3;
-  }
-}
-
-@media (max-width: 768px) {
-  .masonry {
-    column-count: 2;
-  }
-}
-
-/* Cartes d'images */
-.card {
-  position: relative;
-  break-inside: avoid; /* Empêche une image de se couper en deux entre deux colonnes */
   margin-bottom: 20px;
   border-radius: 12px;
   overflow: hidden;
@@ -457,11 +143,11 @@
 
 .cardImg {
   width: 100%;
-  height: auto; /* Laisse l'image prendre sa hauteur naturelle pour l'effet Masonry */
+  height: auto;
   display: block;
 }
 
-/* Cache l'overlay par défaut, l'affiche au survol */
+/* ---- OVERLAY ---- */
 .overlayPure {
   position: absolute;
   top: 0;
@@ -482,7 +168,7 @@
   pointer-events: auto;
 }
 
-/* Bouton d'action de téléchargement */
+/* ---- BOUTON TÉLÉCHARGEMENT ---- */
 .downloadIconBtn {
   background-color: #ffffff;
   color: #1a1a1a;
@@ -496,7 +182,9 @@
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transform: scale(0.9);
-  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s ease, color 0.2s ease;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .card:hover .downloadIconBtn {
@@ -504,7 +192,7 @@
 }
 
 .downloadIconBtn:hover {
-  background-color: #e91e8c; /* Rose signature Art Jatie */
+  background-color: #e91e8c;
   color: #ffffff;
   transform: scale(1.08);
 }
@@ -514,56 +202,7 @@
   height: 22px;
 }
 
-/* États vides / chargement */
-.emptyState {
-  text-align: center;
-  padding: 80px 0;
-  font-size: 15px;
-  color: #7f7870;
-}
-
-/* ============================================
-   RESPONSIVE
-   ============================================ */
-@media (max-width: 1024px) {
-  .masonry {
-    columns: 2;
-  }
-  .statsBar {
-    gap: 32px;
-  }
-}
-
-@media (max-width: 768px) {
-  .nav {
-    padding: 14px 20px;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .navLinks {
-    display: none; /* Remplacer par un burger menu en prod */
-  }
-  .heroTitle {
-    font-size: 36px;
-    letter-spacing: 6px;
-  }
-  .masonry {
-    columns: 2;
-    column-gap: 10px;
-  }
-  .card {
-    margin-bottom: 10px;
-  }
-  .galleryWrap {
-    padding: 32px 16px 60px;
-  }
-  .statsBar {
-    gap: 20px;
-    flex-wrap: wrap;
-    padding: 20px;
-  }
-}
-
+/* ---- BADGES ---- */
 .badgeHot {
   position: absolute;
   top: 10px;
@@ -594,12 +233,75 @@
   text-transform: uppercase;
 }
 
+/* ============================================
+   BOUTON CHARGER PLUS
+   ============================================ */
+.loadMoreWrap {
+  text-align: center;
+  padding: 24px 0 40px;
+}
+
+.loadMoreBtn {
+  background: transparent;
+  border: 0.5px solid #1a0f0a;
+  padding: 17px 52px;
+  font-family: "Jost", "Helvetica Neue", sans-serif;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #1a0f0a;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.loadMoreBtn:hover {
+  background: #1a0f0a;
+  color: #fdf9f6;
+}
+
+/* ============================================
+   ÉTAT VIDE
+   ============================================ */
+.emptyState {
+  text-align: center;
+  padding: 80px 0;
+  font-size: 15px;
+  color: #7f7870;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 1024px) {
+  .masonry {
+    column-count: 3;
+  }
+}
+
+@media (max-width: 768px) {
+  .heroTitle {
+    font-size: 36px;
+    letter-spacing: 6px;
+  }
+  .masonry {
+    column-count: 2;
+    column-gap: 10px;
+  }
+  .card {
+    margin-bottom: 10px;
+  }
+  .galleryWrap {
+    padding: 40px 16px 60px;
+  }
+}
+
 @media (max-width: 480px) {
   .heroTitle {
     font-size: 28px;
     letter-spacing: 4px;
   }
   .masonry {
-    columns: 1;
+    column-count: 1;
   }
 }

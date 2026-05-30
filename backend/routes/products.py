@@ -4,12 +4,54 @@ from typing import List, Optional
 import json
 from models.models import Product, Settings, Color, ProductColorLink
 from database import get_session
-from utils.r2 import upload_image_to_r2  # ← on importe notre fonction R2
+import re
+from utils.r2 import upload_image_to_r2
 
 router = APIRouter()
 
 
+# ─── HELPER : Génération automatique de slug ──────────────────────────────────
+def generate_slug(name: str) -> str:  # ← NOUVEAU : fonction de génération de slug
+    slug = name.lower()
+    slug = slug.replace("é","e").replace("è","e").replace("ê","e")
+    slug = slug.replace("à","a").replace("â","a")
+    slug = slug.replace("ù","u").replace("û","u")
+    slug = slug.replace("ô","o").replace("î","i")
+    slug = re.sub(r"[^a-z0-9\s-]", "", slug)
+    slug = re.sub(r"\s+", "-", slug.strip())
+    return slug
 
+
+# ─── HELPER : Slug unique (évite les doublons) ────────────────────────────────
+def get_unique_slug(name: str, session: Session, exclude_id: Optional[int] = None) -> str:  # ← NOUVEAU
+    base_slug = generate_slug(name)
+    slug = base_slug
+    counter = 1
+    while True:
+        query = select(Product).where(Product.slug == slug)
+        if exclude_id:
+            query = query.where(Product.id != exclude_id)  # ← NOUVEAU : ignore le produit en cours lors d'un update
+        existing = session.exec(query).first()
+        if not existing:
+            break
+        slug = f"{base_slug}-{counter}"  # ← NOUVEAU : robe-rouge-2, robe-rouge-3...
+        counter += 1
+    return slug
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# IMPORTANT : /by-slug et /generate-slugs DOIVENT être AVANT /{product_id}
+# sinon FastAPI essaie de convertir "by-slug" en int → erreur 422
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+
+
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ROUTES EXISTANTES (inchangées sauf ajout du slug)
+# ─────────────────────────────────────────────────────────────────────────────
 
 @router.get("/")
 def get_products(
@@ -18,124 +60,51 @@ def get_products(
     category: Optional[str] = None,
     session: Session = Depends(get_session)
 ):
-    """Récupère les produits avec des filtres optionnels et calcule le prix en Euro dynamique"""
-    
-    # 1. On récupère le taux de change actuel (ou 4500 par défaut)
     settings = session.exec(select(Settings)).first()
     rate = settings.exchange_rate_eur if settings else 4500.0
 
-    # 2. Construction de la requête avec "selectinload" pour charger les couleurs
-    # On utilise selectinload pour éviter le problème du "N+1 queries" (plus performant)
     from sqlalchemy.orm import selectinload
-
-    # 2. On récupère les produits
     statement = select(Product).options(selectinload(Product.colors_list))
-    
+
     if on_order is not None:
         statement = statement.where(Product.on_order == on_order)
     if genre:
         statement = statement.where(Product.genre == genre)
     if category:
         statement = statement.where(Product.category == category)
-        
+
     products = session.exec(statement).all()
-    
-    # 3. On formate la réponse pour injecter le prix en Euro calculé
+
     result = []
     for p in products:
-        p_dict = p.model_dump() # Convertit l'objet SQL en dictionnaire classique
+        p_dict = p.model_dump()
         p_dict["price_eur"] = round(p.price_ar / rate, 2)
-
-
-        # Injection des détails des couleurs au lieu de juste le texte
-        # Cela transformera colors_list en une liste d'objets JSON exploitables
         p_dict["full_colors"] = [
-            {"id": c.id, "name": c.name, "hex_code": c.hex_code} 
+            {"id": c.id, "name": c.name, "hex_code": c.hex_code}
             for c in p.colors_list
         ]
-
-
         result.append(p_dict)
-        
+
     return result
 
 
-@router.post("/")
-async def create_product(
-    name: str = Form(...),
-    tag: str = Form(...),
-    genre: str = Form(...),
-    category: str = Form(...),
-    price_ar: int = Form(...),
-    old_price_ar: Optional[int] = Form(None),
-    description: Optional[str] = Form(None),
-    colors: str = Form(""),
-    color_ids: Optional[str] = Form(None),
-    sizes: str = Form(""),
-    badge: str = Form("Nouveau"),
-    is_hot: bool = Form(False),
-    on_order: bool = Form(False),
-    stock_quantity: int = Form(1),
-    images: List[UploadFile] = File(default=[]),     # ← uniquement celui-ci, pas d'autre image
-    session: Session = Depends(get_session)
-):
-    """Crée un nouveau produit et upload ses images sur Cloudflare R2"""
-    try:
-        # 1. Upload toutes les images vers R2
-        image_urls = []
-        for img in images:
-            if img.filename:
-                url = await upload_image_to_r2(img)
-                image_urls.append(url)
-
-        # 2. Première image = colonne "image" (compatibilité ancienne)
-        #    Toutes les images = colonne "images" (séparées par virgule)
-        first_image = image_urls[0] if image_urls else ""
-        all_images  = ",".join(image_urls)           # "url1,url2,url3"
-
-        # 3. Couleurs
-        actual_colors = []
-        if color_ids:
-            ids = json.loads(color_ids)
-            actual_colors = session.exec(select(Color).where(Color.id.in_(ids))).all()
-
-        # 4. Créer le produit
-        new_product = Product(
-            name=name,
-            tag=tag,
-            genre=genre,
-            category=category,
-            price_ar=price_ar,
-            old_price_ar=old_price_ar,    # ← ajouter
-            description=description,
-            colors=colors,
-            colors_list=actual_colors,
-            sizes=sizes,
-            badge=badge,
-            is_hot=is_hot,
-            on_order=on_order,
-            stock_quantity=stock_quantity,
-            image=first_image,
-            images=all_images,
-        )
-        if new_product.stock_quantity == 0:
-            new_product.badge = "Sur commande"
-            new_product.on_order = True
-
-        session.add(new_product)
-        session.commit()
-        session.refresh(new_product)
-
-        return new_product
-
-    except Exception as e:
-        session.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+# ← NOUVEAU : route pour générer les slugs des produits existants (à appeler une seule fois)
+@router.post("/generate-slugs")
+def generate_all_slugs(session: Session = Depends(get_session)):
+    """Génère les slugs manquants pour tous les produits existants en base"""
+    products = session.exec(select(Product)).all()
+    count = 0
+    for p in products:
+        if not p.slug:  # ← NOUVEAU : ne touche pas les slugs déjà existants
+            p.slug = get_unique_slug(p.name, session, exclude_id=p.id)
+            session.add(p)
+            count += 1
+    session.commit()
+    return {"message": f"{count} slugs générés avec succès"}
 
 
 @router.post("/seed")
 def seed_initial_data(session: Session = Depends(get_session)):
-    """Route temporaire pour injecter quelques produits de test dans Supabase"""
     existing = session.exec(select(Product)).first()
     if existing:
         return {"message": "Les données existent déjà !"}
@@ -157,17 +126,114 @@ def seed_initial_data(session: Session = Depends(get_session)):
             colors="Beige,Marron", sizes="Unique", badge="En stock", is_hot=False, on_order=False, stock_quantity=3
         )
     ]
-    
+
     for p in test_products:
+        p.slug = get_unique_slug(p.name, session)  # ← NOUVEAU : slug généré aussi pour le seed
         session.add(p)
     session.commit()
-    
+
     return {"message": f"{len(test_products)} produits ajoutés avec succès !"}
 
 
-# ---------------------------------------------------------
-# NOUVELLES ROUTES : MODIFICATION (PUT) ET SUPPRESSION (DELETE)
-# ---------------------------------------------------------
+@router.post("/fix-zero-stock")
+def fix_zero_stock(session: Session = Depends(get_session)):
+    products = session.exec(select(Product)).all()
+    count = 0
+    for p in products:
+        if p.stock_quantity == 0:
+            p.badge = "Sur commande"
+            p.on_order = True
+            session.add(p)
+            count += 1
+    session.commit()
+    return {"message": f"{count} produits mis à jour"}
+
+
+# ← NOUVEAU : route par slug pour la page détail produit
+@router.get("/{slug}")
+def get_product_by_slug(slug: str, session: Session = Depends(get_session)):
+    from sqlalchemy.orm import selectinload
+    product = session.exec(
+        select(Product)
+        .options(selectinload(Product.colors_list))
+        .where(Product.slug == slug)
+    ).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Produit introuvable")
+    return product
+
+@router.post("/")
+async def create_product(
+    name: str = Form(...),
+    tag: str = Form(...),
+    genre: str = Form(...),
+    category: str = Form(...),
+    price_ar: int = Form(...),
+    old_price_ar: Optional[int] = Form(None),
+    description: Optional[str] = Form(None),
+    colors: str = Form(""),
+    color_ids: Optional[str] = Form(None),
+    sizes: str = Form(""),
+    badge: str = Form("Nouveau"),
+    is_hot: bool = Form(False),
+    on_order: bool = Form(False),
+    stock_quantity: int = Form(1),
+    images: List[UploadFile] = File(default=[]),
+    session: Session = Depends(get_session)
+):
+    try:
+        image_urls = []
+        for img in images:
+            if img.filename:
+                url = await upload_image_to_r2(img)
+                image_urls.append(url)
+
+        first_image = image_urls[0] if image_urls else ""
+        all_images = ",".join(image_urls)
+
+        actual_colors = []
+        if color_ids:
+            ids = json.loads(color_ids)
+            actual_colors = session.exec(select(Color).where(Color.id.in_(ids))).all()
+
+        slug = get_unique_slug(name, session)  # ← NOUVEAU : génère le slug automatiquement
+
+        new_product = Product(
+            name=name,
+            slug=slug,          # ← NOUVEAU : slug ajouté à la création
+            tag=tag,
+            genre=genre,
+            category=category,
+            price_ar=price_ar,
+            old_price_ar=old_price_ar,
+            description=description,
+            colors=colors,
+            colors_list=actual_colors,
+            sizes=sizes,
+            badge=badge,
+            is_hot=is_hot,
+            on_order=on_order,
+            stock_quantity=stock_quantity,
+            image=first_image,
+            images=all_images,
+        )
+
+        if new_product.stock_quantity == 0:
+            new_product.badge = "Sur commande"
+            new_product.on_order = True
+
+        session.add(new_product)
+        session.commit()
+        session.refresh(new_product)
+        return new_product
+
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+
 
 @router.put("/{product_id}")
 async def update_product(
@@ -180,21 +246,19 @@ async def update_product(
     old_price_ar: Optional[int] = Form(None),
     description: Optional[str] = Form(None),
     colors: str = Form(""),
-    color_ids: Optional[str] = Form(None), # Ajoute ceci
+    color_ids: Optional[str] = Form(None),
     sizes: str = Form(""),
     badge: str = Form("Nouveau"),
     is_hot: bool = Form(False),
     on_order: bool = Form(False),
     stock_quantity: int = Form(1),
-    images: List[UploadFile] = File([]), # Optionnel lors d'une modification
+    images: List[UploadFile] = File([]),
     session: Session = Depends(get_session)
 ):
-    """Modifie un produit existant (et son image si une nouvelle est fournie)"""
     product = session.get(Product, product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Produit introuvable")
 
-    # 1. Mise à jour des textes
     product.name = name
     product.tag = tag if tag is not None else ""
     product.genre = genre
@@ -209,15 +273,15 @@ async def update_product(
     product.on_order = on_order
     product.stock_quantity = stock_quantity
 
+    # ← NOUVEAU : régénère le slug si le nom du produit a changé
+    if not product.slug or product.name != name:
+        product.slug = get_unique_slug(name, session, exclude_id=product_id)
 
-    # Mise à jour de la relation Many-to-Many
     if color_ids is not None:
         ids = json.loads(color_ids)
         actual_colors = session.exec(select(Color).where(Color.id.in_(ids))).all()
-        product.colors_list = actual_colors # Magie de l'ORM : il gère la table de liaison seul
+        product.colors_list = actual_colors
 
-    # 3. Si de nouvelles images sont envoyées → on les upload vers R2
-    #    Sinon → on garde les images existantes
     new_image_urls = []
     for img in images:
         if img.filename:
@@ -225,42 +289,27 @@ async def update_product(
             new_image_urls.append(url)
 
     if new_image_urls:
-        product.image  = new_image_urls[0]              # première image
-        product.images = ",".join(new_image_urls)       # toutes les images
-
+        product.image = new_image_urls[0]
+        product.images = ",".join(new_image_urls)
 
     if product.stock_quantity == 0:
         product.badge = "Sur commande"
         product.on_order = True
 
-    # 3. Sauvegarde en DB
     session.add(product)
     session.commit()
     session.refresh(product)
-    
     return product
 
 
 @router.delete("/{product_id}")
 def delete_product(product_id: int, session: Session = Depends(get_session)):
-    """Supprime un produit de la base de données"""
     product = session.get(Product, product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Produit introuvable")
-    
+
     session.delete(product)
     session.commit()
     return {"message": "Produit supprimé avec succès"}
 
-@router.post("/fix-zero-stock")
-def fix_zero_stock(session: Session = Depends(get_session)):
-    products = session.exec(select(Product)).all()
-    count = 0
-    for p in products:
-        if p.stock_quantity == 0:
-            p.badge = "Sur commande"
-            p.on_order = True
-            session.add(p)
-            count += 1
-    session.commit()
-    return {"message": f"{count} produits mis à jour"}
+

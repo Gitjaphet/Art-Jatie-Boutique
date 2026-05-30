@@ -62,33 +62,24 @@ export default function GaleriePage() {
         const allExtractedImages: GalerieItem[] = [];
 
         products.forEach((p: ProductWithMultipleImages) => {
-          const filterKey = toFilterKey(p.category, p.genre);
+        const filterKey = toFilterKey(p.category, p.genre);
 
-          // 1. Image principale
-          if (p.image && p.image.trim() !== "") {
+        // Seulement le champ `images` (avec s)
+        if (p.imagesString && typeof p.imagesString === "string" && p.imagesString.trim() !== "") {
+          const secondaryImages = p.imagesString
+            .split(",")
+            .map((url) => url.trim())
+            .filter(Boolean);
+
+          secondaryImages.forEach((imgUrl, index) => {
             allExtractedImages.push({
-              id: `${p.id}-main`,
-              src: p.image,
+              id: `${p.id}-img-${index}`,
+              src: imgUrl,
               filterKey: filterKey,
             });
-          }
-
-          // 2. Éclatement de la chaîne d'images secondaires
-          if (p.imagesString && typeof p.imagesString === "string" && p.imagesString.trim() !== "") {
-            const secondaryImages = p.imagesString
-              .split(",")
-              .map((url) => url.trim())
-              .filter(Boolean);
-
-            secondaryImages.forEach((imgUrl, index) => {
-              allExtractedImages.push({
-                id: `${p.id}-secondary-${index}`,
-                src: imgUrl,
-                filterKey: filterKey,
-              });
-            });
-          }
-        });
+          });
+        }
+      });
 
         setItems(allExtractedImages);
       } catch (err) {
