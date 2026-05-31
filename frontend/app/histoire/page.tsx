@@ -145,7 +145,7 @@ export default function HistoirePage() {
               du fil et du coeur
             </h2>
             <p className={styles.paragraph}>
-              Art Jatie est née en 2020 d&apos;une passion profonde pour
+              Art Jatie est née en 2026 d&apos;une passion profonde pour
               l&apos;artisanat malgache et le crochet. Ce qui a commencé comme
               un hobby dans un petit atelier familial s&apos;est transformé en
               une marque reconnue pour la qualité et l&apos;authenticité de ses

@@ -6,6 +6,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import FloatingAI from "@/components/FloatingAI";
+import { GoogleAuthProvider } from "@/lib/googleAuth";
 
 export default function RootLayout({
   children,
@@ -15,15 +16,20 @@ export default function RootLayout({
   const pathname = usePathname();
   const isHome = pathname === "/";
 
-  // On définit les pages qui ont un fond clair (Boutique, etc.)
   const isLightPage =
     pathname.startsWith("/boutique") ||
     pathname.startsWith("/produit") ||
     pathname.startsWith("/panier") ||
-    pathname.startsWith("/") ||
     pathname.startsWith("/galerie") ||
     pathname.startsWith("/contact") ||
-    pathname.startsWith("/commande");
+    pathname.startsWith("/commande") ||
+    pathname.startsWith("/livraison") ||         /* ◄ AJOUTÉ */
+    pathname.startsWith("/mentions-legales") ||  /* ◄ AJOUTÉ */
+    pathname.startsWith("/confidentialite") ||   /* ◄ AJOUTÉ */
+    pathname.startsWith("/checkout") || 
+    pathname.startsWith("/histoire") || 
+    pathname.startsWith("/guide");
+    pathname === "/";
 
   return (
     <html lang="fr">
@@ -34,24 +40,19 @@ export default function RootLayout({
           backgroundColor: isHome ? "#2d2d2d" : "#fdfaf7",
           color: isHome ? "#f8f4ef" : "#1a1a1a",
           minHeight: "100vh",
-          // ← retire display: flex et flexDirection: column
         }}
       >
-        {!isHome && <Header darkIcons={isLightPage} />}
+        <GoogleAuthProvider>
+          {!isHome && <Header darkIcons={isLightPage} />}
 
-        <main
-          style={{
-            // ← retire flex: 1
-            paddingTop: !isHome ? "100px" : "0",
-          }}
-        >
-          {children}
-        </main>
+          <main style={{ paddingTop: !isHome ? "100px" : "0" }}>
+            {children}
+          </main>
 
-        {!isHome && <Footer />}
-        {/* Composants flottants */}
-        <FloatingAI />
-        <FloatingWhatsApp />
+          {!isHome && <Footer />}
+          <FloatingAI />
+          <FloatingWhatsApp />
+        </GoogleAuthProvider>
       </body>
     </html>
   );

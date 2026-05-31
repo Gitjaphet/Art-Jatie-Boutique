@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./BubbleGrid.module.css";
 import Image from "next/image";
+import { getProducts } from "../../lib/api"; // ⚠️ Vérifiez que ce chemin est correct
 
-const FEATURED_PRODUCTS = [
+// Les données de secours au cas où l'API est indisponible ou vide
+const FALLBACK_PRODUCTS = [
   {
     id: "1",
     name: "Robe Filet",
@@ -41,10 +43,81 @@ const FEATURED_PRODUCTS = [
   },
 ];
 
+interface FormattedProduct {
+  id: string;
+  name: string;
+  nameAccent: string;
+  category: string;
+  desc: string;
+  price: string;
+  slug: string;
+  image: string;
+  index: string;
+}
+
 export default function BubbleGrid() {
   const listRef = useRef<HTMLDivElement>(null);
+  const [products, setProducts] = useState<FormattedProduct[]>([]);
 
+  // 1. Récupération des données dynamiques
   useEffect(() => {
+    const fetchEditorialData = async () => {
+      try {
+        const allProducts = await getProducts();
+
+        // On garde uniquement les "Coup de coeur" et on trie du plus récent au plus ancien
+        const hotProducts = allProducts
+          .filter((p: any) => p.hot)
+          .sort((a: any, b: any) => b.id - a.id)
+          .slice(0, 3); // On ne prend que les 3 premiers
+
+        if (hotProducts.length > 0) {
+          const formatted = hotProducts.map((p: any, i: number) => {
+            // Séparation intelligente du nom
+            const words = p.name.trim().split(" ");
+            let baseName = p.name;
+            let accentName = "";
+
+            if (words.length > 1) {
+              const last = words.pop() || "";
+              // On s'assure d'ajouter le point à la fin du dernier mot ("Corail" -> "Corail.")
+              accentName = last.replace(/\.$/, "") + "."; 
+              baseName = words.join(" ");
+            } else {
+              baseName = "";
+              accentName = p.name.replace(/\.$/, "") + ".";
+            }
+
+            return {
+              id: p.id.toString(),
+              name: baseName,
+              nameAccent: accentName,
+              category: p.category || "Sélection",
+              desc: p.description || "Une création unique Art Jatie, tissée à la main.",
+              price: p.price,
+              slug: p.slug,
+              image: p.image,
+              index: String(i + 1).padStart(3, "0"), // Transforme 1 en "001"
+            };
+          });
+          setProducts(formatted);
+        } else {
+          setProducts(FALLBACK_PRODUCTS);
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement de la section éditoriale", error);
+        setProducts(FALLBACK_PRODUCTS);
+      }
+    };
+
+    fetchEditorialData();
+  }, []);
+
+  // 2. Gestion des animations d'apparition au scroll
+  // (On l'exécute uniquement une fois que les 'products' sont chargés)
+  useEffect(() => {
+    if (products.length === 0) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -54,7 +127,7 @@ export default function BubbleGrid() {
           }
         });
       },
-      { threshold: 0.15 },
+      { threshold: 0.15 }
     );
 
     const rows = listRef.current?.querySelectorAll(`.${styles.row}`);
@@ -66,7 +139,10 @@ export default function BubbleGrid() {
     if (footer) observer.observe(footer);
 
     return () => observer.disconnect();
-  }, []);
+  }, [products]); // <-- Se déclenche quand la liste est prête
+
+  // Pendant le chargement, on peut afficher un état vide ou garder les classes
+  if (products.length === 0) return null; 
 
   return (
     <section className={styles.root}>
@@ -80,7 +156,7 @@ export default function BubbleGrid() {
 
       {/* LIST */}
       <div className={styles.list} ref={listRef}>
-        {FEATURED_PRODUCTS.map((product, i) => (
+        {products.map((product, i) => (
           <div
             key={product.id}
             className={styles.row}
@@ -93,12 +169,9 @@ export default function BubbleGrid() {
                 <span className={styles.badge}>{product.category}</span>
                 <Image
                   src={product.image}
-                  alt={product.name}
-                  /* On remplace width/height par fill */
+                  alt={product.name + " " + product.nameAccent}
                   fill
-                  /* sizes aide Next.js à choisir la bonne résolution d'image */
                   sizes="(max-width: 860px) 100vw, 50vw"
-                  /* On garde objectFit pour ne pas déformer l'image */
                   style={{ objectFit: "cover" }}
                   className={styles.img}
                 />
@@ -110,7 +183,9 @@ export default function BubbleGrid() {
                 No. {product.index} — Art Jatie
               </span>
               <h3 className={styles.name}>{product.name}</h3>
+              {/* Le nom accentué (dernier mot en rose) est géré ici */}
               <p className={styles.nameAccent}>{product.nameAccent}</p>
+              
               <div className={styles.sep}>
                 <div className={styles.sepLine} />
                 <div className={styles.sepDot} />

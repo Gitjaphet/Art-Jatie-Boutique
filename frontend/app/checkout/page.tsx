@@ -17,6 +17,7 @@ import {
   Star,
 } from "lucide-react";
 import styles from "./CheckoutPage.module.css";
+import { useAuth } from "@/lib/googleAuth";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -37,6 +38,8 @@ const BOUTIQUE_NAME = "Noeline";
 // Composant principal
 // ─────────────────────────────────────────────────────────────────────────────
 function CheckoutContent() {
+
+  const { user } = useAuth();
   const router = useRouter();
   const params = useSearchParams();
   const { items, clearCart } = useCartStore();
@@ -54,8 +57,8 @@ function CheckoutContent() {
   const formatEur = (p: number) => `≈ ${Math.round(p / EXCHANGE_RATE)} €`;
 
   // ── State ───────────────────────────────────────────────────────────────
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [name, setName] = useState(user?.name || "");
+  const [email, setEmail] = useState(user?.email || "");
   const [whatsapp, setWhatsapp] = useState("");
   const [message, setMessage] = useState("");
   const [payment, setPayment] = useState<PaymentMethod>("mvola");

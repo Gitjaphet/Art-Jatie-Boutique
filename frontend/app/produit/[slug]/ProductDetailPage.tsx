@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation"; // ◄ AJOUTÉ ICI
 import { useCartStore } from "@/lib/cart";
 import styles from "./ProductDetail.module.css";
 import CommandeModal from "@/components/Boutique/CommandeModal"; // Ajustez le chemin si nécessaire
+import { useAuth } from "@/lib/googleAuth";
 
 const COLOR_MAP: Record<string, string> = {
   Beige: "#D4B896", Blanc: "#F5F5F5", Bleu: "#4A90D9",
@@ -189,25 +190,28 @@ function QuantitySelector({
 
 // ─── Section panier (Bouton dynamique) ────────────────────────────────────────
 function AddToCartSection({ product, isSurMesure }: { product: any; isSurMesure: boolean }) {
+  const { user, setShowLoginModal, setOnLoginSuccess } = useAuth();
   const [added, setAdded] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [qty, setQty] = useState(1);
   const addItem = useCartStore((s) => s.addItem);
 
   const handleAdd = () => {
+  const doAdd = () => {
     for (let i = 0; i < qty; i++) {
-      addItem({
-        id: product.id,
-        name: product.name,
-        price: product.rawPrice,
-        quantity: 1,
-        image: product.image,
-        category: product.category ?? "",
-      });
+      addItem({ id: product.id, name: product.name, price: product.rawPrice,
+        quantity: 1, image: product.image, category: product.category ?? "" });
     }
     setAdded(true);
     setTimeout(() => setAdded(false), 2500);
   };
+  if (!user) {
+    setOnLoginSuccess(() => doAdd);
+    setShowLoginModal(true);
+  } else {
+    doAdd();
+  }
+};
 
   // ✅ CAS 1 : Si le produit est "Sur commande"
   if (product.on_order || isSurMesure) {
@@ -237,7 +241,16 @@ function AddToCartSection({ product, isSurMesure }: { product: any; isSurMesure:
           
           <button
             className={`${styles.btnCart} ${styles.btnCommande} ${added ? styles.btnCartAdded : ""}`}
-            onClick={() => { if (!added) setShowModal(true); }}
+            onClick={() => {
+              if (!added) {
+                if (!user) {
+                  setOnLoginSuccess(() => () => setShowModal(true));
+                  setShowLoginModal(true);
+                } else {
+                  setShowModal(true);
+                }
+              }
+            }}
           >
             {added ? "✓ Demande envoyée !" : "Commander sur mesure"}
           </button>

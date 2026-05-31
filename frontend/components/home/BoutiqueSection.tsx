@@ -3,7 +3,10 @@
 import styles from "./BoutiqueSection.module.css";
 import { useRef, useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link"; // ← Import manquant pour la navigation
 import { getProducts } from "../../lib/api";
+import { useAuth } from "../../lib/googleAuth"; // ← Import de l'authentification Google
+import { useCartStore } from "../../lib/cart"; // ← Import du store du panier (ajustez le chemin si besoin)
 
 /* ── Types ── */
 interface Product {
@@ -11,14 +14,17 @@ interface Product {
   name: string;
   subtitle: string;
   price: string;
+  rawPrice?: number; // ← utile pour le panier
   oldPrice?: string;
   badge: "En stock" | "Derniers" | "Rupture" | "Nouveau" | string;
   tag: string;
   color: string;
   image: string;
   hot?: boolean;
-  is_hot?: boolean; // Ajouté pour matcher la base de données
-  on_order?: boolean; // Ajouté pour matcher la base de données
+  is_hot?: boolean;
+  on_order?: boolean;
+  slug?: string; // ← Requis pour le lien "Voir le produit"
+  category?: string; // ← Requis pour le panier
 }
 
 /* Badge color mapping */
@@ -33,6 +39,11 @@ const BADGE_COLORS: Record<string, string> = {
 function ProductCard({ product, index }: { product: Product; index: number }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
+  const [added, setAdded] = useState(false);
+
+  // ↓ Intégration de l'authentification et du panier ↓
+  const { user, setShowLoginModal, setOnLoginSuccess } = useAuth();
+  const addItem = useCartStore((state) => state.addItem);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -49,6 +60,38 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
   }, []);
 
   const badgeColor = BADGE_COLORS[product.badge] || "#000000";
+
+  // ↓ Nouvelle fonction d'ajout au panier protégée par Google Auth ↓
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation(); // Empêche le clic de se propager si la carte entière était un lien
+
+    const doAdd = () => {
+      // On s'assure d'avoir un rawPrice, sinon on essaie de nettoyer la string 'price'
+      const priceVal =
+        product.rawPrice ||
+        parseInt(product.price.replace(/\D/g, ""), 10) ||
+        0;
+
+      addItem({
+        id: product.id,
+        name: product.name,
+        price: priceVal,
+        quantity: 1,
+        image: product.image,
+        category: product.category || "",
+      });
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
+    };
+
+    if (!user) {
+      setOnLoginSuccess(() => doAdd);
+      setShowLoginModal(true);
+    } else {
+      doAdd();
+    }
+  };
 
   return (
     <div
@@ -85,10 +128,19 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
         )}
 
         <div className={styles.cardOverlay}>
-          <button className={styles.quickBtn} aria-label="Voir le produit">
+          {/* ↓ Bouton transformé en Link pour naviguer vers le produit ↓ */}
+          <Link
+            href={
+              product.slug
+                ? `/produit/${product.slug}${product.on_order ? "?mode=sur-mesure" : ""}`
+                : "#"
+            }
+            className={styles.quickBtn}
+            aria-label={`Voir le produit ${product.name}`}
+          >
             Voir le produit
             <span className={styles.quickArrow}>→</span>
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -104,24 +156,36 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
               <span className={styles.cardOldPrice}>{product.oldPrice}</span>
             )}
           </div>
+          
+          {/* ↓ L'icône panier exécute handleAddToCart ↓ */}
           <button
-            className={styles.addBtn}
+            className={`${styles.addBtn} ${added ? styles.addedAnim : ""}`}
             aria-label={`Commander ${product.name}`}
+            onClick={handleAddToCart}
+            disabled={added} // Empêche le spam clic
           >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              aria-hidden="true"
-            >
-              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <path d="M16 10a4 4 0 01-8 0" />
-            </svg>
+            {added ? (
+              // Icône "Check" quand ajouté
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            ) : (
+              // Icône panier standard
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                aria-hidden="true"
+              >
+                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <path d="M16 10a4 4 0 01-8 0" />
+              </svg>
+            )}
           </button>
         </div>
       </div>
@@ -151,28 +215,23 @@ export default function BoutiqueSection() {
     return () => observer.disconnect();
   }, []);
 
-  // --- NOUVELLE LOGIQUE DE RÉCUPÉRATION ET DE FILTRAGE ---
   useEffect(() => {
     const fetchShowcaseProducts = async () => {
       try {
         setLoading(true);
-        // On récupère les deux listes en même temps
         const [inStockData, onOrderData] = await Promise.all([
-          getProducts(false), // Produits en stock
-          getProducts(true), // Produits sur commande
+          getProducts(false),
+          getProducts(true),
         ]);
 
-        // 1. Filtrer les "Coups de coeur" en stock et prendre les 3 premiers
         const inStockHot = inStockData
           .filter((p: Product) => p.hot || p.is_hot)
           .slice(0, 3);
 
-        // 2. Filtrer les "Coups de coeur" sur commande et prendre les 3 premiers
         const onOrderHot = onOrderData
           .filter((p: Product) => p.hot || p.is_hot)
           .slice(0, 3);
 
-        // 3. Fusionner pour n'avoir que 6 produits au total
         setProducts([...inStockHot, ...onOrderHot]);
       } catch (error) {
         console.error("Erreur de chargement des produits :", error);
@@ -233,7 +292,7 @@ export default function BoutiqueSection() {
         </div>
 
         <div className={styles.cta}>
-          <a href="/boutique" className={styles.ctaBtn}>
+          <Link href="/boutique" className={styles.ctaBtn}>
             <span className={styles.ctaBtnInner}>
               <svg
                 width="16"
@@ -254,7 +313,7 @@ export default function BoutiqueSection() {
             <span className={styles.ctaBtnArrow} aria-hidden="true">
               →
             </span>
-          </a>
+          </Link>
 
           <p className={styles.ctaHint}>
             +50 créations disponibles · Livraison dans toute Madagascar

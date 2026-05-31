@@ -64,7 +64,7 @@ export default function Footer() {
                 <Link href="/boutique">La Boutique</Link>
                 <Link href="/commande">Sur Mesure</Link>
                 <Link href="/histoire">Notre Histoire</Link>
-                <Link href="/blog">Journal {"d'Artisane"}</Link>
+                
               </nav>
             </div>
 
@@ -74,7 +74,7 @@ export default function Footer() {
               <nav className={styles.nav}>
                 <Link href="/livraison">Livraison & Retours</Link>
                 <Link href="/guide">Guide des Tailles</Link>
-                <Link href="/faq">Questions Fréquentes</Link>
+                  
                 <Link href="/contact">Contactez-nous</Link>
               </nav>
             </div>

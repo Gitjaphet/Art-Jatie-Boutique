@@ -293,7 +293,7 @@
   font-size: 0.68rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #b8946a;
+  color: var(--rose, #e05070);
   font-family: 'Helvetica Neue', sans-serif;
 }
 
@@ -301,12 +301,12 @@
   font-size: 0.68rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #bbb;
+  color: #8a807a;
   font-family: 'Helvetica Neue', sans-serif;
 }
 
 .separator {
-  color: #ddd;
+  color: rgba(224, 80, 112, 0.4);
 }
 
 .name {
@@ -381,7 +381,7 @@
 
 .discount {
   background: #fdf0e8;
-  color: #b85c2a;
+  color: var(--rose, #e05070);
   font-size: 0.72rem;
   letter-spacing: 0.1em;
   font-weight: 600;
@@ -594,11 +594,11 @@
 }
 
 .btnCommande {
-  background: #b8946a;
+  background: #1a1a1a;
 }
 
 .btnCommande:hover {
-  background: #a07d56 !important;
+  background: #1a1a1a !important;
 }
 
 /* ── Garanties ── */
@@ -630,18 +630,27 @@
 
 /* ── On order banner ── */
 .onOrderBanner {
-  background: #fdf6ee;
-  border: 1px solid #e8d5b7;
+  /* Fond rose très clair et transparent */
+  background: rgba(224, 80, 112, 0.06); 
+  /* Bordure rose subtile */
+  border: 1px solid rgba(224, 80, 112, 0.2); 
   border-radius: 3px;
   padding: 0.8rem 1.1rem;
   font-size: 0.78rem;
-  color: #8a6a3a;
+  /* Texte couleur rose signature Art Jatie */
+  color: var(--rose, #e05070); 
   letter-spacing: 0.05em;
   font-family: 'Helvetica Neue', sans-serif;
   margin-bottom: 1rem;
   display: flex;
   align-items: center;
   gap: 0.55rem;
+}
+
+/* On s'assure que la petite icône (le svg) prenne aussi la bonne couleur */
+.onOrderBanner svg {
+  color: var(--rose, #e05070);
+  flex-shrink: 0;
 }
 
 /* ── Meta grid ── */

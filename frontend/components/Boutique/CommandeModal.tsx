@@ -1,9 +1,17 @@
 "use client";
+
+
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import styles from "./CommandeModal.module.css";
+import { useAuth } from "../../lib/googleAuth";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+
+
+
+
 
 type Props = {
   product: any; // On utilise 'any' pour accepter sereinement les différences entre Boutique et Sur-mesure
@@ -12,6 +20,10 @@ type Props = {
 };
 
 export default function CommandeModal({ product, onClose, onSuccess }: Props) {
+
+
+  // Dans le composant, après les déclarations de useState :
+  const { user } = useAuth();
   // 1. Récupération sécurisée du prix (corrige le bug "NaN")
   const priceAr = product.priceAr || product.rawPrice || product.price_ar || 0;
   const priceEur = product.priceEur || Math.round(priceAr / 4800) || 0;
@@ -20,9 +32,11 @@ export default function CommandeModal({ product, onClose, onSuccess }: Props) {
   const defaultSizes: string[] = product.sizesArray || (typeof product.sizes === 'string' ? product.sizes.split(',').map((s: string) => s.trim()) : (product.sizes || []));
   const defaultColors: string[] = product.colorsArray || (typeof product.colors === 'string' ? product.colors.split(',').map((c: string) => c.trim()) : (product.colors || []));
 
+  
   // États du formulaire
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  // Changez les useState de name et email :
+  const [name, setName] = useState(user?.name || "");
+  const [email, setEmail] = useState(user?.email || "");
   const [whatsapp, setWhatsapp] = useState("");
   const [message, setMessage] = useState("");
   const [agreed, setAgreed] = useState(false);

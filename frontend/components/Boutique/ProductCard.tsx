@@ -1,4 +1,6 @@
 "use client";
+
+
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -6,6 +8,8 @@ import type { Product } from "../../app/boutique/page";
 import { useCartStore } from "../../lib/cart";
 import CommandeModal from "./CommandeModal";
 import styles from "./ProductCard.module.css";
+import { useAuth } from "../../lib/googleAuth";
+
 
 const COLOR_MAP: Record<string, string> = {
   Beige: "#D4B896",
@@ -21,6 +25,7 @@ const COLOR_MAP: Record<string, string> = {
   Kaki: "#8B9467",
 };
 
+
 type Props = {
   product: Product;
   listView?: boolean;
@@ -32,24 +37,36 @@ export default function ProductCard({
   listView = false,
   commandeMode = false,
 }: Props) {
+
+  const { user, setShowLoginModal, setOnLoginSuccess } = useAuth();
   const [hovered, setHovered] = useState(false);
   const [added, setAdded] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const addItem = useCartStore((s) => s.addItem);
 
+  // Remplacez handleAddToCart :
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: product.priceAr,
-      quantity: 1,
-      image: product.image,
-      category: product.category,
-    });
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+    const doAdd = () => {
+      addItem({
+        id: product.id,
+        name: product.name,
+        price: product.priceAr,
+        quantity: 1,
+        image: product.image,
+        category: product.category,
+      });
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
+    };
+
+    if (!user) {
+      setOnLoginSuccess(() => doAdd);
+      setShowLoginModal(true);
+    } else {
+      doAdd();
+    }
   };
 
   const handleOrderSuccess = () => {
@@ -209,7 +226,14 @@ export default function ProductCard({
               className={`${styles.btnCart} ${orderSuccess ? styles.btnCartAdded : styles.btnCommande}`}
               onClick={(e) => {
                 e.preventDefault();
-                if (!orderSuccess) setShowModal(true);
+                if (!orderSuccess) {
+                  if (!user) {
+                    setOnLoginSuccess(() => () => setShowModal(true));
+                    setShowLoginModal(true);
+                  } else {
+                    setShowModal(true);
+                  }
+                }
               }}
             >
               {orderSuccess ? "✓ Commande envoyée !" : "Commander"}

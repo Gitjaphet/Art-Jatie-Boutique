@@ -1,0 +1,276 @@
+/* ─── TOKENS & SETUP ─── */
+.pageWrap {
+  --cream: #faf7f4;
+  --cream-dark: #f0e6db;
+  --rose: #e05070;
+  --rose-dim: rgba(224, 80, 112, 0.08);
+  --charcoal: #1e1b18;
+  --ink: #2d2926;
+  --muted: #8a807a;
+  --border: #e2d9d0;
+  --white: #ffffff;
+
+  background-color: var(--cream);
+  color: var(--ink);
+  font-family: 'Jost', 'Helvetica Neue', sans-serif;
+  min-height: 100vh;
+  padding: 0 0 60px 0;
+}
+
+/* ─── BREADCRUMB ─────────────────────────────────────────────────────────── */
+.breadcrumb {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+.breadcrumb a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.breadcrumb a:hover { color: var(--rose); }
+.breadcrumbSep { opacity: 0.4; }
+.breadcrumbCurrent { color: var(--ink); opacity: 0.7; }
+
+/* ─── CONTENT CONTAINER ─── */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ─── HERO SECTION ─── */
+.hero {
+  text-align: center;
+  padding: 80px 0 60px;
+  position: relative;
+}
+.heroEyebrow {
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--rose);
+  font-weight: 600;
+  margin-bottom: 20px;
+  display: block;
+}
+.heroTitle {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 300;
+  margin: 0 0 20px;
+  color: var(--charcoal);
+  line-height: 1.1;
+}
+.heroTitle em { font-style: italic; color: var(--rose); }
+.heroSub {
+  max-width: 600px;
+  margin: 0 auto;
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* ─── HOW TO MEASURE SECTION ─── */
+.measureGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+  margin: 100px 0;
+  background: var(--white);
+  padding: 60px;
+  border: 1px solid var(--border);
+}
+.measureImageWrap {
+  position: relative;
+  /* ✅ CORRECTION 2 : Change le background pour enlever le gris */
+  background: transparent;
+  /* ✅ CORRECTION 1 : Retire le padding pour agrandir l'image */
+  padding: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.measureImageWrap img {
+  /* Ces règles sont déjà bonnes pour agrandir l'image à 100% de sa colonne */
+  max-width: 100%;
+  height: auto;
+  mix-blend-mode: multiply;
+}
+
+
+.measureImage {
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
+.measureContent h2 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 2.2rem;
+  font-weight: 400;
+  margin-bottom: 30px;
+  color: var(--charcoal);
+}
+.measureStep {
+  margin-bottom: 30px;
+  display: flex;
+  gap: 20px;
+}
+.stepNum {
+  width: 32px;
+  height: 32px;
+  background: var(--rose-dim);
+  color: var(--rose);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+.stepText strong {
+  display: block;
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+  color: var(--ink);
+}
+.stepText p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-weight: 300;
+  line-height: 1.6;
+}
+
+/* ─── TABLES SECTION ─── */
+.sectionHeader {
+  margin: 80px 0 40px;
+  border-left: 4px solid var(--rose);
+  padding-left: 20px;
+}
+.sectionHeader h2 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 2rem;
+  margin: 0;
+  font-weight: 400;
+  color: var(--charcoal);
+}
+.sectionHeader em {
+  font-style: italic;
+  color: var(--rose);
+}
+.sectionHeader p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 300;
+}
+
+.tableContainer {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  background: var(--white);
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+.table thead { background: var(--cream-dark); }
+.table th {
+  text-align: left;
+  padding: 18px 24px;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+.table td {
+  padding: 20px 24px;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--ink);
+}
+.table tr:last-child td { border-bottom: none; }
+.table tr:hover td { background-color: var(--rose-dim); }
+.sizeTag {
+  font-weight: 600;
+  color: var(--rose);
+}
+
+/* ─── ADVICE BOX ─── */
+.adviceBox {
+  background: var(--charcoal);
+  color: var(--white);
+  padding: 40px;
+  margin-top: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+}
+.adviceContent h3 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.8rem;
+  margin: 0 0 10px;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--white);
+}
+.adviceContent p {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  font-weight: 300;
+  line-height: 1.6;
+}
+.btnWa {
+  background: var(--rose);
+  color: white;
+  padding: 14px 28px;
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: background 0.2s;
+  border: none;
+  cursor: pointer;
+}
+.btnWa:hover {
+  background: #c8415f;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 968px) {
+  .measureGrid { 
+    grid-template-columns: 1fr; 
+    padding: 30px; 
+    gap: 40px; 
+  }
+  .measureImageWrap {
+    max-height: 400px;
+  }
+  .adviceBox { 
+    flex-direction: column; 
+    text-align: center; 
+  }
+}
+@media (max-width: 600px) {
+  .hero { padding: 40px 0; }
+  .table td, .table th { padding: 15px; }
+}
