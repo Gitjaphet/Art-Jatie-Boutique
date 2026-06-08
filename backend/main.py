@@ -23,6 +23,7 @@ async def lifespan(app: FastAPI):
 
 # 1. On déclare d'abord l'application FastAPI !
 app = FastAPI(
+    root_path="/api",
     title="Art Jatie API",
     description="Backend boutique crochet artisanal + Agent IA Jatie",
     version="2.0.0",
@@ -37,6 +38,8 @@ app.add_middleware(
     allow_origins=[
         "https://art-jatie-boutique.vercel.app",
         "https://art-jatie-boutique.vercel.app/",
+        "https://artjatie.com",
+        "https://www.artjatie.com",
         "http://localhost:3000",
     ],
     allow_credentials=True,

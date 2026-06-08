@@ -15,11 +15,15 @@ interface AuthContextType {
   setShowLoginModal: (v: boolean) => void;
   onLoginSuccess: (() => void) | null;
   setOnLoginSuccess: (fn: (() => void) | null) => void;
+  triggerLoginFlow: (callback: () => void) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 const CLIENT_ID = "949981876915-l1q6btco8j3qkosv1svjvdiivr72lgrc.apps.googleusercontent.com";
+
+const KEY_USER   = "artjatie_user";
+const KEY_CHOICE = "artjatie_auth_choice"; // "google" | "guest"
 
 export function GoogleAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<GoogleUser | null>(null);
@@ -27,14 +31,12 @@ export function GoogleAuthProvider({ children }: { children: ReactNode }) {
   const [onLoginSuccess, setOnLoginSuccess] = useState<(() => void) | null>(null);
 
   useEffect(() => {
-    // Charger le script Google
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
     script.async = true;
     document.head.appendChild(script);
 
-    // Restaurer session depuis localStorage
-    const saved = localStorage.getItem("artjatie_user");
+    const saved = localStorage.getItem(KEY_USER);
     if (saved) {
       try { setUser(JSON.parse(saved)); } catch {}
     }
@@ -42,23 +44,17 @@ export function GoogleAuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!showLoginModal) return;
-    // Initialiser Google One Tap quand le modal s'ouvre
     const timer = setTimeout(() => {
       if ((window as any).google) {
         (window as any).google.accounts.id.initialize({
           client_id: CLIENT_ID,
           callback: (response: any) => {
-            // Décoder le JWT Google
             const payload = JSON.parse(atob(response.credential.split(".")[1]));
-            const newUser = {
-              name: payload.name,
-              email: payload.email,
-              picture: payload.picture,
-            };
+            const newUser = { name: payload.name, email: payload.email, picture: payload.picture };
             setUser(newUser);
-            localStorage.setItem("artjatie_user", JSON.stringify(newUser));
+            localStorage.setItem(KEY_USER, JSON.stringify(newUser));
+            localStorage.setItem(KEY_CHOICE, "google");
             setShowLoginModal(false);
-            // Déclencher l'action qui attendait la connexion
             if (onLoginSuccess) {
               onLoginSuccess();
               setOnLoginSuccess(null);
@@ -67,45 +63,63 @@ export function GoogleAuthProvider({ children }: { children: ReactNode }) {
         });
         (window as any).google.accounts.id.renderButton(
           document.getElementById("google-signin-btn"),
-          { 
-            theme: "outline", 
-            size: "large", 
-            text: "continue_with",
-            width: 280,
-            locale: "fr"
-          }
+          { theme: "outline", size: "large", text: "continue_with", width: 280, locale: "fr" }
         );
       }
     }, 300);
     return () => clearTimeout(timer);
   }, [showLoginModal, onLoginSuccess]);
 
-  const signIn = () => setShowLoginModal(true);
+  // ✅ LA VRAIE FIX : triggerLoginFlow reçoit le callback ET vérifie le choix mémorisé
+  const triggerLoginFlow = (callback: () => void) => {
+    const choice = localStorage.getItem(KEY_CHOICE);
+    if (choice) {
+      // Déjà choisi sur ce navigateur → on exécute directement sans modal
+      callback();
+      return;
+    }
+    // Premier passage → afficher le modal, stocker le callback
+    setOnLoginSuccess(() => callback);
+    setShowLoginModal(true);
+  };
+
+  const signIn = () => {
+    const choice = localStorage.getItem(KEY_CHOICE);
+    if (choice) {
+      if (onLoginSuccess) {
+        onLoginSuccess();
+        setOnLoginSuccess(null);
+      }
+      return;
+    }
+    setShowLoginModal(true);
+  };
 
   const signOut = () => {
     setUser(null);
-    localStorage.removeItem("artjatie_user");
+    localStorage.removeItem(KEY_USER);
+    localStorage.removeItem(KEY_CHOICE); // Reset → le modal réapparaîtra
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, signIn, signOut, 
+    <AuthContext.Provider value={{
+      user, signIn, signOut,
       showLoginModal, setShowLoginModal,
-      onLoginSuccess, setOnLoginSuccess 
+      onLoginSuccess, setOnLoginSuccess,
+      triggerLoginFlow,
     }}>
       {children}
       {showLoginModal && (
-        <LoginModal 
-          // 1. Action si on clique sur la Croix (On annule tout)
+        <LoginModal
           onClose={() => {
             setShowLoginModal(false);
-            setOnLoginSuccess(null); // On vide l'action en attente
-          }} 
-          // 2. Action si on clique sur "Continuer sans se connecter" (On continue l'action)
+            setOnLoginSuccess(null);
+          }}
           onGuestContinue={() => {
+            localStorage.setItem(KEY_CHOICE, "guest"); // ✅ Mémorise "guest"
             setShowLoginModal(false);
             if (onLoginSuccess) {
-              onLoginSuccess(); // Ajoute au panier ou ouvre la modale sur-mesure !
+              onLoginSuccess();
               setOnLoginSuccess(null);
             }
           }}
@@ -115,29 +129,28 @@ export function GoogleAuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-function LoginModal({ onClose, onGuestContinue }: { onClose: () => void, onGuestContinue: () => void }) {
+function LoginModal({ onClose, onGuestContinue }: { onClose: () => void; onGuestContinue: () => void }) {
   return (
-    <div 
+    <div
       style={{
         position: "fixed", inset: 0, zIndex: 9999,
         background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)",
-        display: "flex", alignItems: "center", justifyContent: "center"
+        display: "flex", alignItems: "center", justifyContent: "center",
       }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div style={{
         background: "#fff", borderRadius: "16px", padding: "40px 32px",
         width: "360px", textAlign: "center", boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
-        position: "relative"
+        position: "relative",
       }}>
         <button onClick={onClose} style={{
           position: "absolute", top: 12, right: 16,
           background: "none", border: "none", fontSize: 20,
-          cursor: "pointer", color: "#999"
+          cursor: "pointer", color: "#999",
         }}>✕</button>
 
-        {/* Logo Art Jatie */}
-        <img src="/images/logo/art_jatie.png" alt="Art Jatie" 
+        <img src="/images/logo/art_jatie.png" alt="Art Jatie"
           style={{ height: 60, marginBottom: 16, objectFit: "contain" }} />
 
         <h2 style={{ fontSize: 20, fontWeight: 700, color: "#1a1a1a", margin: "0 0 8px" }}>
@@ -147,13 +160,11 @@ function LoginModal({ onClose, onGuestContinue }: { onClose: () => void, onGuest
           Connectez-vous pour remplir automatiquement votre nom et email dans le formulaire.
         </p>
 
-        {/* Bouton Google injecté ici */}
         <div id="google-signin-btn" style={{ display: "flex", justifyContent: "center", marginBottom: 16 }} />
 
-        {/* ✅ LE BOUTON MAGIQUE QUI RÉSOUT LE PROBLÈME */}
         <button onClick={onGuestContinue} style={{
           background: "none", border: "none", color: "#999",
-          fontSize: 13, cursor: "pointer", textDecoration: "underline"
+          fontSize: 13, cursor: "pointer", textDecoration: "underline",
         }}>
           Continuer sans se connecter
         </button>

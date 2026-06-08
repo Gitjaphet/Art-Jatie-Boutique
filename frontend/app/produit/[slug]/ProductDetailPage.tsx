@@ -189,6 +189,7 @@ function QuantitySelector({
 }
 
 // ─── Section panier (Bouton dynamique) ────────────────────────────────────────
+// ─── Section panier (Bouton dynamique) ────────────────────────────────────────
 function AddToCartSection({ product, isSurMesure }: { product: any; isSurMesure: boolean }) {
   const { user, setShowLoginModal, setOnLoginSuccess } = useAuth();
   const [added, setAdded] = useState(false);
@@ -196,31 +197,48 @@ function AddToCartSection({ product, isSurMesure }: { product: any; isSurMesure:
   const [qty, setQty] = useState(1);
   const addItem = useCartStore((s) => s.addItem);
 
-  const handleAdd = () => {
-  const doAdd = () => {
-    for (let i = 0; i < qty; i++) {
-      addItem({ id: product.id, name: product.name, price: product.rawPrice,
-        quantity: 1, image: product.image, category: product.category ?? "" });
-    }
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2500);
-  };
-  if (!user) {
-    setOnLoginSuccess(() => doAdd);
-    setShowLoginModal(true);
-  } else {
-    doAdd();
-  }
-};
+  // ✅ LA VRAIE FIX : vérifier le choix mémorisé, pas seulement user
+  const hasChosen = () => !!localStorage.getItem("artjatie_auth_choice");
 
-  // ✅ CAS 1 : Si le produit est "Sur commande"
+  const handleAdd = () => {
+    const doAdd = () => {
+      for (let i = 0; i < qty; i++) {
+        addItem({
+          id: product.id, name: product.name, price: product.rawPrice,
+          quantity: 1, image: product.image, category: product.category ?? "",
+        });
+      }
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2500);
+    };
+
+    if (hasChosen()) {
+      // ✅ Déjà choisi (Google ou invité) → on ajoute directement
+      doAdd();
+    } else {
+      // Premier passage → afficher le modal
+      setOnLoginSuccess(() => doAdd);
+      setShowLoginModal(true);
+    }
+  };
+
+  // ✅ CAS 1 : Produit "Sur commande" ou sur-mesure
   if (product.on_order || isSurMesure) {
+    const handleCommande = () => {
+      const doOpen = () => setShowModal(true);
+      if (hasChosen()) {
+        doOpen();
+      } else {
+        setOnLoginSuccess(() => doOpen);
+        setShowLoginModal(true);
+      }
+    };
+
     return (
       <>
         {showModal && (
           <CommandeModal
             product={product}
-            
             onClose={() => setShowModal(false)}
             onSuccess={() => {
               setAdded(true);
@@ -229,28 +247,18 @@ function AddToCartSection({ product, isSurMesure }: { product: any; isSurMesure:
           />
         )}
         <div className={styles.cartSection}>
-          {/* ✅ On ajoute le choix de quantité même pour le sur-mesure */}
-          
-
           <div className={styles.onOrderBanner}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
             </svg>
             Fabriqué sur commande — délai 7 à 14 jours
           </div>
-          
+
           <button
             className={`${styles.btnCart} ${styles.btnCommande} ${added ? styles.btnCartAdded : ""}`}
-            onClick={() => {
-              if (!added) {
-                if (!user) {
-                  setOnLoginSuccess(() => () => setShowModal(true));
-                  setShowLoginModal(true);
-                } else {
-                  setShowModal(true);
-                }
-              }
-            }}
+            onClick={() => { if (!added) handleCommande(); }}
           >
             {added ? "✓ Demande envoyée !" : "Commander sur mesure"}
           </button>
@@ -270,9 +278,7 @@ function AddToCartSection({ product, isSurMesure }: { product: any; isSurMesure:
           <span className={styles.qtyLabel}>Quantité</span>
           <QuantitySelector value={qty} onChange={setQty} max={maxQty} />
           {maxQty <= 3 && maxQty > 0 && (
-            <span className={styles.qtyWarning}>
-              Plus que {maxQty} en stock
-            </span>
+            <span className={styles.qtyWarning}>Plus que {maxQty} en stock</span>
           )}
         </div>
       )}
@@ -291,7 +297,6 @@ function AddToCartSection({ product, isSurMesure }: { product: any; isSurMesure:
     </div>
   );
 }
-
 // ─── Page principale ──────────────────────────────────────────────────────────
 export default function ProductDetailPage({ product }: { product: any }) {
   const searchParams = useSearchParams();

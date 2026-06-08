@@ -73,6 +73,7 @@ function CheckoutContent() {
   const [error, setError] = useState("");
   const [orderId, setOrderId] = useState<number | null>(null);
   const [polling, setPolling] = useState(false);
+  
 
   // ── Panier vide ─────────────────────────────────────────────────────────
   if (items.length === 0 && step !== "success") {

@@ -7,7 +7,7 @@ load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./artjatie.db")
 connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
-engine = create_engine(DATABASE_URL, echo=False, connect_args=connect_args)
+engine = create_engine(DATABASE_URL, echo=False, connect_args=connect_args, pool_pre_ping=True)
 
 def sync_table_columns():
     """Compare models.py avec la DB et ajoute les colonnes manquantes automatiquement"""

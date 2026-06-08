@@ -38,7 +38,7 @@ export default function ProductCard({
   commandeMode = false,
 }: Props) {
 
-  const { user, setShowLoginModal, setOnLoginSuccess } = useAuth();
+  const { setShowLoginModal, setOnLoginSuccess } = useAuth();
   const [hovered, setHovered] = useState(false);
   const [added, setAdded] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -46,7 +46,10 @@ export default function ProductCard({
   const addItem = useCartStore((s) => s.addItem);
 
   // Remplacez handleAddToCart :
-  const handleAddToCart = (e: React.MouseEvent) => {
+  // ✅ APRÈS
+const hasChosen = () => !!localStorage.getItem("artjatie_auth_choice");
+
+const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     const doAdd = () => {
       addItem({
@@ -61,11 +64,11 @@ export default function ProductCard({
       setTimeout(() => setAdded(false), 2000);
     };
 
-    if (!user) {
+    if (hasChosen()) {
+      doAdd();
+    } else {
       setOnLoginSuccess(() => doAdd);
       setShowLoginModal(true);
-    } else {
-      doAdd();
     }
   };
 
@@ -224,14 +227,15 @@ export default function ProductCard({
           {commandeMode ? (
             <button
               className={`${styles.btnCart} ${orderSuccess ? styles.btnCartAdded : styles.btnCommande}`}
+              
               onClick={(e) => {
                 e.preventDefault();
                 if (!orderSuccess) {
-                  if (!user) {
+                  if (hasChosen()) {
+                    setShowModal(true);
+                  } else {
                     setOnLoginSuccess(() => () => setShowModal(true));
                     setShowLoginModal(true);
-                  } else {
-                    setShowModal(true);
                   }
                 }
               }}
