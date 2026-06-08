@@ -82,4 +82,5 @@ jobs:
             docker compose up -d --no-deps backend
             sleep 10
             docker inspect artjatie_backend --format='{{.State.Health.Status}}' | grep -q healthy
+            docker image prune -af
             echo "Deploy réussi — $(date)"
