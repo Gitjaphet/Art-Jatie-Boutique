@@ -7,6 +7,8 @@ from sqlmodel import Session, select
 from typing import Optional
 import os
 import uuid
+import boto3
+from botocore.config import Config
 
 # ─── DELETE /products/{id} ───────────────────────────────────
 @router.delete("/{product_id}")
@@ -16,13 +18,19 @@ def delete_product(product_id: int, session: Session = Depends(get_session)):
     if not product:
         raise HTTPException(status_code=404, detail="Produit introuvable.")
 
-    # Suppression optionnelle de l'image Supabase
-    if supabase and product.image:
-        try:
+    try:
+        s3 = boto3.client(
+            "s3",
+            endpoint_url=f"https://{os.getenv('CLOUDFLARE_R2_ACCOUNT_ID')}.r2.cloudflarestorage.com",
+            aws_access_key_id=os.getenv("CLOUDFLARE_R2_ACCESS_KEY_ID"),
+            aws_secret_access_key=os.getenv("CLOUDFLARE_R2_SECRET_ACCESS_KEY"),
+            config=Config(signature_version="s3v4"),
+        )
+        if product.image:
             filename = product.image.split("/")[-1]
-            supabase.storage.from_("products").remove([filename])
-        except Exception:
-            pass  # On ne bloque pas la suppression si l'image échoue
+            s3.delete_object(Bucket=os.getenv("CLOUDFLARE_R2_BUCKET_NAME"), Key=filename)
+    except Exception:
+        pass
 
     session.delete(product)
     session.commit()
@@ -67,24 +75,28 @@ async def update_product(
 
     # Si une nouvelle image est fournie → on l'upload et on remplace
     if image and image.filename:
-        if not supabase:
-            raise HTTPException(status_code=500, detail="Supabase Storage n'est pas configuré.")
         try:
-            # Supprimer l'ancienne image
+            s3 = boto3.client(
+                "s3",
+                endpoint_url=f"https://{os.getenv('CLOUDFLARE_R2_ACCOUNT_ID')}.r2.cloudflarestorage.com",
+                aws_access_key_id=os.getenv("CLOUDFLARE_R2_ACCESS_KEY_ID"),
+                aws_secret_access_key=os.getenv("CLOUDFLARE_R2_SECRET_ACCESS_KEY"),
+                config=Config(signature_version="s3v4"),
+            )
+            bucket = os.getenv("CLOUDFLARE_R2_BUCKET_NAME")
             if product.image:
                 old_filename = product.image.split("/")[-1]
-                supabase.storage.from_("products").remove([old_filename])
-
-            # Upload de la nouvelle
+                s3.delete_object(Bucket=bucket, Key=old_filename)
             file_extension = image.filename.split(".")[-1]
             unique_filename = f"{uuid.uuid4()}.{file_extension}"
             file_bytes = await image.read()
-            supabase.storage.from_("products").upload(
-                path=unique_filename,
-                file=file_bytes,
-                file_options={"content-type": image.content_type},
+            s3.put_object(
+                Bucket=bucket,
+                Key=unique_filename,
+                Body=file_bytes,
+                ContentType=image.content_type or "image/jpeg",
             )
-            product.image = supabase.storage.from_("products").get_public_url(unique_filename)
+            product.image = f"{os.getenv('CLOUDFLARE_R2_PUBLIC_URL')}/{unique_filename}"
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 

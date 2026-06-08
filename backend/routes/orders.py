@@ -11,13 +11,13 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlmodel import Session, select
 from pydantic import BaseModel
 from typing import Optional, List
-from supabase import create_client
+import boto3
+from botocore.config import Config
 
 from models.models import Order, Product, Client
 from database import get_session
 
-SUPABASE_URL = os.getenv("SUPABASE_URL", "")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
+
 
 router = APIRouter()
 
@@ -302,16 +302,24 @@ def delete_order(order_id: int, session: Session = Depends(get_session)):
 @router.post("/upload-proof")
 async def upload_proof(file: UploadFile = File(...)):
     try:
-        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-        ext = file.filename.split(".")[-1] if file.filename else "jpg"
-        filename = f"{uuid.uuid4()}.{ext}"
-        content = await file.read()
-        supabase.storage.from_("payment-proofs").upload(
-            filename,
-            content,
-            {"content-type": file.content_type or "image/jpeg"}
+        s3 = boto3.client(
+            "s3",
+            endpoint_url=os.getenv("CLOUDFLARE_R2_ENDPOINT"),
+            aws_access_key_id=os.getenv("CLOUDFLARE_R2_ACCESS_KEY"),
+            aws_secret_access_key=os.getenv("CLOUDFLARE_R2_SECRET_KEY"),
+            config=Config(signature_version="s3v4"),
         )
-        url = supabase.storage.from_("payment-proofs").get_public_url(filename)
+        ext = file.filename.split(".")[-1] if file.filename else "jpg"
+        filename = f"payment-proofs/{uuid.uuid4()}.{ext}"
+        content = await file.read()
+        bucket = os.getenv("CLOUDFLARE_R2_BUCKET")
+        s3.put_object(
+            Bucket=bucket,
+            Key=filename,
+            Body=content,
+            ContentType=file.content_type or "image/jpeg",
+        )
+        url = f"{os.getenv('CLOUDFLARE_R2_PUBLIC_URL')}/{filename}"
         return {"url": url}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Upload échoué: {str(e)}")
