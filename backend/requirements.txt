@@ -7,7 +7,7 @@ python-jose[cryptography]
 python-multipart
 cloudinary
 python-dotenv
-httpx
+httpx2
 gunicorn
 supabase
 bcrypt
@@ -17,3 +17,8 @@ langchain-groq
 langchain-community
 langchain-core
 boto3
+langchain-google-genai
+google-generativeai
+requests
+pytest
+pytest-asyncio
