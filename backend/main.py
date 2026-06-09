@@ -7,7 +7,7 @@ import os
 import httpx
 
 from database import create_db_and_tables
-from routes import products, settings, auth, users, orders, mvola, colors, clients
+from routes import products, settings, auth, users, orders, mvola, colors, clients, agent
 
 
 @asynccontextmanager
@@ -98,3 +98,4 @@ app.include_router(orders.router,   prefix="/orders",    tags=["Commandes"])
 app.include_router(clients.router,  prefix="/clients",   tags=["Clients CRM"])
 app.include_router(mvola.router,    prefix="/mvola",     tags=["MVola"])
 app.include_router(colors.router,   prefix="/colors",    tags=["Couleurs"])
+app.include_router(agent.router,    prefix="/agent",     tags=["Agent IA"])
