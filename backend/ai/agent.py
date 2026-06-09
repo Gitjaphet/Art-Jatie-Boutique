@@ -387,11 +387,16 @@ def rechercher_produit_tool(
     if requete_libre:
         return _recherche_semantique(requete_libre)
 
-    return _get_products(
+    resultats = _get_products(
         produit=produit, couleur=couleur, categorie=categorie,
         genre=genre, prix_min=prix_min, prix_max=prix_max,
         sort=sort, limit=limit,
     )
+
+    if not resultats and produit:
+        return _recherche_semantique(produit)
+
+    return resultats
 
 
 @tool
