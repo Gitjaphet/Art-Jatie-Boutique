@@ -448,7 +448,7 @@ def llm1_classifier(message: str) -> dict:
         "Content-Type": "application/json",
     }
     body = {
-        "model": "llama3.1-8b",
+        "model": "gpt-oss-120b",
         "messages": [
             {
                 "role": "system",
