@@ -448,7 +448,7 @@ def llm1_classifier(message: str) -> dict:
         "Content-Type": "application/json",
     }
     body = {
-        "model": "gpt-oss-120b",
+        "model": "llama-3.3-70b-versatile",
         "messages": [
             {
                 "role": "system",
@@ -468,7 +468,7 @@ def llm1_classifier(message: str) -> dict:
         "temperature": 0,
     }
     response = httpx.post(
-        "https://api.cerebras.ai/v1/chat/completions",
+        "https://api.groq.com/openai/v1/chat/completions",
         headers=headers,
         json=body,
         timeout=30,
