@@ -335,7 +335,7 @@ def _passer_commande(
 
 
 # ============================================================
-#  LLM 1 — GROQ — CLASSIFIER (Remplacement de Cerebras)
+#  LLM 1 — GROQ — CLASSIFIER (Prompt Amélioré)
 # ============================================================
 
 def llm1_classifier(message: str, history: list = None) -> dict:
@@ -343,42 +343,39 @@ def llm1_classifier(message: str, history: list = None) -> dict:
     import httpx
 
     headers = {
-        "Authorization": f"Bearer {os.getenv('GROQ_API_KEY')}", # ✅ Utilisation de Groq
+        "Authorization": f"Bearer {os.getenv('GROQ_API_KEY')}",
         "Content-Type": "application/json",
     }
     
-    # Construction des messages avec historique
-    messages_payload = [
-        {
-            "role": "system",
-            "content": (
-                "Classify the user message into exactly ONE word:\n"
-                '- "recherche" : looking for a product\n'
-                '- "commande"  : wants to order\n'
-                '- "stats"     : asking about stock/count/price stats\n'
-                '- "faq"       : asking about delivery/returns/payment\n'
-                '- "salutation": greeting or small talk\n'
-                "Reply with ONLY the single word, nothing else."
-            ),
-        }
-    ]
+    # 🔴 LE NOUVEAU PROMPT EST ICI
+    prompt_system = (
+        "Classify the user message into exactly ONE word from this list:\n"
+        '- "recherche" : User is looking for recommendations, styles, or a generic item (e.g., "je veux une robe", "quelque chose de chic", "montre moi des sacs").\n'
+        '- "commande"  : User explicitly wants to BUY/CHECKOUT a specific item they already chose (e.g., "je veux commander ça", "voici mon adresse pour la commande").\n'
+        '- "stats"     : User asks about stock, how many items you have, or price averages.\n'
+        '- "faq"       : User asks about delivery, shipping, returns, or payment methods.\n'
+        '- "salutation": Simple greetings (bonjour, merci, au revoir) with no specific request.\n'
+        "Reply with ONLY the single word."
+    )
+
+    messages_payload = [{"role": "system", "content": prompt_system}]
     
     if history:
-        for msg in history[-4:]: # Prend les 4 derniers messages pour le contexte
+        for msg in history[-4:]:
             messages_payload.append({"role": msg["role"], "content": msg["content"]})
             
     messages_payload.append({"role": "user", "content": message})
 
     body = {
-        "model": "llama-3.1-8b-instant", # ✅ Modèle Groq ultra-rapide pour la classification
+        "model": "llama-3.1-70b-instant",
         "messages": messages_payload,
         "max_tokens": 10,
-        "temperature": 0,
+        "temperature": 0, # Température à 0 pour être très précis
     }
     
     try:
         response = httpx.post(
-            "https://api.groq.com/openai/v1/chat/completions", # ✅ URL Groq
+            "https://api.groq.com/openai/v1/chat/completions",
             headers=headers,
             json=body,
             timeout=30,
@@ -391,9 +388,14 @@ def llm1_classifier(message: str, history: list = None) -> dict:
         data = response.json()
         latence = (time.time() - t0) * 1000
         
-        # ✅ Extraction sécurisée pour éviter l'Exception 'content'
         message_obj = data.get("choices", [{}])[0].get("message", {})
         intent = message_obj.get("content", "salutation").strip().lower()
+        
+        # Sécurité au cas où l'IA répond une phrase au lieu d'un mot
+        for valid_intent in ["recherche", "commande", "stats", "faq", "salutation"]:
+            if valid_intent in intent:
+                intent = valid_intent
+                break
         
         tokens_in = data.get("usage", {}).get("prompt_tokens", 0)
         tokens_out = data.get("usage", {}).get("completion_tokens", 0)
