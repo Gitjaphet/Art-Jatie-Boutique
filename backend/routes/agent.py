@@ -32,9 +32,14 @@ def chat(body: ChatRequest):
 
     logging.info(f"[AGENT] Historique construit — {len(historique)} messages — {time.time()-t0:.2f}s")
 
+    MAX_TOURS = 2
     tour = 0
     while True:
         tour += 1
+        if tour > MAX_TOURS:
+            logging.info(f"[AGENT] Max tours atteint ({MAX_TOURS}) — arrêt forcé")
+            break
+
         t_llm = time.time()
         logging.info(f"[AGENT] Tour {tour} — Appel LLM...")
         response = llm_with_tools.invoke(historique)
@@ -61,7 +66,6 @@ def chat(body: ChatRequest):
                     resultat = {"erreur": str(e)}
 
             logging.info(f"[AGENT] Tool {tool_name} exécuté en {time.time()-t_tool:.2f}s")
-
             historique.append(
                 ToolMessage(
                     content=json.dumps(resultat, ensure_ascii=False, default=str),
