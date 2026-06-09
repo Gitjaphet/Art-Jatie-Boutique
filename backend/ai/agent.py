@@ -489,7 +489,7 @@ TOOLS_MAP = {t.name: t for t in TOOLS}
 # ============================================================
 
 llm = ChatOllama(
-    model="qwen2.5:7b",
+    model="qwen2.5:3b",
     base_url=os.getenv("OLLAMA_BASE_URL", "http://ollama:11434"),
     temperature=0.1,
 )
