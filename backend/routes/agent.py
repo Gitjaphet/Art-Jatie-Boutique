@@ -18,7 +18,7 @@ async def chat(body: ChatRequest):
     logging.info(f"[ROUTER] Début requête : '{body.message}'")
 
     try:
-        resultat = await run_multi_agent(
+        resultat = run_multi_agent(
             message=body.message,
             historique_commande=body.historique_commande,
         )
