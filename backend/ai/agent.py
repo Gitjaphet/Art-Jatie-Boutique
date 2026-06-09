@@ -335,7 +335,7 @@ def _passer_commande(
 
 
 # ============================================================
-#  LLM 1 — CEREBRAS — CLASSIFIER
+#  LLM 1 — GROQ — CLASSIFIER (Remplacement de Cerebras)
 # ============================================================
 
 def llm1_classifier(message: str, history: list = None) -> dict:
@@ -343,7 +343,7 @@ def llm1_classifier(message: str, history: list = None) -> dict:
     import httpx
 
     headers = {
-        "Authorization": f"Bearer {os.getenv('CEREBRAS_API_KEY')}",
+        "Authorization": f"Bearer {os.getenv('GROQ_API_KEY')}", # ✅ Utilisation de Groq
         "Content-Type": "application/json",
     }
     
@@ -370,7 +370,7 @@ def llm1_classifier(message: str, history: list = None) -> dict:
     messages_payload.append({"role": "user", "content": message})
 
     body = {
-        "model": "gpt-oss-120b", # ✅ LE BON NOM DU MODÈLE EST ICI
+        "model": "llama-3.1-8b-instant", # ✅ Modèle Groq ultra-rapide pour la classification
         "messages": messages_payload,
         "max_tokens": 10,
         "temperature": 0,
@@ -378,30 +378,32 @@ def llm1_classifier(message: str, history: list = None) -> dict:
     
     try:
         response = httpx.post(
-            "https://api.cerebras.ai/v1/chat/completions",
+            "https://api.groq.com/openai/v1/chat/completions", # ✅ URL Groq
             headers=headers,
             json=body,
             timeout=30,
         )
         
-        # ✅ Sécurité anti-crash
         if response.status_code != 200:
-            logging.error(f"[CEREBRAS] Erreur API {response.status_code}: {response.text}")
+            logging.error(f"[GROQ CLASSIFIER] Erreur API {response.status_code}: {response.text}")
             return {"intent": "salutation", "tokens_in": 0, "tokens_out": 0}
 
         data = response.json()
         latence = (time.time() - t0) * 1000
-        intent = data["choices"][0]["message"]["content"].strip().lower()
-        tokens_in = data["usage"]["prompt_tokens"]
-        tokens_out = data["usage"]["completion_tokens"]
         
-        log_llm_call("cerebras/gpt-oss-120b", "classifier", tokens_in, tokens_out, latence, intent)
+        # ✅ Extraction sécurisée pour éviter l'Exception 'content'
+        message_obj = data.get("choices", [{}])[0].get("message", {})
+        intent = message_obj.get("content", "salutation").strip().lower()
+        
+        tokens_in = data.get("usage", {}).get("prompt_tokens", 0)
+        tokens_out = data.get("usage", {}).get("completion_tokens", 0)
+        
+        log_llm_call("groq/llama-3.1-8b-instant", "classifier", tokens_in, tokens_out, latence, intent)
         return {"intent": intent, "tokens_in": tokens_in, "tokens_out": tokens_out}
         
     except Exception as e:
-        logging.error(f"[CEREBRAS] Exception : {str(e)}")
+        logging.error(f"[GROQ CLASSIFIER] Exception : {str(e)}")
         return {"intent": "salutation", "tokens_in": 0, "tokens_out": 0}
-
 
 # ============================================================
 #  LLM 2 — GROQ — ROUTER (tool calling)
