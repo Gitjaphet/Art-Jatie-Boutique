@@ -4,6 +4,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import List, Optional
 from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
+import logging
 
 from ai.agent import llm_with_tools, TOOLS_MAP, SYSTEM_PROMPT
 
@@ -43,6 +44,7 @@ def chat(body: ChatRequest):
 
         for tool_call in response.tool_calls:
             tool_fn = TOOLS_MAP.get(tool_call["name"])
+            logging.info(f"TOOL APPELÉ: {tool_call['name']} avec args: {tool_call['args']}")
             if tool_fn is None:
                 resultat = {"erreur": f"Tool inconnu : {tool_call['name']}"}
             else:
