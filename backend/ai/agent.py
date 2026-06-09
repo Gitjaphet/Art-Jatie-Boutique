@@ -502,7 +502,7 @@ llm = ChatOllama(
     model="qwen2.5:3b",
     base_url=os.getenv("OLLAMA_BASE_URL", "http://ollama:11434"),
     temperature=0.1,
-    num_ctx=512,
+    num_ctx=1024,
 )
 
 llm_with_tools = llm.bind_tools(TOOLS)
