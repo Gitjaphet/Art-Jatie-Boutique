@@ -544,6 +544,24 @@ def execute_tool(tool_name: str, tool_args: dict) -> list | dict:
             if not result and tool_args.get("produit"):
                 result = _recherche_semantique(tool_args["produit"])
 
+        # 🔴 NOUVEAUTÉ PRO : Logique d'alternative si tout est en rupture
+        if isinstance(result, list) and len(result) > 0:
+            tout_en_rupture = all(p.get("stock", 0) == 0 for p in result)
+            if tout_en_rupture:
+                # On lance une recherche sémantique secondaire en coulisse
+                terme = requete_libre or tool_args.get("produit") or tool_args.get("categorie") or "chic"
+                alternatives = _recherche_semantique(f"Alternative similaire à {terme}", top_k=3)
+                
+                # On filtre pour ne garder que ce qui est EN STOCK
+                alts_en_stock = [p for p in alternatives if p.get("stock", 0) > 0 and p["id"] not in [r["id"] for r in result]]
+                
+                if alts_en_stock:
+                    # On modifie le résultat pour donner l'info complète au reformulateur
+                    result = {
+                        "demande_initiale": result,
+                        "alternatives_en_stock": alts_en_stock
+                    }
+
     elif tool_name == "statistiques":
         result = _stats(
             operation=tool_args.get("operation", "count"),
