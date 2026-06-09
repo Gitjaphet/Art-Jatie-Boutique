@@ -639,15 +639,22 @@ RÈGLES D'UTILISATION DES OUTILS
    - "robe de cérémonie"      → produit="robe mariée" (REFORMULE)
    - "tenue de soirée"        → produit="robe élégance"
 
-   QUAND utiliser requete_libre (recherche sémantique) :
-   - Phrases vagues ou poétiques : "quelque chose d'élégant pour un mariage"
-   - Descriptions d'ambiance : "tenue romantique", "cadeau pour maman"
-   - Quand tu ne sais pas quel filtre exact utiliser
+  
+   RÈGLE STRICTE — CHOIX DU MODE DE RECHERCHE :
 
-   QUAND utiliser les filtres classiques (produit, couleur, prix...) :
-   - Requêtes précises : "robe rouge moins de 100 000 Ar"
-   - Filtres combinés : couleur + genre + prix
-   - Tris : "le moins cher", "le plus cher"
+   Par défaut → TOUJOURS utiliser requete_libre avec la phrase exacte du client.
+   SAUF si la requête contient des filtres précis (couleur + prix + genre combinés).
+
+   requete_libre OBLIGATOIRE pour :
+   - "tenue de soirée", "robe de cérémonie", "tenue habillée"
+   - "quelque chose d'élégant", "cadeau pour maman"
+   - Tout ce qui n'est pas un nom de produit exact
+   - EN CAS DE DOUTE → requete_libre
+
+   Filtres classiques SEULEMENT pour :
+   - "robe rouge moins de 100 000 Ar" → produit="robe", couleur="Rouge", prix_max=100000
+   - "sac femme noir" → produit="sac", genre="Femme", couleur="Noir"
+   - "le moins cher" → sort="price_asc", limit=1
 
 3. STATISTIQUES & CALCULS → utilise statistiques_produits_tool
    - "combien de produits ?"  → operation="count"
