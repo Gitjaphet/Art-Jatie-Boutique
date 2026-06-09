@@ -132,13 +132,12 @@ export async function chatWithJatie(
   clientWhatsapp: string,
   channel: string = "web"
 ) {
-  const res = await fetch(`${API_URL}/api/agent/chat`, {
+  const res = await fetch(`${API_URL}/agent/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       message,
-      client_whatsapp: clientWhatsapp,
-      channel,
+      history: [],
     }),
   });
   if (!res.ok) throw new Error("Erreur agent IA");
