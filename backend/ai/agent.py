@@ -370,7 +370,7 @@ def llm1_classifier(message: str, history: list = None) -> dict:
     messages_payload.append({"role": "user", "content": message})
 
     body = {
-        "model": "llama3.1-8b", # ✅ Corrigé
+        "model": "gpt-oss-120b", # ✅ LE BON NOM DU MODÈLE EST ICI
         "messages": messages_payload,
         "max_tokens": 10,
         "temperature": 0,
@@ -378,7 +378,7 @@ def llm1_classifier(message: str, history: list = None) -> dict:
     
     try:
         response = httpx.post(
-            "https://api.cerebras.ai/v1/chat/completions", # ✅ Corrigé
+            "https://api.cerebras.ai/v1/chat/completions",
             headers=headers,
             json=body,
             timeout=30,
@@ -395,7 +395,7 @@ def llm1_classifier(message: str, history: list = None) -> dict:
         tokens_in = data["usage"]["prompt_tokens"]
         tokens_out = data["usage"]["completion_tokens"]
         
-        log_llm_call("cerebras/llama3.1-8b", "classifier", tokens_in, tokens_out, latence, intent)
+        log_llm_call("cerebras/gpt-oss-120b", "classifier", tokens_in, tokens_out, latence, intent)
         return {"intent": intent, "tokens_in": tokens_in, "tokens_out": tokens_out}
         
     except Exception as e:
