@@ -36,9 +36,6 @@ def chat(body: ChatRequest):
     tour = 0
     while True:
         tour += 1
-        if tour > MAX_TOURS:
-            logging.info(f"[AGENT] Max tours atteint ({MAX_TOURS}) — arrêt forcé")
-            break
 
         t_llm = time.time()
         logging.info(f"[AGENT] Tour {tour} — Appel LLM...")
@@ -72,6 +69,13 @@ def chat(body: ChatRequest):
                     tool_call_id=tool_call["id"],
                 )
             )
+
+        # Si MAX_TOURS atteint → forcer un dernier appel sans tools pour réponse finale
+        if tour >= MAX_TOURS:
+            logging.info(f"[AGENT] Max tours atteint — forcer réponse finale")
+            response = llm_with_tools.invoke(historique)
+            break
+
 
     texte = response.content
     if isinstance(texte, list):
