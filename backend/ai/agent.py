@@ -604,7 +604,7 @@ def llm3_reformulateur(message: str, donnees: any) -> str:
 
 
 # ============================================================
-#  LLM 4 — GEMINI FLASH — COLLECTEUR + CONFIRMATEUR COMMANDE
+#  LLM 4 — GROQ — COLLECTEUR + CONFIRMATEUR COMMANDE
 # ============================================================
 
 def llm4_commande(message: str, historique_commande: dict, commande_result: dict = None) -> str:
@@ -630,30 +630,41 @@ def llm4_commande(message: str, historique_commande: dict, commande_result: dict
             f"Réponds en français, ton chaleureux."
         )
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={os.getenv('GOOGLE_API_KEY')}"
+    headers = {
+        "Authorization": f"Bearer {os.getenv('GROQ_API_KEY')}",
+        "Content-Type": "application/json",
+    }
+    
     body = {
-        "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {"maxOutputTokens": 150, "temperature": 0.3},
+        "model": "llama-3.3-70b-versatile", # Modèle Groq puissant
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": 150,
+        "temperature": 0.3,
     }
     
     try:
-        response = httpx.post(url, json=body, timeout=30)
+        response = httpx.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers=headers,
+            json=body,
+            timeout=30
+        )
         
         if response.status_code != 200:
-            logging.error(f"[GEMINI] Erreur API {response.status_code}")
+            logging.error(f"[GROQ COMMANDE] Erreur API {response.status_code}")
             return "Une erreur technique empêche la commande pour l'instant, veuillez nous contacter directement sur WhatsApp !"
 
         data = response.json()
         latence = (time.time() - t0) * 1000
-        texte = data["candidates"][0]["content"]["parts"][0]["text"].strip()
-        tokens_in = data.get("usageMetadata", {}).get("promptTokenCount", 0)
-        tokens_out = data.get("usageMetadata", {}).get("candidatesTokenCount", 0)
+        texte = data["choices"][0]["message"]["content"].strip()
+        tokens_in = data.get("usage", {}).get("prompt_tokens", 0)
+        tokens_out = data.get("usage", {}).get("completion_tokens", 0)
         
-        log_llm_call("google/gemini-2.0-flash", "collecteur_commande", tokens_in, tokens_out, latence, texte[:100])
+        log_llm_call("groq/llama-3.3-70b", "collecteur_commande", tokens_in, tokens_out, latence, texte[:100])
         return texte
         
     except Exception as e:
-        logging.error(f"[GEMINI] Exception : {str(e)}")
+        logging.error(f"[GROQ COMMANDE] Exception : {str(e)}")
         return "Désolé, notre système de commande rencontre une petite perturbation technique."
 
 
