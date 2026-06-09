@@ -206,7 +206,7 @@ def _stats(
     filtre_categorie: str = "",
     filtre_genre: str = "",
 ) -> dict:
-    """10 opérations statistiques sur le catalogue (version complète de l'ancien agent)."""
+    """10 opérations statistiques sur le catalogue (versions complète de l'ancien agent)."""
     with Session(engine) as session:
         query = select(Product)
 
