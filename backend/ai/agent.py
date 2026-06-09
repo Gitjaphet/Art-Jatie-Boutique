@@ -367,7 +367,7 @@ def llm1_classifier(message: str, history: list = None) -> dict:
     messages_payload.append({"role": "user", "content": message})
 
     body = {
-        "model": "llama-3.1-70b-instant",
+        "model": "llama-3.1-8b-instant",
         "messages": messages_payload,
         "max_tokens": 10,
         "temperature": 0, # Température à 0 pour être très précis
