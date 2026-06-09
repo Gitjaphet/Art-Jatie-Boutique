@@ -652,7 +652,7 @@ def llm4_commande(message: str, historique_commande: dict, commande_result: dict
         
         if response.status_code != 200:
             logging.error(f"[GROQ COMMANDE] Erreur API {response.status_code}")
-            return "Une erreur technique empêche la commande pour l'instant, veuillez nous contacter directement sur WhatsApp !"
+            return "Une erreur technique empêche la commandes pour l'instant, veuillez nous contacter directement sur WhatsApp !"
 
         data = response.json()
         latence = (time.time() - t0) * 1000
