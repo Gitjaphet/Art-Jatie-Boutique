@@ -46,7 +46,10 @@ def chat(body: ChatRequest):
             if tool_fn is None:
                 resultat = {"erreur": f"Tool inconnu : {tool_call['name']}"}
             else:
-                resultat = tool_fn.invoke(tool_call["args"])
+                try:
+                    resultat = tool_fn.invoke(tool_call["args"])
+                except Exception as e:
+                    resultat = {"erreur": str(e)}
 
             historique.append(
                 ToolMessage(

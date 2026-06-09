@@ -401,7 +401,12 @@ def statistiques_produits_tool(
     filtre_genre: str = "",
 ) -> dict:
     """
+
+    OBLIGATOIRE : tu dois toujours fournir le paramètre 'operation'.
+    Exemple : operation="count"
+    
     Calcule des statistiques sur le catalogue.
+   
 
     Opérations :
     - "count"         → nombre total de produits
@@ -744,7 +749,10 @@ def run_agent():
                 if tool_fn is None:
                     resultat = {"erreur": f"Tool inconnu : {tool_name}"}
                 else:
-                    resultat = tool_fn.invoke(tool_args)
+                    try:
+                        resultat = tool_fn.invoke(tool_call["args"])
+                    except Exception as e:
+                        resultat = {"erreur": str(e)}
 
                 print(f"  Résultat : {json.dumps(resultat, ensure_ascii=False, default=str)[:400]}…")
 
