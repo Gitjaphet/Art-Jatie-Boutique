@@ -8,6 +8,7 @@ from sqlmodel import Session, select
 from database import engine
 from models.models import Product
 import psycopg2
+from ai.core.db import db_config
 
 load_dotenv()
 
@@ -50,14 +51,7 @@ def construire_texte_produit(p: Product) -> str:
 
 # ── Vectorisation de tous les produits ────────────────────────────────────
 def vectoriser_tous_les_produits():
-    conn = psycopg2.connect(
-        host="aws-0-eu-west-1.pooler.supabase.com",
-        port=6543,
-        dbname="postgres",
-        user="postgres.gmoezlcqbrfcutyxpxjw",
-        password=os.getenv("DB_PASSWORD"),
-        sslmode="require"
-    )
+    conn = psycopg2.connect(**db_config)
 
     with Session(engine) as session:
         produits = session.exec(select(Product)).all()
