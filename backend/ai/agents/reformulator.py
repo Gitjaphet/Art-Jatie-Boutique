@@ -1,4 +1,5 @@
 # ai/agents/reformulator.py
+from __future__ import annotations
 import os
 import json
 import time
@@ -6,12 +7,13 @@ import logging
 import httpx
 from ai.core.token_logger import log_llm_call
 from ai.core.retry import llm_retry
+from ai.core.types import ToolResult
 
 _OLLAMA_URL = f"{os.getenv('OLLAMA_BASE_URL', 'http://ollama:11434')}/api/generate"
 _FALLBACK = "J'ai trouvé des articles, mais j'ai un petit souci de connexion pour vous les présenter."
 
 
-def llm3_reformulateur(token_log: list, message: str, donnees: any) -> str:
+def llm3_reformulateur(token_log: list, message: str, donnees: ToolResult) -> str:
     t0 = time.time()
     prompt = (
         f"Tu es Jatie, assistante commerciale Art-Jatie (crochet malgache).\n"
