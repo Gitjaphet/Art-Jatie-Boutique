@@ -1,28 +1,37 @@
-import os
-from dotenv import load_dotenv
-import psycopg2
-from urllib.parse import urlparse
+import time
+import logging
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from typing import Optional, Dict, Any
 
-load_dotenv()
+from ai.agent import run_multi_agent
 
-_url = urlparse(os.getenv("DATABASE_URL"))
-config = {
-    "host":     _url.hostname,
-    "port":     _url.port or 5432,
-    "dbname":   _url.path.lstrip("/"),
-    "user":     _url.username,
-    "password": _url.password,
-    "sslmode":  os.getenv("DB_SSLMODE", "disable"),
-}
+router = APIRouter()
 
-print("Config chargée :", {**config, "password": "***"})
+class ChatRequest(BaseModel):
+    message: str
+    historique_commande: Optional[Dict[str, Any]] = None
 
-try:
-    conn = psycopg2.connect(**config)
-    cur = conn.cursor()
-    cur.execute("SELECT version();")
-    print("✅ Connexion OK :", cur.fetchone()[0])
-    cur.close()
-    conn.close()
-except Exception as e:
-    print("❌ Erreur :", e)
+@router.post("/chat")
+async def chat(body: ChatRequest):
+    t0 = time.time()
+    logging.info(f"[ROUTER] Début requête : '{body.message}'")
+
+    try:
+        resultat = run_multi_agent(
+            message=body.message,
+            historique_commande=body.historique_commande,
+        )
+
+        logging.info(f"[ROUTER] Total : {time.time() - t0:.2f}s")
+
+        return {
+            "response": resultat.get("response", "Erreur de génération."),
+            "intent": resultat.get("intent"),
+            "historique_commande": resultat.get("historique_commande"),
+            "token_summary": resultat.get("token_summary"),
+        }
+
+    except Exception as e:
+        logging.error(f"[ROUTER] Erreur critique : {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Erreur interne de l'agent")
