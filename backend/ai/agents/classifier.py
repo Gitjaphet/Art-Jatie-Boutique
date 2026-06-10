@@ -1,0 +1,68 @@
+# ai/agents/classifier.py
+import os
+import time
+import logging
+import httpx
+from ai.core.token_logger import log_llm_call
+
+
+def llm1_classifier(token_log: list, message: str, history: list = None) -> dict:
+    t0 = time.time()
+
+    headers = {
+        "Authorization": f"Bearer {os.getenv('GROQ_API_KEY')}",
+        "Content-Type": "application/json",
+    }
+
+    prompt_system = (
+        "Classify the user message into exactly ONE word from this list:\n"
+        '- "recherche" : User is looking for recommendations, styles, or a generic item.\n'
+        '- "commande"  : User explicitly wants to BUY/CHECKOUT a specific item.\n'
+        '- "stats"     : User asks about stock, how many items, or price averages.\n'
+        '- "faq"       : User asks about delivery, shipping, returns, or payment.\n'
+        '- "salutation": Simple greetings with no specific request.\n'
+        "Reply with ONLY the single word."
+    )
+
+    messages_payload = [{"role": "system", "content": prompt_system}]
+    if history:
+        for msg in history[-4:]:
+            messages_payload.append({"role": msg["role"], "content": msg["content"]})
+    messages_payload.append({"role": "user", "content": message})
+
+    body = {
+        "model": "llama-3.1-8b-instant",
+        "messages": messages_payload,
+        "max_tokens": 10,
+        "temperature": 0,
+    }
+
+    try:
+        response = httpx.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers=headers,
+            json=body,
+            timeout=30,
+        )
+
+        if response.status_code != 200:
+            logging.error(f"[CLASSIFIER] Erreur API {response.status_code}: {response.text}")
+            return {"intent": "salutation", "tokens_in": 0, "tokens_out": 0}
+
+        data = response.json()
+        latence = (time.time() - t0) * 1000
+        intent = data["choices"][0]["message"]["content"].strip().lower()
+
+        for valid in ["recherche", "commande", "stats", "faq", "salutation"]:
+            if valid in intent:
+                intent = valid
+                break
+
+        tokens_in = data.get("usage", {}).get("prompt_tokens", 0)
+        tokens_out = data.get("usage", {}).get("completion_tokens", 0)
+        log_llm_call(token_log, "groq/llama-3.1-8b-instant", "classifier", tokens_in, tokens_out, latence, intent)
+        return {"intent": intent, "tokens_in": tokens_in, "tokens_out": tokens_out}
+
+    except Exception as e:
+        logging.error(f"[CLASSIFIER] Exception: {str(e)}")
+        return {"intent": "salutation", "tokens_in": 0, "tokens_out": 0}
