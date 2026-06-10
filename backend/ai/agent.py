@@ -154,14 +154,16 @@ def _recherche_semantique(texte: str, top_k: int = 5) -> list[dict]:
 
     t1 = time.time()
     try:
-        conn = psycopg2.connect(
-            host="aws-0-eu-west-1.pooler.supabase.com",
-            port=6543,
-            dbname="postgres",
-            user="postgres.gmoezlcqbrfcutyxpxjw",
-            password=os.getenv("DB_PASSWORD"),
-            sslmode="require",
-        )
+        _db_config = {
+            "host":     os.getenv("DB_HOST"),
+            "port":     int(os.getenv("DB_PORT", 5432)),
+            "dbname":   os.getenv("DB_NAME"),
+            "user":     os.getenv("DB_USER"),
+            "password": os.getenv("DB_PASSWORD"),
+            "sslmode":  os.getenv("DB_SSLMODE", "disable"),
+        }
+
+        conn = psycopg2.connect(**_db_config)
         cur = conn.cursor()
         cur.execute(
             """
