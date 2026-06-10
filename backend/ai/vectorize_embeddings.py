@@ -51,30 +51,26 @@ def construire_texte_produit(p: Product) -> str:
 
 # ── Vectorisation de tous les produits ────────────────────────────────────
 def vectoriser_tous_les_produits():
-    conn = psycopg2.connect(**db_config)
-
     with Session(engine) as session:
         produits = session.exec(select(Product)).all()
         print(f"→ {len(produits)} produits trouvés\n")
 
-    cur = conn.cursor()
-    cur.execute("DELETE FROM product_embedding;")
+    with psycopg2.connect(**db_config) as conn:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM product_embedding;")
+            for produit in produits:
+                texte = construire_texte_produit(produit)
+                print(f"Vectorisation : {produit.name}...")
+                vecteur = get_embedding(texte)
+                cur.execute(
+                    """
+                    INSERT INTO product_embedding (product_id, contenu, embedding)
+                    VALUES (%s, %s, %s::vector)
+                    """,
+                    (produit.id, texte, str(vecteur))
+                )
+        conn.commit()
 
-    for produit in produits:
-        texte = construire_texte_produit(produit)
-        print(f"Vectorisation : {produit.name}...")
-        vecteur = get_embedding(texte)
-        cur.execute(
-            """
-            INSERT INTO product_embedding (product_id, contenu, embedding)
-            VALUES (%s, %s, %s::vector)
-            """,
-            (produit.id, texte, str(vecteur))
-        )
-
-    conn.commit()
-    cur.close()
-    conn.close()
     print(f"\n✓ {len(produits)} produits vectorisés avec succès !")
 
 if __name__ == "__main__":
