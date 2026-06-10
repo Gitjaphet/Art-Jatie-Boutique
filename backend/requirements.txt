@@ -17,3 +17,4 @@ langchain-ollama
 requests
 pytest
 pytest-asyncio
+tenacity>=9.0.0

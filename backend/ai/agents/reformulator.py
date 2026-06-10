@@ -5,11 +5,14 @@ import time
 import logging
 import httpx
 from ai.core.token_logger import log_llm_call
+from ai.core.retry import llm_retry
+
+_OLLAMA_URL = f"{os.getenv('OLLAMA_BASE_URL', 'http://ollama:11434')}/api/generate"
+_FALLBACK = "J'ai trouvé des articles, mais j'ai un petit souci de connexion pour vous les présenter."
 
 
 def llm3_reformulateur(token_log: list, message: str, donnees: any) -> str:
     t0 = time.time()
-
     prompt = (
         f"Tu es Jatie, assistante commerciale Art-Jatie (crochet malgache).\n"
         f"Reformule ces données en français naturel et chaleureux en 3 phrases max.\n"
@@ -20,9 +23,10 @@ def llm3_reformulateur(token_log: list, message: str, donnees: any) -> str:
         f"Réponse Jatie :"
     )
 
-    try:
-        response = httpx.post(
-            f"{os.getenv('OLLAMA_BASE_URL', 'http://ollama:11434')}/api/generate",
+    @llm_retry
+    def _call() -> httpx.Response:
+        r = httpx.post(
+            _OLLAMA_URL,
             json={
                 "model": "qwen2.5:3b",
                 "prompt": prompt,
@@ -31,20 +35,18 @@ def llm3_reformulateur(token_log: list, message: str, donnees: any) -> str:
             },
             timeout=120,
         )
+        r.raise_for_status()
+        return r
 
-        if response.status_code != 200:
-            logging.error(f"[REFORMULATEUR] Erreur Ollama {response.status_code}")
-            return "Voici les résultats trouvés, mais je n'arrive pas à bien les lire pour le moment."
-
+    try:
+        response = _call()
         data = response.json()
         latence = (time.time() - t0) * 1000
         tokens_in = data.get("prompt_eval_count", 0)
         tokens_out = data.get("eval_count", 0)
         texte = data.get("response", "").strip()
-
         log_llm_call(token_log, "ollama/qwen2.5:3b", "reformulateur", tokens_in, tokens_out, latence, texte[:100])
         return texte
-
     except Exception as e:
-        logging.error(f"[REFORMULATEUR] Exception: {str(e)}")
-        return "J'ai trouvé des articles, mais j'ai un petit souci de connexion pour vous les présenter."
+        logging.error(f"[REFORMULATEUR] Échec après retries : {e}")
+        return _FALLBACK

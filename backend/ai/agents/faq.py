@@ -4,7 +4,10 @@ import time
 import logging
 import httpx
 from ai.core.token_logger import log_llm_call
+from ai.core.retry import llm_retry
 
+_OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+_FALLBACK = "Pour toute question, n'hésitez pas à nous contacter directement sur WhatsApp au 034 30 513 60 ! 💕"
 
 FAQ_CONTEXT = """
 Art-Jatie Boutique — Crochet artisanal malgache — Atelier : Seganinga, Nosy Be
@@ -20,13 +23,11 @@ PAIEMENT : MVola, Orange Money, WhatsApp. Sur mesure: acompte 50%.
 
 def llm5_faq(token_log: list, message: str) -> str:
     t0 = time.time()
-
     headers = {
         "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
         "Content-Type": "application/json",
         "HTTP-Referer": "https://artjatie.com",
     }
-
     body = {
         "model": "deepseek/deepseek-r1:free",
         "messages": [
@@ -40,27 +41,21 @@ def llm5_faq(token_log: list, message: str) -> str:
         "temperature": 0.2,
     }
 
+    @llm_retry
+    def _call() -> httpx.Response:
+        r = httpx.post(_OPENROUTER_URL, headers=headers, json=body, timeout=30)
+        r.raise_for_status()
+        return r
+
     try:
-        response = httpx.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers=headers,
-            json=body,
-            timeout=30,
-        )
-
-        if response.status_code != 200:
-            logging.error(f"[FAQ] Erreur API {response.status_code}")
-            return "Pour toute question, n'hésitez pas à nous contacter directement sur WhatsApp au 034 30 513 60 ! 💕"
-
+        response = _call()
         data = response.json()
         latence = (time.time() - t0) * 1000
         texte = data["choices"][0]["message"]["content"].strip()
         tokens_in = data.get("usage", {}).get("prompt_tokens", 0)
         tokens_out = data.get("usage", {}).get("completion_tokens", 0)
-
         log_llm_call(token_log, "openrouter/deepseek-r1", "faq", tokens_in, tokens_out, latence, texte[:100])
         return texte
-
     except Exception as e:
-        logging.error(f"[FAQ] Exception: {str(e)}")
-        return "Pour toute question, n'hésitez pas à nous contacter directement sur WhatsApp au 034 30 513 60 ! 💕"
+        logging.error(f"[FAQ] Échec après retries : {e}")
+        return _FALLBACK
