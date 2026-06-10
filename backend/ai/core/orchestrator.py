@@ -114,6 +114,13 @@ def run_multi_agent(
                 "client_whatsapp": None,
                 "client_email":    None,
             }
+        # ── Extraction automatique du product_id ──────────────────────
+        if not historique_commande.get("product_id"):
+            candidats = recherche_semantique(message, top_k=1)
+            if candidats:
+                historique_commande["product_id"]   = candidats[0]["id"]
+                historique_commande["product_name"] = candidats[0].get("name", "")
+                logging.info(f"[ORCHESTRATOR] Produit détecté : {historique_commande['product_name']} (id={historique_commande['product_id']})")
 
         champs_manquants = [k for k, v in historique_commande.items() if not v]
 
