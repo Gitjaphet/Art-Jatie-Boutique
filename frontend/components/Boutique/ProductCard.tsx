@@ -4,7 +4,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import type { Product } from "../../app/boutique/page";
+import type { Product } from "../../app/boutique/BoutiqueClient";
 import { useCartStore } from "../../lib/cart";
 import CommandeModal from "./CommandeModal";
 import styles from "./ProductCard.module.css";
