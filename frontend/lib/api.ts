@@ -2,9 +2,7 @@
 
 // Utilisation de la variable d'environnement Vercel (avec localhost en secours)
 // api.ts
-const API_URL = typeof window === "undefined"
-  ? (process.env.API_URL || "http://backend:8000")        // ← serveur Docker
-  : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"); // ← navigateur
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.artjatie.com";// ← navigateur
 
 // 1. Définition de l'interface brute venant de la base de données (Backend)
 interface ApiProduct {
