@@ -80,11 +80,21 @@ function mapApiProduct(
 }
 
 export default async function BoutiquePage() {
-  // Fetch côté serveur — Google voit le résultat dans le HTML
-  const [settings, inStock] = await Promise.all([
-    getSettings(),
-    getProducts(false),
-  ]);
+  console.log("API_URL used:", process.env.API_URL || process.env.NEXT_PUBLIC_API_URL);
+
+  let settings: Record<string, string> = {};
+  let inStock: Record<string, unknown>[] = [];
+
+  try {
+    [settings, inStock] = await Promise.all([
+      getSettings(),
+      getProducts(false),
+    ]);
+    console.log("Products count:", inStock.length);
+  } catch (err) {
+    console.error("BoutiquePage fetch error:", err);
+    // Continue avec données vides plutôt que crasher
+  }
 
   const rate = Number(settings.exchange_rate_eur) || 4800;
 
