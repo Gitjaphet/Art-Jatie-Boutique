@@ -20,6 +20,16 @@ const nextConfig: NextConfig = {
         hostname: "gmoezlcqbrfcutyxpxjw.supabase.co",
         pathname: "/storage/v1/object/public/**",
       },
+      {
+        protocol: "https",
+        hostname: "api.artjatie.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "test.com",
+        pathname: "/**",
+      },
     ],
   },
 };
