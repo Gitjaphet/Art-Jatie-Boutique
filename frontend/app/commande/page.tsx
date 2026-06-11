@@ -8,7 +8,8 @@ import BoutiqueHeader from "../../components/Boutique/BoutiqueHeader";
 import SidebarFilters, { SizeItem } from "../../components/Boutique/SidebarFilters";
 import ProductCard from "../../components/Boutique/ProductCard";
 import { getProducts, getSettings } from "../../lib/api";
-import type { Product } from "../boutique/page";
+
+import type { Product } from "../boutique/BoutiqueClient";
 
 
 
