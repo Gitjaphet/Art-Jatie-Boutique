@@ -33,7 +33,7 @@ export async function getProducts(onOrder?: boolean) {
       ? `${API_URL}/products/?on_order=${onOrder}`
       : `${API_URL}/products/`;
 
-  const res = await fetch(url);
+  const res = await fetch(url, { next: { revalidate: 300 } }); // ← AJOUTER
   if (!res.ok) throw new Error("Erreur de réseau");
   const data: ApiProduct[] = await res.json();
 
@@ -42,24 +42,21 @@ export async function getProducts(onOrder?: boolean) {
     name: p.name,
     slug: p.slug,
     subtitle: `${p.category} · ${p.genre}`,
-
-    // --- Valeurs mathématiques ---
+    genre: p.genre,        // ← AJOUTER
+    category: p.category,  // ← AJOUTER
+    on_order: p.on_order,  // ← AJOUTER
     rawPrice: p.price_ar,
     rawOldPrice: p.old_price_ar,
-
-    // Affichage texte Ariary
     price: `${p.price_ar.toLocaleString("fr-FR")} Ar`,
     oldPrice: p.old_price_ar
       ? `${p.old_price_ar.toLocaleString("fr-FR")} Ar`
       : undefined,
-
     badge: p.badge,
     tag: p.tag,
     color: "#f5ead9",
     image: p.image,
     imagesString: p.images || "",
     hot: p.is_hot,
-    // Transformation des chaînes CSV en tableaux
     colorsArray: p.colors ? p.colors.split(",").map((c) => c.trim()) : [],
     sizesArray: p.sizes ? p.sizes.split(",").map((s) => s.trim()) : [],
     stock_quantity: p.stock_quantity ?? 0,
@@ -68,7 +65,7 @@ export async function getProducts(onOrder?: boolean) {
 }
 
 export async function getSettings() {
-  const res = await fetch(`${API_URL}/settings/`);
+  const res = await fetch(`${API_URL}/settings/`, { next: { revalidate: 300 } }); // ← AJOUTER
   if (!res.ok) throw new Error("Erreur chargement settings");
   return res.json();
 }
