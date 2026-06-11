@@ -3,10 +3,9 @@
 import styles from "./BoutiqueSection.module.css";
 import { useRef, useState, useEffect } from "react";
 import Image from "next/image";
-import Link from "next/link"; // ← Import manquant pour la navigation
-import { getProducts } from "../../lib/api";
-import { useAuth } from "../../lib/googleAuth"; // ← Import de l'authentification Google
-import { useCartStore } from "../../lib/cart"; // ← Import du store du panier (ajustez le chemin si besoin)
+import Link from "next/link";
+import { useAuth } from "../../lib/googleAuth";
+import { useCartStore } from "../../lib/cart";
 
 /* ── Types ── */
 interface Product {
@@ -14,7 +13,7 @@ interface Product {
   name: string;
   subtitle: string;
   price: string;
-  rawPrice?: number; // ← utile pour le panier
+  rawPrice?: number;
   oldPrice?: string;
   badge: "En stock" | "Derniers" | "Rupture" | "Nouveau" | string;
   tag: string;
@@ -23,8 +22,8 @@ interface Product {
   hot?: boolean;
   is_hot?: boolean;
   on_order?: boolean;
-  slug?: string; // ← Requis pour le lien "Voir le produit"
-  category?: string; // ← Requis pour le panier
+  slug?: string;
+  category?: string;
 }
 
 /* Badge color mapping */
@@ -41,7 +40,6 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
   const [visible, setVisible] = useState(false);
   const [added, setAdded] = useState(false);
 
-  // ↓ Intégration de l'authentification et du panier ↓
   const { user, setShowLoginModal, setOnLoginSuccess } = useAuth();
   const addItem = useCartStore((state) => state.addItem);
 
@@ -61,13 +59,11 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
 
   const badgeColor = BADGE_COLORS[product.badge] || "#000000";
 
-  // ↓ Nouvelle fonction d'ajout au panier protégée par Google Auth ↓
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
-    e.stopPropagation(); // Empêche le clic de se propager si la carte entière était un lien
+    e.stopPropagation();
 
     const doAdd = () => {
-      // On s'assure d'avoir un rawPrice, sinon on essaie de nettoyer la string 'price'
       const priceVal =
         product.rawPrice ||
         parseInt(product.price.replace(/\D/g, ""), 10) ||
@@ -128,7 +124,6 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
         )}
 
         <div className={styles.cardOverlay}>
-          {/* ↓ Bouton transformé en Link pour naviguer vers le produit ↓ */}
           <Link
             href={
               product.slug
@@ -156,31 +151,19 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
               <span className={styles.cardOldPrice}>{product.oldPrice}</span>
             )}
           </div>
-          
-          {/* ↓ L'icône panier exécute handleAddToCart ↓ */}
+
           <button
             className={`${styles.addBtn} ${added ? styles.addedAnim : ""}`}
             aria-label={`Commander ${product.name}`}
             onClick={handleAddToCart}
-            disabled={added} // Empêche le spam clic
+            disabled={added}
           >
             {added ? (
-              // Icône "Check" quand ajouté
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
             ) : (
-              // Icône panier standard
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                aria-hidden="true"
-              >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                 <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
                 <line x1="3" y1="6" x2="21" y2="6" />
                 <path d="M16 10a4 4 0 01-8 0" />
@@ -193,14 +176,17 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
   );
 }
 
+/* ── Types props ── */
+type BoutiqueSectionProps = {
+  products: Product[];
+};
+
 /* ── Section principale ── */
-export default function BoutiqueSection() {
+export default function BoutiqueSection({ products }: BoutiqueSectionProps) {
   const titleRef = useRef<HTMLDivElement>(null);
   const [titleVisible, setTitleVisible] = useState(false);
 
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-
+  // ✅ Animation du titre restaurée
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -215,47 +201,15 @@ export default function BoutiqueSection() {
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    const fetchShowcaseProducts = async () => {
-      try {
-        setLoading(true);
-        const [inStockData, onOrderData] = await Promise.all([
-          getProducts(false),
-          getProducts(true),
-        ]);
-
-        const inStockHot = inStockData
-          .filter((p: Product) => p.hot || p.is_hot)
-          .slice(0, 3);
-
-        const onOrderHot = onOrderData
-          .filter((p: Product) => p.hot || p.is_hot)
-          .slice(0, 3);
-
-        setProducts([...inStockHot, ...onOrderHot]);
-      } catch (error) {
-        console.error("Erreur de chargement des produits :", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchShowcaseProducts();
-  }, []);
-
   return (
     <section className={styles.root}>
       <div className={styles.bgBlob1} aria-hidden="true" />
       <div className={styles.bgBlob2} aria-hidden="true" />
-      <span className={styles.watermark} aria-hidden="true">
-        B
-      </span>
+      <span className={styles.watermark} aria-hidden="true">B</span>
 
       <div className={styles.container}>
         <div
-          className={`${styles.header} ${
-            titleVisible ? styles.headerVisible : ""
-          }`}
+          className={`${styles.header} ${titleVisible ? styles.headerVisible : ""}`}
           ref={titleRef}
         >
           <div className={styles.eyebrowRow}>
@@ -276,11 +230,7 @@ export default function BoutiqueSection() {
         </div>
 
         <div className={styles.grid}>
-          {loading ? (
-            <p style={{ textAlign: "center", width: "100%", padding: "2rem" }}>
-              Chargement de nos créations...
-            </p>
-          ) : products.length > 0 ? (
+          {products.length > 0 ? (
             products.map((p, i) => (
               <ProductCard key={p.id} product={p} index={i} />
             ))
@@ -294,25 +244,14 @@ export default function BoutiqueSection() {
         <div className={styles.cta}>
           <Link href="/boutique" className={styles.ctaBtn}>
             <span className={styles.ctaBtnInner}>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                aria-hidden="true"
-              >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                 <circle cx="9" cy="21" r="1" />
                 <circle cx="20" cy="21" r="1" />
                 <path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.68l1.62-8.32H6" />
               </svg>
               Voir toute la boutique
             </span>
-            <span className={styles.ctaBtnArrow} aria-hidden="true">
-              →
-            </span>
+            <span className={styles.ctaBtnArrow} aria-hidden="true">→</span>
           </Link>
 
           <p className={styles.ctaHint}>

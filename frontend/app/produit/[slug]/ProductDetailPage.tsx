@@ -3,10 +3,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
-import { useSearchParams } from "next/navigation"; // ◄ AJOUTÉ ICI
 import { useCartStore } from "@/lib/cart";
 import styles from "./ProductDetail.module.css";
-import CommandeModal from "@/components/Boutique/CommandeModal"; // Ajustez le chemin si nécessaire
+import CommandeModal from "@/components/Boutique/CommandeModal";
 import { useAuth } from "@/lib/googleAuth";
 
 const COLOR_MAP: Record<string, string> = {
@@ -30,8 +29,14 @@ function Lightbox({
 }) {
   const [current, setCurrent] = useState(startIndex);
 
-  const prev = useCallback(() => setCurrent((i) => (i - 1 + images.length) % images.length), [images.length]);
-  const next = useCallback(() => setCurrent((i) => (i + 1) % images.length), [images.length]);
+  const prev = useCallback(
+    () => setCurrent((i) => (i - 1 + images.length) % images.length),
+    [images.length]
+  );
+  const next = useCallback(
+    () => setCurrent((i) => (i + 1) % images.length),
+    [images.length]
+  );
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -50,9 +55,7 @@ function Lightbox({
         className={`${styles.lightboxArrow} ${styles.lightboxArrowLeft}`}
         onClick={(e) => { e.stopPropagation(); prev(); }}
         aria-label="Image précédente"
-      >
-        ‹
-      </button>
+      >‹</button>
       <div className={styles.lightboxImageWrap} onClick={(e) => e.stopPropagation()}>
         <Image
           src={images[current]}
@@ -67,9 +70,7 @@ function Lightbox({
         className={`${styles.lightboxArrow} ${styles.lightboxArrowRight}`}
         onClick={(e) => { e.stopPropagation(); next(); }}
         aria-label="Image suivante"
-      >
-        ›
-      </button>
+      >›</button>
       <div className={styles.lightboxCounter}>
         {current + 1} / {images.length}
       </div>
@@ -77,7 +78,7 @@ function Lightbox({
   );
 }
 
-// ─── Galerie principale ───────────────────────────────────────────────────────
+// ─── Galerie ──────────────────────────────────────────────────────────────────
 function Gallery({ product }: { product: any }) {
   const mainImage: string = product.image ?? "";
   const extraImages: string[] = product.imagesString
@@ -121,8 +122,10 @@ function Gallery({ product }: { product: any }) {
           />
           <div className={styles.zoomHint}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-              <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              <line x1="11" y1="8" x2="11" y2="14"/>
+              <line x1="8" y1="11" x2="14" y2="11"/>
             </svg>
             Agrandir
           </div>
@@ -161,7 +164,7 @@ function Gallery({ product }: { product: any }) {
   );
 }
 
-// ─── Compteur de quantité ────────────────────────────────────────────────────
+// ─── Quantité ─────────────────────────────────────────────────────────────────
 function QuantitySelector({
   value,
   onChange,
@@ -188,24 +191,32 @@ function QuantitySelector({
   );
 }
 
-// ─── Section panier (Bouton dynamique) ────────────────────────────────────────
-// ─── Section panier (Bouton dynamique) ────────────────────────────────────────
-function AddToCartSection({ product, isSurMesure }: { product: any; isSurMesure: boolean }) {
-  const { user, setShowLoginModal, setOnLoginSuccess } = useAuth();
+// ─── Panier ───────────────────────────────────────────────────────────────────
+function AddToCartSection({
+  product,
+  isSurMesure,
+}: {
+  product: any;
+  isSurMesure: boolean;
+}) {
+  const { setShowLoginModal, setOnLoginSuccess } = useAuth();
   const [added, setAdded] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [qty, setQty] = useState(1);
   const addItem = useCartStore((s) => s.addItem);
 
-  // ✅ LA VRAIE FIX : vérifier le choix mémorisé, pas seulement user
   const hasChosen = () => !!localStorage.getItem("artjatie_auth_choice");
 
   const handleAdd = () => {
     const doAdd = () => {
       for (let i = 0; i < qty; i++) {
         addItem({
-          id: product.id, name: product.name, price: product.rawPrice,
-          quantity: 1, image: product.image, category: product.category ?? "",
+          id: product.id,
+          name: product.name,
+          price: product.rawPrice,
+          quantity: 1,
+          image: product.image,
+          category: product.category ?? "",
         });
       }
       setAdded(true);
@@ -213,16 +224,13 @@ function AddToCartSection({ product, isSurMesure }: { product: any; isSurMesure:
     };
 
     if (hasChosen()) {
-      // ✅ Déjà choisi (Google ou invité) → on ajoute directement
       doAdd();
     } else {
-      // Premier passage → afficher le modal
       setOnLoginSuccess(() => doAdd);
       setShowLoginModal(true);
     }
   };
 
-  // ✅ CAS 1 : Produit "Sur commande" ou sur-mesure
   if (product.on_order || isSurMesure) {
     const handleCommande = () => {
       const doOpen = () => setShowModal(true);
@@ -255,7 +263,6 @@ function AddToCartSection({ product, isSurMesure }: { product: any; isSurMesure:
             </svg>
             Fabriqué sur commande — délai 7 à 14 jours
           </div>
-
           <button
             className={`${styles.btnCart} ${styles.btnCommande} ${added ? styles.btnCartAdded : ""}`}
             onClick={() => { if (!added) handleCommande(); }}
@@ -267,7 +274,6 @@ function AddToCartSection({ product, isSurMesure }: { product: any; isSurMesure:
     );
   }
 
-  // ✅ CAS 2 : Produit en stock normal
   const maxQty = product.stock_quantity ?? 1;
   const isSoldOut = maxQty === 0;
 
@@ -297,13 +303,15 @@ function AddToCartSection({ product, isSurMesure }: { product: any; isSurMesure:
     </div>
   );
 }
+
 // ─── Page principale ──────────────────────────────────────────────────────────
-export default function ProductDetailPage({ product }: { product: any }) {
-  const searchParams = useSearchParams();
-  const isSurMesure = searchParams.get("mode") === "sur-mesure";
-
-
-  
+export default function ProductDetailPage({
+  product,
+  isSurMesure,
+}: {
+  product: any;
+  isSurMesure: boolean;
+}) {
   const colors = product.colorsArray ?? (product.colors ? product.colors.split(",").map((c: string) => c.trim()) : []);
   const sizes = product.sizesArray ?? (product.sizes ? product.sizes.split(",").map((s: string) => s.trim()) : []);
   const priceEur = Math.round((product.rawPrice ?? product.price_ar) / EXCHANGE_RATE);
@@ -322,7 +330,6 @@ export default function ProductDetailPage({ product }: { product: any }) {
 
   return (
     <div className={styles.page}>
-      {/* ✅ Breadcrumb dynamique en fonction du paramètre */}
       <nav className={styles.breadcrumb}>
         <Link href="/">Accueil</Link>
         <span className={styles.breadcrumbSep}>/</span>
@@ -350,7 +357,6 @@ export default function ProductDetailPage({ product }: { product: any }) {
 
           <div className={styles.divider} />
 
-          {/* Prix */}
           <div className={styles.priceBlock}>
             <div className={styles.priceMain}>
               <span className={styles.priceAr}>
@@ -373,7 +379,6 @@ export default function ProductDetailPage({ product }: { product: any }) {
             )}
           </div>
 
-          {/* Description */}
           {product.description && (
             <div
               className={styles.description}
@@ -381,7 +386,6 @@ export default function ProductDetailPage({ product }: { product: any }) {
             />
           )}
 
-          {/* Couleurs */}
           {colors.length > 0 && (
             <div className={styles.section}>
               <p className={styles.sectionLabel}>Couleurs disponibles</p>
@@ -400,7 +404,6 @@ export default function ProductDetailPage({ product }: { product: any }) {
             </div>
           )}
 
-          {/* Tailles */}
           {sizes.length > 0 && (
             <div className={styles.section}>
               <p className={styles.sectionLabel}>Tailles disponibles</p>
@@ -412,7 +415,6 @@ export default function ProductDetailPage({ product }: { product: any }) {
             </div>
           )}
 
-          {/* ✅ Stock indicator — Masqué si isSurMesure est vrai */}
           {!product.on_order && !isSurMesure && product.stock_quantity !== undefined && (
             <div className={styles.stockRow}>
               <span className={styles.stockDot} style={{ background: stockColor }} />
@@ -422,10 +424,8 @@ export default function ProductDetailPage({ product }: { product: any }) {
             </div>
           )}
 
-          {/* Panier + quantité — On transmet l'état isSurMesure */}
           <AddToCartSection product={product} isSurMesure={isSurMesure} />
 
-          {/* Garanties */}
           <div className={styles.trustRow}>
             <div className={styles.trustItem}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -435,8 +435,10 @@ export default function ProductDetailPage({ product }: { product: any }) {
             </div>
             <div className={styles.trustItem}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
-                <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+                <rect x="1" y="3" width="15" height="13"/>
+                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                <circle cx="5.5" cy="18.5" r="2.5"/>
+                <circle cx="18.5" cy="18.5" r="2.5"/>
               </svg>
               Livraison partout dans le monde
             </div>
@@ -448,7 +450,6 @@ export default function ProductDetailPage({ product }: { product: any }) {
             </div>
           </div>
 
-          {/* Meta grid */}
           <div className={styles.metaGrid}>
             {product.category && (
               <div className={styles.metaItem}>
