@@ -148,46 +148,65 @@ export default function ContactPage() {
           </p>
 
           <div className={styles.contactBlocks}>
-            <a
-              href="mailto:contact@artjatie.mg"
-              className={styles.contactBlock}
-            >
-              <div className={styles.contactBlockBg} aria-hidden="true" />
-              <div className={styles.contactIcon}>
+            <a href="mailto:contact@artjatie.mg" className={styles.contactBlock}>
+                <div className={styles.contactBlockBg} aria-hidden="true" />
+                <div className={styles.contactIcon}>
                 <IconMail className={styles.contactIconSvg} />
-              </div>
-              <div className={styles.contactInfo}>
+                </div>
+                <div className={styles.contactInfo}>
                 <span className={styles.contactLabel}>Email</span>
                 <span className={styles.contactValue}>contact@artjatie.mg</span>
-              </div>
+                </div>
             </a>
 
-            <a href="tel:+261343051360" className={styles.contactBlock}>
-              <div className={styles.contactBlockBg} aria-hidden="true" />
-              <div className={styles.contactIcon}>
+            <a href="tel:+261320251270" className={styles.contactBlock}>
+                <div className={styles.contactBlockBg} aria-hidden="true" />
+                <div className={styles.contactIcon}>
                 <IconPhone className={styles.contactIconSvg} />
-              </div>
-              <div className={styles.contactInfo}>
-                <span className={styles.contactLabel}>
-                  Téléphone & WhatsApp
-                </span>
+                </div>
+                <div className={styles.contactInfo}>
+                <span className={styles.contactLabel}>Téléphone</span>
+                <span className={styles.contactValue}>+261 32 02 251 70</span>
+                </div>
+            </a>
+
+            
+                <a href="https://wa.me/261343051360"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.contactBlock}
+            >
+                <div className={styles.contactBlockBg} aria-hidden="true" />
+                <div className={styles.contactIcon}>
+                <svg
+                    className={styles.contactIconSvg}
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    stroke="none"
+                >
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+                    <path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.121 1.535 5.856L.057 23.882a.5.5 0 00.606.61l6.208-1.625A11.934 11.934 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.808 9.808 0 01-5.003-1.368l-.36-.214-3.706.972.988-3.613-.235-.372A9.789 9.789 0 012.182 12C2.182 6.575 6.575 2.182 12 2.182c5.424 0 9.818 4.393 9.818 9.818 0 5.424-4.394 9.818-9.818 9.818z" />
+                </svg>
+                </div>
+                <div className={styles.contactInfo}>
+                <span className={styles.contactLabel}>WhatsApp</span>
                 <span className={styles.contactValue}>+261 34 30 513 60</span>
-              </div>
+                </div>
             </a>
 
             <div className={styles.contactBlock} style={{ cursor: "default" }}>
-              <div className={styles.contactBlockBg} aria-hidden="true" />
-              <div className={styles.contactIcon}>
+                <div className={styles.contactBlockBg} aria-hidden="true" />
+                <div className={styles.contactIcon}>
                 <IconLocation className={styles.contactIconSvg} />
-              </div>
-              <div className={styles.contactInfo}>
+                </div>
+                <div className={styles.contactInfo}>
                 <span className={styles.contactLabel}>Adresse</span>
                 <span className={styles.contactValue}>
-                  Seganinga, Nosy Be
-                  <br />
-                  Madagascar
+                    Seganinga, Nosy Be
+                    <br />
+                    Madagascar
                 </span>
-              </div>
+                </div>
             </div>
           </div>
 
