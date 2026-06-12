@@ -23,13 +23,13 @@ export default function RootLayout({
     pathname.startsWith("/galerie") ||
     pathname.startsWith("/contact") ||
     pathname.startsWith("/commande") ||
-    pathname.startsWith("/livraison") ||         /* ◄ AJOUTÉ */
-    pathname.startsWith("/mentions-legales") ||  /* ◄ AJOUTÉ */
-    pathname.startsWith("/confidentialite") ||   /* ◄ AJOUTÉ */
-    pathname.startsWith("/checkout") || 
-    pathname.startsWith("/histoire") || 
-    pathname.startsWith("/guide");
-    pathname === "/";
+    pathname.startsWith("/livraison") ||
+    pathname.startsWith("/mentions-legales") ||
+    pathname.startsWith("/confidentialite") ||
+    pathname.startsWith("/checkout") ||
+    pathname.startsWith("/histoire") ||
+    pathname.startsWith("/guide") ||  // ← virgule au lieu de point-virgule
+    pathname === "/";                  // ← maintenant évalué correctement
 
   return (
     <html lang="fr">
