@@ -212,7 +212,7 @@ export default function ContactPage() {
 
           <div className={styles.socialRow}>
             <a
-              href="https://facebook.com/artjatie"
+              href="https://www.facebook.com/profile.php?id=61588409926655"
               target="_blank"
               rel="noopener noreferrer"
               className={styles.socialBtn}
@@ -228,7 +228,7 @@ export default function ContactPage() {
             </a>
 
             <a
-              href="https://tiktok.com/@artjatie"
+              href="https://www.tiktok.com/@jatieart"
               target="_blank"
               rel="noopener noreferrer"
               className={styles.socialBtn}
