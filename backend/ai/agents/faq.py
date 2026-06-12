@@ -21,7 +21,7 @@ def llm5_faq(token_log: list, message: str) -> str:
         "HTTP-Referer": "https://artjatie.com",
     }
     body = {
-        "model": "deepseek/deepseek-r1:free",
+        "model": "openai/gpt-oss-120b:free",
         "messages": [
             {
                 "role": "system",

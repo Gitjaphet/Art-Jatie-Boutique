@@ -12,7 +12,7 @@ from ai.core.prompts import REFORMULATOR
 
 _OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 _OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY", "")
-_MODEL = "qwen/qwen-2.5-7b-instruct:free"
+_MODEL = "openai/gpt-oss-120b:free"
 _FALLBACK = "J'ai trouvé des articles, mais j'ai un petit souci de connexion pour vous les présenter."
 
 
