@@ -112,42 +112,7 @@
   -webkit-text-fill-color: #1a1a1a !important;
 }
 
-/* ─────────────────────────────────────────────────────────
-   MOBILE — plein écran
-   ───────────────────────────────────────────────────────── */
-@media (max-width: 500px) {
-  .wrapper {
-    bottom: 0;
-    right: 0;
-    left: 0;
-    width: 100%;
-    align-items: stretch;
-  }
 
-  .chatCard {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100% !important;
-    height: 100% !important;
-    border-radius: 0;
-    bottom: unset;
-  }
-
-  .trigger {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-  }
-
-  .hintBubble {
-    position: fixed;
-    bottom: 90px;
-    right: 16px;
-  }
-}
 
 /* --- Header --- */
 .header {
@@ -377,11 +342,8 @@
 }
 .messengerImageWrap:hover .messengerZoomHint { opacity: 1; }
 
-/* Sur mobile : afficher le hint en permanence */
-@media (max-width: 500px) {
-  .messengerZoomHint { opacity: 1; }
-  .messengerImage { height: 220px; }
-}
+
+
 
 .stockBadge {
   position: absolute;
@@ -620,3 +582,85 @@
   margin-top: 2px;
 }
 .zoomClose:hover { background: #f9f9f9; }
+
+
+
+
+
+
+
+/* ─────────────────────────────────────────────────────────
+   MOBILE — plein écran
+   ───────────────────────────────────────────────────────── */
+@media (max-width: 500px) {
+  .wrapper {
+    bottom: 0;
+    right: 0;
+    left: unset;        /* ← ne pas étirer sur toute la largeur */
+    width: auto;        /* ← laisser le contenu décider */
+    align-items: flex-end;  /* ← comme desktop */
+  }
+
+  .chatCard {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw !important;
+    height: 100dvh !important;   /* ← dvh évite le bug barre navigateur mobile */
+    border-radius: 0;
+    max-height: none;
+  }
+
+  .trigger {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10000;     /* ← au-dessus du chatCard fermé */
+  }
+
+  .hintBubble {
+    position: fixed;
+    bottom: 90px;
+    right: 16px;
+    white-space: nowrap;
+    max-width: calc(100vw - 32px);  /* ← ne dépasse pas l'écran */
+  }
+
+  /* Input ne se cache pas derrière le clavier virtuel */
+  .footer {
+    padding-bottom: env(safe-area-inset-bottom, 12px);
+  }
+
+  /* Messages plus lisibles sur petit écran */
+  .message {
+    max-width: 90%;
+    font-size: 0.9rem;
+  }
+
+  .messengerCard {
+    width: 95%;
+  }
+
+  .messengerImage {
+    height: 200px;
+  }
+}
+
+/* Sur mobile : afficher le hint en permanence */
+@media (max-width: 500px) {
+  .messengerZoomHint { opacity: 1; }
+  .messengerImage { height: 220px; }
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   TABLETTE (501px - 768px)
+   ───────────────────────────────────────────────────────── */
+@media (min-width: 501px) and (max-width: 768px) {
+  .chatCard {
+    width: 360px;
+    height: 560px;
+  }
+}
