@@ -3,12 +3,14 @@ from prometheus_fastapi_instrumentator import Instrumentator
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from contextlib import asynccontextmanager
+from ai.core.logging_config import setup_logging
 import os
 import httpx
 
 from database import create_db_and_tables
 from routes import products, settings, auth, users, orders, mvola, colors, clients, agent
 
+setup_logging()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
