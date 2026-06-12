@@ -68,9 +68,44 @@ export default async function ProductPage({
     );
   }
 
+  // Schema.org Product
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description:
+      product.description || "Création artisanale en crochet fait main par nos artisanes malgaches.",
+    image: product.image,
+    sku: `artjatie-${product.id}`,
+    brand: {
+      "@type": "Brand",
+      name: "Art Jatie",
+    },
+    offers: {
+      "@type": "Offer",
+      priceCurrency: "MGA",
+      price: product.rawPrice,
+      availability:
+        product.stock_quantity && product.stock_quantity > 0
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
+      seller: {
+        "@type": "Organization",
+        name: "Art Jatie",
+      },
+    },
+  };
+
   return (
-    <Suspense fallback={null}>
-      <ProductDetailWrapper product={product} />
-    </Suspense>
+    <>
+      {/* Schema.org injecté dans le <head> */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <Suspense fallback={null}>
+        <ProductDetailWrapper product={product} />
+      </Suspense>
+    </>
   );
 }
