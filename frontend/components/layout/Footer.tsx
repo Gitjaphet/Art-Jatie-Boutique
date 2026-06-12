@@ -42,18 +42,10 @@ export default function Footer() {
                 audace et élégance.
               </p>
               <div className={styles.socials}>
-                <a href="#" aria-label="Instagram">
-                  IG
-                </a>
-                <a href="#" aria-label="Facebook">
-                  FB
-                </a>
-                <a href="#" aria-label="TikTok">
-                  TK
-                </a>
-                <a href="#" aria-label="WhatsApp">
-                  WA
-                </a>
+                <a href="https://www.instagram.com/artjatie" target="_blank" rel="noopener noreferrer" aria-label="Instagram">IG</a>
+                <a href="https://www.facebook.com/profile.php?id=61588409926655" target="_blank" rel="noopener noreferrer" aria-label="Facebook">FB</a>
+                <a href="https://www.tiktok.com/@jatiejeart" target="_blank" rel="noopener noreferrer" aria-label="TikTok">TK</a>
+                <a href="https://wa.me/261343051360" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">WA</a>
               </div>
             </div>
 
