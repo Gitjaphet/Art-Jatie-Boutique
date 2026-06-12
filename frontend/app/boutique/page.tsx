@@ -58,7 +58,7 @@ function mapApiProduct(
     name: (raw.name as string) ?? "",
     tag: (raw.tag as string) ?? "",
     genre: (raw.genre as string) || "Femme",
-category: (raw.category as string) || "TENUES",
+    category: (raw.category as string) || "TENUES",
     priceAr,
     priceArDisplay,
     priceEur,
