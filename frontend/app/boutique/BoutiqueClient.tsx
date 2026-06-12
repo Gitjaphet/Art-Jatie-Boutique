@@ -12,8 +12,8 @@ export type Product = {
   slug: string;
   name: string;
   tag: string;
-  genre: "Femme" | "Homme" | "Enfant";
-  category: "TENUES" | "MAILLOTS" | "ACCESSOIRES";
+  genre: string;
+  category: string;
   priceAr: number;
   priceArDisplay: string;
   priceEur: number;
