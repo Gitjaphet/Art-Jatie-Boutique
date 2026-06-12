@@ -583,7 +583,9 @@
 }
 .zoomClose:hover { background: #f9f9f9; }
 
-
+:global(body[data-chat-open]) .wrapper {
+  display: none !important;
+}
 
 
 

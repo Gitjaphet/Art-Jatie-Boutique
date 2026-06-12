@@ -41,6 +41,11 @@
   animation: pulse 2s infinite;
 }
 
+
+:global(body[data-chat-open]) .whatsappContainer {
+  display: none !important;
+}
+
 @keyframes pulse {
   0% {
     transform: scale(1);

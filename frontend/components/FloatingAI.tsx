@@ -195,6 +195,15 @@ export default function FloatingAI() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, step]);
 
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.setAttribute("data-chat-open", "true");
+    } else {
+      document.body.removeAttribute("data-chat-open");
+    }
+  }, [isOpen]);
+
   // ── Envoi message normal ────────────────────────────────────────────────────
 
   const addBotMessage = (text: string, products?: ProductCard[]) => {
