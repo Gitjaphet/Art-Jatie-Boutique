@@ -10,7 +10,9 @@ from ai.core.retry import llm_retry
 from ai.core.types import ToolResult
 from ai.core.prompts import REFORMULATOR
 
-_OLLAMA_URL = f"{os.getenv('OLLAMA_BASE_URL', 'http://ollama:11434')}/api/generate"
+_OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+_OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY", "")
+_MODEL = "qwen/qwen-2.5-7b-instruct:free"
 _FALLBACK = "J'ai trouvé des articles, mais j'ai un petit souci de connexion pour vous les présenter."
 
 
@@ -24,14 +26,19 @@ def llm3_reformulateur(token_log: list, message: str, donnees: ToolResult) -> st
     @llm_retry
     def _call() -> httpx.Response:
         r = httpx.post(
-            _OLLAMA_URL,
-            json={
-                "model": "qwen2.5:3b",
-                "prompt": prompt,
-                "stream": False,
-                "options": {"num_ctx": 512, "temperature": 0.3},
+            _OPENROUTER_URL,
+            headers={
+                "Authorization": f"Bearer {_OPENROUTER_KEY}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": os.getenv("SITE_URL", "https://artjatie.com"),
             },
-            timeout=120,
+            json={
+                "model": _MODEL,
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": 256,
+                "temperature": 0.3,
+            },
+            timeout=30,
         )
         r.raise_for_status()
         return r
@@ -40,10 +47,19 @@ def llm3_reformulateur(token_log: list, message: str, donnees: ToolResult) -> st
         response = _call()
         data = response.json()
         latence = (time.time() - t0) * 1000
-        tokens_in = data.get("prompt_eval_count", 0)
-        tokens_out = data.get("eval_count", 0)
-        texte = data.get("response", "").strip()
-        log_llm_call(token_log, "ollama/qwen2.5:3b", "reformulateur", tokens_in, tokens_out, latence, texte[:100])
+        usage = data.get("usage", {})
+        tokens_in = usage.get("prompt_tokens", 0)
+        tokens_out = usage.get("completion_tokens", 0)
+        texte = data["choices"][0]["message"]["content"].strip()
+        log_llm_call(
+            token_log,
+            f"openrouter/{_MODEL}",
+            "reformulateur",
+            tokens_in,
+            tokens_out,
+            latence,
+            texte[:100],
+        )
         return texte
     except Exception as e:
         logging.error(f"[REFORMULATEUR] Échec après retries : {e}")
