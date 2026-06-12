@@ -58,7 +58,7 @@ export default function Header({ darkIcons = false }: { darkIcons?: boolean }) {
 
       <div className={styles.actions}>
         <div className={styles.socials}>
-          <a href="#" className={styles.socialLink} aria-label="Facebook">
+          <a href="https://www.facebook.com/profile.php?id=61588409926655" className={styles.socialLink} aria-label="Facebook">
             <svg
               width="18"
               height="18"
@@ -72,7 +72,7 @@ export default function Header({ darkIcons = false }: { darkIcons?: boolean }) {
               <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
             </svg>
           </a>
-          <a href="#" className={styles.socialLink} aria-label="TikTok">
+          <a href="https://www.tiktok.com/@jatieart" className={styles.socialLink} aria-label="TikTok">
             <svg
               width="18"
               height="18"
@@ -86,7 +86,7 @@ export default function Header({ darkIcons = false }: { darkIcons?: boolean }) {
               <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
             </svg>
           </a>
-          <a href="#" className={styles.socialLink} aria-label="YouTube">
+          <a href="https://www.youtube.com/@jatiejennestaj.j.e4917" className={styles.socialLink} aria-label="YouTube">
             <svg
               width="18"
               height="18"
@@ -103,7 +103,7 @@ export default function Header({ darkIcons = false }: { darkIcons?: boolean }) {
           </a>
         </div>
 
-        {/* ✅ CartBadge est un composant client isolé — zéro erreur linter */}
+        {/* CartBadge est un composant client isolé — zéro erreur linter */}
         <Link
           href="/panier"
           className={styles.cartBtn}
