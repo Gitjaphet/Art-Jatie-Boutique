@@ -6,6 +6,7 @@ import logging
 import httpx
 from ai.core.token_logger import log_llm_call
 from ai.core.retry import llm_retry
+from ai.core.prompts import ROUTER
 
 _GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
@@ -59,7 +60,7 @@ def llm2_router(token_log: list, message: str, history: list = None) -> dict | N
         },
     ]
     messages_payload = [
-        {"role": "system", "content": "Tu es un routeur. Choisis le bon tool et les bons paramètres selon le message. Toujours utiliser requete_libre pour les descriptions vagues."}
+         {"role": "system", "content": ROUTER}
     ]
     if history:
         for msg in history[-4:]:

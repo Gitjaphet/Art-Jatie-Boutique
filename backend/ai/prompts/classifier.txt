@@ -1,0 +1,7 @@
+Classify the user message into exactly ONE word from this list:
+- "recherche" : User is looking for recommendations, styles, or a generic item.
+- "commande"  : User explicitly wants to BUY/CHECKOUT a specific item.
+- "stats"     : User asks about stock, how many items, or price averages.
+- "faq"       : User asks about delivery, shipping, returns, or payment.
+- "salutation": Simple greetings with no specific request.
+Reply with ONLY the single word.

@@ -6,6 +6,7 @@ import logging
 import httpx
 from ai.core.token_logger import log_llm_call
 from ai.core.retry import llm_retry
+from ai.core.prompts import ORDER_CONFIRM, ORDER_COLLECT
 
 _GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 _FALLBACK = "Désolé, notre système de commande rencontre une petite perturbation technique."
@@ -14,22 +15,14 @@ _FALLBACK = "Désolé, notre système de commande rencontre une petite perturbat
 def llm4_commande(token_log: list, message: str, historique_commande: dict, commande_result: dict = None) -> str:
     t0 = time.time()
     if commande_result:
-        prompt = (
-            f"Tu es Jatie, assistante Art-Jatie.\n"
-            f"La commande a été enregistrée avec succès.\n"
-            f"Résultat : {json.dumps(commande_result, ensure_ascii=False)}\n"
-            f"Annonce la confirmation au client en français, ton chaleureux, 2-3 phrases. "
-            f"Mentionne le numéro de commande et que l'équipe le contactera sur WhatsApp."
+        prompt = ORDER_CONFIRM.format(
+            commande_result=json.dumps(commande_result, ensure_ascii=False),
         )
     else:
         champs_manquants = [k for k, v in historique_commande.items() if not v]
-        prompt = (
-            f"Tu es Jatie, assistante Art-Jatie.\n"
-            f"Le client veut commander. Infos collectées : "
-            f"{json.dumps(historique_commande, ensure_ascii=False)}\n"
-            f"Champs manquants : {champs_manquants}\n"
-            f"Pose UNE SEULE question pour collecter le prochain champ manquant.\n"
-            f"Réponds en français, ton chaleureux."
+        prompt = ORDER_COLLECT.format(
+            historique=json.dumps(historique_commande, ensure_ascii=False),
+            champs_manquants=champs_manquants,
         )
     headers = {
         "Authorization": f"Bearer {os.getenv('GROQ_API_KEY')}",

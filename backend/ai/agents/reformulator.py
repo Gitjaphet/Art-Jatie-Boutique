@@ -8,6 +8,7 @@ import httpx
 from ai.core.token_logger import log_llm_call
 from ai.core.retry import llm_retry
 from ai.core.types import ToolResult
+from ai.core.prompts import REFORMULATOR
 
 _OLLAMA_URL = f"{os.getenv('OLLAMA_BASE_URL', 'http://ollama:11434')}/api/generate"
 _FALLBACK = "J'ai trouvé des articles, mais j'ai un petit souci de connexion pour vous les présenter."
@@ -15,14 +16,9 @@ _FALLBACK = "J'ai trouvé des articles, mais j'ai un petit souci de connexion po
 
 def llm3_reformulateur(token_log: list, message: str, donnees: ToolResult) -> str:
     t0 = time.time()
-    prompt = (
-        f"Tu es Jatie, assistante commerciale Art-Jatie (crochet malgache).\n"
-        f"Reformule ces données en français naturel et chaleureux en 3 phrases max.\n"
-        f"Ne mens jamais sur les prix ou stocks.\n"
-        f"Si stock=0 → propose commande sur mesure.\n\n"
-        f"Question client : {message}\n"
-        f"Données : {json.dumps(donnees, ensure_ascii=False, default=str)[:800]}\n\n"
-        f"Réponse Jatie :"
+    prompt = REFORMULATOR.format(
+        message=message,
+        donnees=json.dumps(donnees, ensure_ascii=False, default=str)[:800],
     )
 
     @llm_retry
