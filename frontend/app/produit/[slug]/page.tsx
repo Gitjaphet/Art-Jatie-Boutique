@@ -126,10 +126,11 @@ export default async function ProductPage({
       applicableCountry: "MG",
       returnPolicyCategory:
         "https://schema.org/MerchantReturnFiniteReturnWindow",
-      merchantReturnDays: 2,        // 2 jours après réception
+      merchantReturnDays: 2,
       returnMethod: "https://schema.org/ReturnByMail",
       merchantReturnLink: "https://www.artjatie.com/livraison",
       refundType: "https://schema.org/FullRefund",
+      returnFees: "https://schema.org/ReturnFeesCustomerResponsibility", // ← AJOUTER
     },
   },
 };
