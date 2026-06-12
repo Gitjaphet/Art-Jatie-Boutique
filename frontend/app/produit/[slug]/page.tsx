@@ -70,31 +70,69 @@ export default async function ProductPage({
 
   // Schema.org Product
   const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: product.name,
-    description:
-      product.description || "Création artisanale en crochet fait main par nos artisanes malgaches.",
-    image: product.image,
-    sku: `artjatie-${product.id}`,
-    brand: {
-      "@type": "Brand",
+  "@context": "https://schema.org",
+  "@type": "Product",
+  name: product.name,
+  description:
+    product.description ||
+    "Création artisanale en crochet fait main par nos artisanes malgaches.",
+  image: product.image,
+  sku: `artjatie-${product.id}`,
+  brand: {
+    "@type": "Brand",
+    name: "Art Jatie",
+  },
+  offers: {
+    "@type": "Offer",
+    priceCurrency: "MGA",
+    price: product.rawPrice,
+    availability:
+      product.stock_quantity && product.stock_quantity > 0
+        ? "https://schema.org/InStock"
+        : "https://schema.org/OutOfStock",
+    seller: {
+      "@type": "Organization",
       name: "Art Jatie",
     },
-    offers: {
-      "@type": "Offer",
-      priceCurrency: "MGA",
-      price: product.rawPrice,
-      availability:
-        product.stock_quantity && product.stock_quantity > 0
-          ? "https://schema.org/InStock"
-          : "https://schema.org/OutOfStock",
-      seller: {
-        "@type": "Organization",
-        name: "Art Jatie",
+    shippingDetails: {
+      "@type": "OfferShippingDetails",
+      shippingRate: {
+        "@type": "MonetaryAmount",
+        value: "0",       // Gratuit à Nosy Be en ville
+        currency: "MGA",
+      },
+      shippingDestination: {
+        "@type": "DefinedRegion",
+        addressCountry: "MG",
+      },
+      deliveryTime: {
+        "@type": "ShippingDeliveryTime",
+        handlingTime: {
+          "@type": "QuantitativeValue",
+          minValue: 1,
+          maxValue: 2,   // 1–2 jours ouvrés de préparation atelier
+          unitCode: "DAY",
+        },
+        transitTime: {
+          "@type": "QuantitativeValue",
+          minValue: 0,   // Demi-journée à Nosy Be
+          maxValue: 7,   // Jusqu'à 7 jours pour Madagascar
+          unitCode: "DAY",
+        },
       },
     },
-  };
+    hasMerchantReturnPolicy: {
+      "@type": "MerchantReturnPolicy",
+      applicableCountry: "MG",
+      returnPolicyCategory:
+        "https://schema.org/MerchantReturnFiniteReturnWindow",
+      merchantReturnDays: 2,        // 2 jours après réception
+      returnMethod: "https://schema.org/ReturnByMail",
+      merchantReturnLink: "https://www.artjatie.com/livraison",
+      refundType: "https://schema.org/FullRefund",
+    },
+  },
+};
 
   return (
     <>
