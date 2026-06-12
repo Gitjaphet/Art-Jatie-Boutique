@@ -119,7 +119,7 @@ def run_multi_agent(
             candidats = recherche_semantique(message, top_k=1)
             if candidats:
                 historique_commande["product_id"]   = candidats[0]["id"]
-                historique_commande["product_name"] = candidats[0].get("name", "")
+                historique_commande["product_name"] = candidats[0].get("nom", "")
                 logging.info(f"[ORCHESTRATOR] Produit détecté : {historique_commande['product_name']} (id={historique_commande['product_id']})")
 
         champs_manquants = [k for k, v in historique_commande.items() if not v]
