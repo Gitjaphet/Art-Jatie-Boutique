@@ -597,29 +597,15 @@
    ───────────────────────────────────────────────────────── */
 @media (max-width: 500px) {
   .wrapper {
-    position: static;   /* ← était fixed implicitement via bottom/right */
+    position: static;
     bottom: unset;
     right: unset;
   }
 
-  .chatCard {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100vw !important;
-    height: 100vh !important;   /* ← dvh évite le bug barre navigateur mobile */
-    border-radius: 0;
-    max-height: none;
-    z-index: 99998;
-  }
-
   .trigger {
-    z-index: 9999;
-    position: fixed;   /* si pas déjà présent sur mobile */
+    position: fixed;
     bottom: 150px;
-    right: 20px;     /* ← au-dessus du chatCard fermé */
+    right: 20px;
     z-index: 10001;
   }
 
@@ -628,24 +614,40 @@
     bottom: 210px;
     right: 16px;
     white-space: nowrap;
-    max-width: calc(100vw - 32px);  /* ← ne dépasse pas l'écran */
+    max-width: calc(100vw - 32px);
     z-index: 10001;
+  }
+
+  .chatCard {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100vw !important;
+    height: 100vh !important;
+    border-radius: 0;
+    max-height: none;
+    z-index: 99998;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;  /* ← clé */
+  }
+
+  .header {
+    flex-shrink: 0;  /* ← ne rétrécit jamais */
   }
 
   .chatBody {
     flex: 1;
-    min-height: 0;
+    min-height: 0;   /* ← clé absolue pour que flex:1 marche */
     overflow-y: auto;
   }
 
-  /* Input ne se cache pas derrière le clavier virtuel */
   .footer {
-    flex-shrink: 0;
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
-    /* ← colle le footer juste au-dessus du clavier */
+    flex-shrink: 0;  /* ← ne rétrécit jamais */
+    padding-bottom: env(safe-area-inset-bottom, 12px);
   }
 
-  /* Messages plus lisibles sur petit écran */
   .message {
     max-width: 90%;
     font-size: 0.9rem;
@@ -656,10 +658,11 @@
   }
 
   .messengerImage {
-    height: 200px;
+    height: 220px;
   }
-}
 
+  .messengerZoomHint { opacity: 1; }
+}
 /* Sur mobile : afficher le hint en permanence */
 @media (max-width: 500px) {
   .messengerZoomHint { opacity: 1; }
