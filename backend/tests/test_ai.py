@@ -6,6 +6,11 @@ from sqlmodel.pool import StaticPool
 from models.models import Product, Client, Order
 
 
+@pytest.fixture(autouse=True)
+def mock_exchange_rate():
+    with patch("ai.data.stats.get_exchange_rate", return_value=4500.0):
+        yield
+
 # ── Fixture base de données IA ─────────────────────────────────────────────
 
 @pytest.fixture(name="ai_session")
@@ -111,11 +116,15 @@ def test_stats_stock_total(ai_engine, produit_test):
 
 
 def test_stats_prix_moyen(ai_engine, produit_test):
-    with patch("ai.data.stats.engine", ai_engine):
+    with patch("ai.data.stats.engine", ai_engine), \
+         patch("ai.data.stats.get_exchange_rate", return_value=4500.0):
         from ai.data.stats import get_stats
         result = get_stats("prix_moyen")
-    assert isinstance(result["resultat"], int)
-    assert result["resultat"] > 0
+    assert isinstance(result["resultat"], dict)
+    assert "ar" in result["resultat"]
+    assert "eur" in result["resultat"]
+    assert result["resultat"]["ar"] == 45000
+    assert result["resultat"]["eur"] == 10  # 45000 / 4500 = 10
 
 
 def test_stats_rupture(ai_engine, produit_rupture):
