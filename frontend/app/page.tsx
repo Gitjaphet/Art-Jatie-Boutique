@@ -61,9 +61,10 @@ export default async function HomePage() {
     });
 
     // Produits pour BoutiqueSection — les coup de coeur en stock + sur commande
-    const inStockHot = inStock.filter((p: any) => p.hot || p.is_hot).slice(0, 3);
-    const onOrderHot = onOrder.filter((p: any) => p.hot || p.is_hot).slice(0, 3);
-    boutiqueProducts = [...inStockHot, ...onOrderHot];
+    boutiqueProducts = [...inStock, ...onOrder]
+      .filter((p: any) => p.hot || p.is_hot)
+      .sort((a: any, b: any) => b.id - a.id)
+      .slice(0, 6);
 
   } catch (error) {
     console.error("Erreur chargement page accueil :", error);

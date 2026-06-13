@@ -49,7 +49,7 @@ def get_image_embedding(image_url: str) -> list[float]:
         headers=_jina_headers(),
         json={
             "model": "jina-embeddings-v3",
-            "input": [image_url],   # ← URL directement en string, pas {"image": url}
+            "input": [image_url],   
             "task": "retrieval.passage",
             "dimensions": JINA_DIMENSIONS,
         },
