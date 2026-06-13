@@ -55,7 +55,11 @@ export default function FloatingAI() {
     setInput("");
   };
 
-  if (!isOpen) return <button className={styles.trigger} onClick={() => setIsOpen(true)}>💬</button>;
+  if (!isOpen) return <button className={styles.trigger} onClick={() => setIsOpen(true)}>
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+  </svg>
+</button>
 
   return createPortal(
     <div className={styles.card} ref={cardRef}>
