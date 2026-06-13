@@ -190,22 +190,26 @@ export default function FloatingAI() {
   ]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
+  const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, step]);
 
 
   useEffect(() => {
-  if (isOpen) {
-    document.body.setAttribute("data-chat-open", "true");
-    // Empêche le scroll du body derrière le chat sur mobile
-    document.body.style.overflow = "hidden";
-  } else {
-    document.body.removeAttribute("data-chat-open");
-    document.body.style.overflow = "";
-  }
-}, [isOpen]);
+    if (isOpen) {
+      document.body.setAttribute("data-chat-open", "true");
+      document.body.style.overflow = "hidden";
+      
+      // ← NOUVEAU : On met le focus sur l'input après un court instant
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 150); 
+    } else {
+      document.body.removeAttribute("data-chat-open");
+      document.body.style.overflow = "";
+    }
+  }, [isOpen]);
 
   // ── Envoi message normal ────────────────────────────────────────────────────
 
@@ -497,6 +501,7 @@ export default function FloatingAI() {
           <div className={styles.footer}>
             <input
               type="text"
+              ref={inputRef}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSendWrapped()}

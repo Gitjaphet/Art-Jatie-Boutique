@@ -584,7 +584,8 @@
 }
 .zoomClose:hover { background: #f9f9f9; }
 
-:global(body[data-chat-open]) .wrapper {
+:global(body[data-chat-open]) .hintBubble,
+:global(body[data-chat-open]) .trigger {
   display: none !important;
 }
 
@@ -608,10 +609,11 @@
     left: 0;
     right: 0;
     bottom: 0;
-    width: 100vw !important;
-    height: 100dvh !important;   /* ← dvh évite le bug barre navigateur mobile */
+    width: 100% !important;      /* ← 100% au lieu de 100vw */
+    height: 100% !important;     /* ← 100% au lieu de 100dvh */
     border-radius: 0;
     max-height: none;
+    z-index: 99999;              /* S'assure qu'il passe au-dessus de tout */
   }
 
   .trigger {
