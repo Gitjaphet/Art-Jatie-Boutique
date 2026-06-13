@@ -115,36 +115,32 @@ def run_multi_agent(
                 "client_email":    None,
             }
 
-        # ── Chercher le produit dans l'historique de conversation ────────
+        # ── Chercher le produit UNIQUEMENT dans l'historique ────────────
         if not historique_commande.get("product_id"):
-            # 1. Chercher dans les messages précédents
-            produit_depuis_history = None
-            if history:
+            produit_trouve = None
+
+            # Chercher dans les messages précédents uniquement
+            if history and len(history) > 0:
                 historique_texte = " ".join([
                     m.get("content", "") for m in history
-                    if m.get("role") in ["user", "assistant"]
+                    if m.get("role") == "user"  # uniquement les messages du client
                 ])
-                candidats_history = recherche_semantique(historique_texte, top_k=1)
-                if candidats_history and candidats_history[0].get("stock", 0) > 0:
-                    produit_depuis_history = candidats_history[0]
+                # Chercher seulement si l'historique mentionne un produit réel
+                mots_cles_produit = ["robe", "sac", "pochette", "lampe", "panier", "chemise", "tenue"]
+                if any(mot in historique_texte.lower() for mot in mots_cles_produit):
+                    candidats = recherche_semantique(historique_texte, top_k=1)
+                    if candidats:
+                        produit_trouve = candidats[0]
 
-            if produit_depuis_history:
-                # Produit trouvé dans l'historique → confirmer avec le client
-                historique_commande["product_id"]   = produit_depuis_history["id"]
-                historique_commande["product_name"] = produit_depuis_history.get("nom", "")
+            if produit_trouve:
+                # Produit trouvé dans historique → confirmer
+                historique_commande["product_id"]   = produit_trouve["id"]
+                historique_commande["product_name"] = produit_trouve.get("nom", "")
                 logging.info(f"[ORCHESTRATOR] Produit trouvé dans historique : {historique_commande['product_name']}")
             else:
-                # 2. Chercher dans le message actuel
-                candidats = recherche_semantique(message, top_k=1)
-                if candidats:
-                    historique_commande["product_id"]   = candidats[0]["id"]
-                    historique_commande["product_name"] = candidats[0].get("nom", "")
-                    logging.info(f"[ORCHESTRATOR] Produit détecté dans message : {historique_commande['product_name']}")
-                else:
-                    # 3. Aucun produit trouvé → demander au client
-                    historique_commande["product_id"]   = "sur_mesure"
-                    historique_commande["product_name"] = None
-                    logging.info("[ORCHESTRATOR] Aucun produit trouvé → proposition sur mesure")
+                # Aucun produit mentionné → laisser product_id None
+                # order_collect.txt va demander au client ce qu'il veut
+                logging.info("[ORCHESTRATOR] Aucun produit dans historique → demande au client")
 
         champs_manquants = [k for k, v in historique_commande.items() if not v]
 
