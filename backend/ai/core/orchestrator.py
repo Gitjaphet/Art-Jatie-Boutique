@@ -114,13 +114,37 @@ def run_multi_agent(
                 "client_whatsapp": None,
                 "client_email":    None,
             }
-        # ── Extraction automatique du product_id ──────────────────────
+
+        # ── Chercher le produit dans l'historique de conversation ────────
         if not historique_commande.get("product_id"):
-            candidats = recherche_semantique(message, top_k=1)
-            if candidats:
-                historique_commande["product_id"]   = candidats[0]["id"]
-                historique_commande["product_name"] = candidats[0].get("nom", "")
-                logging.info(f"[ORCHESTRATOR] Produit détecté : {historique_commande['product_name']} (id={historique_commande['product_id']})")
+            # 1. Chercher dans les messages précédents
+            produit_depuis_history = None
+            if history:
+                historique_texte = " ".join([
+                    m.get("content", "") for m in history
+                    if m.get("role") in ["user", "assistant"]
+                ])
+                candidats_history = recherche_semantique(historique_texte, top_k=1)
+                if candidats_history and candidats_history[0].get("stock", 0) > 0:
+                    produit_depuis_history = candidats_history[0]
+
+            if produit_depuis_history:
+                # Produit trouvé dans l'historique → confirmer avec le client
+                historique_commande["product_id"]   = produit_depuis_history["id"]
+                historique_commande["product_name"] = produit_depuis_history.get("nom", "")
+                logging.info(f"[ORCHESTRATOR] Produit trouvé dans historique : {historique_commande['product_name']}")
+            else:
+                # 2. Chercher dans le message actuel
+                candidats = recherche_semantique(message, top_k=1)
+                if candidats:
+                    historique_commande["product_id"]   = candidats[0]["id"]
+                    historique_commande["product_name"] = candidats[0].get("nom", "")
+                    logging.info(f"[ORCHESTRATOR] Produit détecté dans message : {historique_commande['product_name']}")
+                else:
+                    # 3. Aucun produit trouvé → demander au client
+                    historique_commande["product_id"]   = "sur_mesure"
+                    historique_commande["product_name"] = None
+                    logging.info("[ORCHESTRATOR] Aucun produit trouvé → proposition sur mesure")
 
         champs_manquants = [k for k, v in historique_commande.items() if not v]
 
