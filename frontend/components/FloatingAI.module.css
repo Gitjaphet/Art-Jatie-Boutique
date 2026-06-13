@@ -165,13 +165,20 @@
   50% { opacity: 0.3; }
 }
 
+
+
+.botRow {
+  display: flex;
+  align-items: flex-end;  /* ← flex-end au lieu de flex-start */
+  gap: 6px;
+}
+
 .userRow {
   display: flex;
-  align-items: flex-end;
+  align-items: flex-end;  /* ← flex-end au lieu de flex-start */
   gap: 6px;
   justify-content: flex-end;
 }
-
 .avatarSmall {
   width: 26px;
   height: 26px;
@@ -184,6 +191,7 @@
   font-size: 0.65rem;
   font-weight: 700;
   flex-shrink: 0;
+  margin-bottom: -10px;
 }
 
 .avatarSmallUser {
@@ -198,6 +206,7 @@
   font-size: 0.65rem;
   font-weight: 700;
   flex-shrink: 0;
+  margin-bottom: -10px;
 }
 
 .footer { 
