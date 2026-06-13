@@ -110,6 +110,7 @@
   animation: slideIn 0.3s ease-out;
   color: #1a1a1a !important;
   -webkit-text-fill-color: #1a1a1a !important;
+  z-index: 99998;
 }
 
 
@@ -596,11 +597,9 @@
    ───────────────────────────────────────────────────────── */
 @media (max-width: 500px) {
   .wrapper {
-    bottom: 0;
-    right: 0;
-    left: unset;        /* ← ne pas étirer sur toute la largeur */
-    width: auto;        /* ← laisser le contenu décider */
-    align-items: flex-end;  /* ← comme desktop */
+    position: static;   /* ← était fixed implicitement via bottom/right */
+    bottom: unset;
+    right: unset;
   }
 
   .chatCard {
@@ -613,21 +612,24 @@
     height: 100dvh !important;   /* ← dvh évite le bug barre navigateur mobile */
     border-radius: 0;
     max-height: none;
+    z-index: 99998;
   }
 
   .trigger {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 10000;     /* ← au-dessus du chatCard fermé */
+    z-index: 9999;
+    position: fixed;   /* si pas déjà présent sur mobile */
+    bottom: 150px;
+    right: 20px;     /* ← au-dessus du chatCard fermé */
+    z-index: 10001;
   }
 
   .hintBubble {
     position: fixed;
-    bottom: 90px;
+    bottom: 210px;
     right: 16px;
     white-space: nowrap;
     max-width: calc(100vw - 32px);  /* ← ne dépasse pas l'écran */
+    z-index: 10001;
   }
 
   /* Input ne se cache pas derrière le clavier virtuel */

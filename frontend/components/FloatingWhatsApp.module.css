@@ -1,8 +1,8 @@
 .whatsappContainer {
   position: fixed;
-  bottom: 30px;
-  right: 30px;
-  z-index: 9999; /* Toujours au-dessus du reste */
+  bottom: 60px;   /* ← était 30px, maintenant au-dessus du trigger Jatie */
+  right: 20px;
+  z-index: 10000;   /* ← était 9999, juste en dessous de Jatie (9999) */
 }
 
 .whatsappFloat {

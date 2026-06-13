@@ -185,7 +185,7 @@ export default function FloatingAI() {
   const [messages, setMessages] = useState<Message[]>([
     {
       sender: "bot",
-      text: "Bonjour belle 💕 Je suis Jatie, votre assistante Art Jatie ✨ Que puis-je faire pour vous aujourd'hui ?",
+      text: "Bonjour ! Je suis Jatie, votre assistante Art Jatie ✨ Que puis-je faire pour vous aujourd'hui ?",
     },
   ]);
 
@@ -436,7 +436,8 @@ export default function FloatingAI() {
       )}
 
       {/* Fenêtre de chat */}
-      {isOpen && (
+      {/* Fenêtre de chat — via portal pour éviter le stacking context du wrapper */}
+      {isOpen && typeof document !== "undefined" && createPortal(
         <div className={styles.chatCard}>
           <div className={styles.header}>
             <div className={styles.headerInfo}>
@@ -453,14 +454,11 @@ export default function FloatingAI() {
             <div className={styles.messagesContainer}>
               {messages.map((msg, index) => (
                 <div key={index}>
-                  {/* Message texte normal */}
                   {msg.text && (
                     <div className={`${styles.message} ${styles[msg.sender]}`}>
                       <p style={{ whiteSpace: "pre-wrap" }}>{msg.text}</p>
                     </div>
                   )}
-
-                  {/* Carte produit unique style Messenger */}
                   {msg.singleProduct && (
                     <MessengerProductCard
                       product={msg.singleProduct}
@@ -469,8 +467,6 @@ export default function FloatingAI() {
                       onZoom={setZoomedProduct}
                     />
                   )}
-
-                  {/* Grille de produits (ancien format, au cas où) */}
                   {msg.products && msg.products.length > 0 && (
                     <div className={styles.productCards}>
                       {msg.products.map((p) => (
@@ -486,13 +482,11 @@ export default function FloatingAI() {
                   )}
                 </div>
               ))}
-
               {isLoading && (
                 <div className={`${styles.message} ${styles.bot}`}>
                   <p className={styles.typing}>Jatie écrit…</p>
                 </div>
               )}
-
               <div ref={messagesEndRef} />
             </div>
           </div>
@@ -523,7 +517,8 @@ export default function FloatingAI() {
               </svg>
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Bouton flottant */}
