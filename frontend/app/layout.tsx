@@ -29,7 +29,7 @@ export default function RootLayout({
     pathname.startsWith("/checkout") ||
     pathname.startsWith("/histoire") ||
     pathname.startsWith("/guide") ||  // ← virgule au lieu de point-virgule
-    pathname === "/";                  // ← maintenant évalué correctement
+    pathname === "/"                // ← maintenant évalué correctement
 
   return (
     <html lang="fr">
