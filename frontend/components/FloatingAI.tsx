@@ -28,6 +28,7 @@ export default function FloatingAI() {
 
     const update = () => {
       if (!cardRef.current) return;
+      if (window.innerWidth > 500) return; // ← desktop : on ne touche pas
       cardRef.current.style.height = `${vv.height}px`;
       cardRef.current.style.top = `${vv.offsetTop}px`;
     };
