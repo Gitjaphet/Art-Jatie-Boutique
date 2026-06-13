@@ -6,10 +6,6 @@
   --glass-white: rgba(255, 255, 255, 0.7);
 }
 
-/* ══════════════════════════════════════════════════════════
-   WRAPPER (trigger + hint) — desktop
-   ══════════════════════════════════════════════════════════ */
-
 .wrapper {
   position: fixed;
   bottom: 110px;
@@ -21,7 +17,7 @@
   font-family: "Inter", sans-serif;
 }
 
-/* ── Bulle d'accroche ── */
+/* --- Bulle d'accroche --- */
 .hintBubble {
   background: var(--glass-white);
   backdrop-filter: blur(10px);
@@ -39,7 +35,9 @@
   position: relative;
   border: 1px solid rgba(255, 255, 255, 0.3);
   cursor: pointer;
-  box-shadow: 0px 0px 15px rgba(255, 105, 180, 0.5), 0px 0px 30px rgba(255, 105, 180, 0.3);
+  box-shadow:
+    0px 0px 15px rgba(255, 105, 180, 0.5),
+    0px 0px 30px rgba(255, 105, 180, 0.3);
   animation: hintPulse 2.5s infinite ease-in-out;
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
@@ -59,17 +57,24 @@
 }
 
 .hintIcon { color: var(--brand-black); }
-.hintText { color: #333 !important; -webkit-text-fill-color: #333 !important; }
-
-@keyframes hintPulse {
-  0%   { transform: translateY(0);    box-shadow: 0px 0px 15px rgba(255,105,180,0.5), 0px 0px 30px rgba(255,105,180,0.3); }
-  50%  { transform: translateY(-8px); box-shadow: 0px 0px 25px rgba(255,105,180,0.8), 0px 0px 50px rgba(255,105,180,0.6); }
-  100% { transform: translateY(0);    box-shadow: 0px 0px 15px rgba(255,105,180,0.5), 0px 0px 30px rgba(255,105,180,0.3); }
+.hintText {
+  color: #333 !important;
+  -webkit-text-fill-color: #333 !important;
 }
 
-.hintHidden { opacity: 0; transform: translateY(10px) scale(0.9); pointer-events: none; }
+@keyframes hintPulse {
+  0%   { transform: translateY(0);   opacity: 1;    box-shadow: 0px 0px 15px rgba(255,105,180,0.5), 0px 0px 30px rgba(255,105,180,0.3); }
+  50%  { transform: translateY(-8px); opacity: 0.95; box-shadow: 0px 0px 25px rgba(255,105,180,0.8), 0px 0px 50px rgba(255,105,180,0.6); }
+  100% { transform: translateY(0);   opacity: 1;    box-shadow: 0px 0px 15px rgba(255,105,180,0.5), 0px 0px 30px rgba(255,105,180,0.3); }
+}
 
-/* ── Bouton trigger ── */
+.hintHidden {
+  opacity: 0;
+  transform: translateY(10px) scale(0.9);
+  pointer-events: none;
+}
+
+/* --- Bouton flottant --- */
 .trigger {
   width: 60px;
   height: 60px;
@@ -87,16 +92,15 @@
 .trigger:hover { transform: scale(1.1); background: #333; }
 .active { background: var(--brand-pink); }
 
-/* ══════════════════════════════════════════════════════════
-   CHAT CARD — DESKTOP
-   ══════════════════════════════════════════════════════════ */
-
+/* ─────────────────────────────────────────────────────────
+   CHAT CARD — DESKTOP (grande fenêtre)
+   ───────────────────────────────────────────────────────── */
 .chatCard {
-  position: fixed;
+  position: absolute;
   bottom: 85px;
-  right: 30px;
-  width: 420px;
-  height: 620px;
+  right: 0;
+  width: 420px;          /* ← plus large */
+  height: 620px;         /* ← plus haute */
   background: white;
   border-radius: 20px;
   overflow: hidden;
@@ -104,11 +108,14 @@
   display: flex;
   flex-direction: column;
   animation: slideIn 0.3s ease-out;
-  z-index: 99998;
   color: #1a1a1a !important;
+  -webkit-text-fill-color: #1a1a1a !important;
+  z-index: 99998;
 }
 
-/* ── Header ── */
+
+
+/* --- Header --- */
 .header {
   padding: 14px 16px;
   background: #1a1a1a;
@@ -121,32 +128,79 @@
   font-weight: 500;
   flex-shrink: 0;
 }
-.headerInfo { display: flex; align-items: center; gap: 8px; color: white !important; -webkit-text-fill-color: white !important; }
-.statusDot { width: 8px; height: 8px; background: #4ade80; border-radius: 50%; box-shadow: 0 0 8px #4ade80; flex-shrink: 0; }
-.closeBtn { background: none; border: none; color: white !important; -webkit-text-fill-color: white !important; cursor: pointer; font-size: 1.1rem; }
 
-/* ── Body ── */
+.headerInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  background: #4ade80;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #4ade80;
+  flex-shrink: 0;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+/* --- Corps du chat --- */
 .chatBody {
   flex: 1;
-  min-height: 0;
   padding: 14px;
   background: #fdfaf7;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-height: 0;  /* important pour que flex:1 marche avec overflow */
 }
-.messagesContainer { display: flex; flex-direction: column; gap: 8px; }
 
-/* ── Messages ── */
-.message { max-width: 82%; padding: 10px 14px; border-radius: 15px; font-size: 0.88rem; line-height: 1.5; }
+.messagesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* --- Bulles de messages --- */
+.message {
+  max-width: 82%;
+  padding: 10px 14px;
+  border-radius: 15px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
 .message p { margin: 0; padding: 0; }
-.bot { align-self: flex-start; background: white; border: 1px solid #eee; color: #333 !important; -webkit-text-fill-color: #333 !important; }
+
+.bot {
+  align-self: flex-start;
+  background: white;
+  border: 1px solid #eee;
+  color: #333 !important;
+  -webkit-text-fill-color: #333 !important;
+}
 .bot p { color: #333 !important; -webkit-text-fill-color: #333 !important; }
-.user { align-self: flex-end; background: var(--brand-pink); color: white !important; -webkit-text-fill-color: white !important; }
+
+.user {
+  align-self: flex-end;
+  background: var(--brand-pink);
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
 .user p { color: white !important; -webkit-text-fill-color: white !important; }
 
-/* ── Footer ── */
+/* --- Footer & Input --- */
 .footer {
   padding: 12px;
   background: white;
@@ -156,6 +210,7 @@
   align-items: center;
   flex-shrink: 0;
 }
+
 .inputArea {
   flex: 1;
   border: 1px solid #eee;
@@ -168,7 +223,11 @@
   -webkit-text-fill-color: #1a1a1a !important;
   caret-color: #1a1a1a !important;
 }
-.inputArea::placeholder { color: #aaa !important; -webkit-text-fill-color: #aaa !important; opacity: 1; }
+.inputArea::placeholder {
+  color: #aaa !important;
+  -webkit-text-fill-color: #aaa !important;
+  opacity: 1;
+}
 .inputArea:disabled { opacity: 0.6; background: #f9f9f9 !important; }
 
 .sendBtn {
@@ -188,17 +247,56 @@
 .sendBtn:hover { background: #ff69b4; }
 .sendBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* ── Typing ── */
-.typing { color: #999 !important; -webkit-text-fill-color: #999 !important; font-style: italic; animation: blink 1s infinite; }
+/* --- Typing indicator --- */
+.typing {
+  color: #999 !important;
+  -webkit-text-fill-color: #999 !important;
+  font-style: italic;
+  animation: blink 1s infinite;
+}
 
-/* ── Cart badge ── */
-.cartBadge { background: var(--brand-pink); color: white !important; -webkit-text-fill-color: white !important; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 12px; margin-right: auto; margin-left: 8px; }
+/* --- Cartes produits (ancien format grille, gardé en fallback) --- */
+.productCards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+  margin-left: 4px;
+}
+.productCard {
+  display: flex;
+  gap: 10px;
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  max-width: 85%;
+}
+.productCard:hover {
+  border-color: var(--brand-pink);
+  box-shadow: 0 2px 10px rgba(255,105,180,0.2);
+  transform: translateY(-1px);
+}
+.productImage { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
+.productInfo  { display: flex; flex-direction: column; justify-content: center; gap: 2px; }
+.productName  { font-size: 0.8rem; font-weight: 600; color: #1a1a1a !important; -webkit-text-fill-color: #1a1a1a !important; margin: 0 !important; }
+.productPrice { font-size: 0.8rem; color: var(--brand-pink) !important; -webkit-text-fill-color: var(--brand-pink) !important; font-weight: 600; margin: 0 !important; }
+.productStock { font-size: 0.7rem; color: #999 !important; -webkit-text-fill-color: #999 !important; margin: 0 !important; }
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
 /* ══════════════════════════════════════════════════════════
-   MESSENGER PRODUCT CARDS
+   MESSENGER-STYLE PRODUCT CARDS + JP FLOW
    ══════════════════════════════════════════════════════════ */
-
-.productCards { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; margin-left: 4px; }
 
 .messengerCard {
   align-self: flex-start;
@@ -211,23 +309,79 @@
   box-shadow: 0 2px 12px rgba(255, 105, 180, 0.12);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.messengerCard:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 105, 180, 0.22); }
+.messengerCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 105, 180, 0.22);
+}
 
-.messengerImageWrap { position: relative; cursor: pointer; overflow: hidden; }
-.messengerImage { width: 100%; height: 200px; object-fit: cover; display: block; transition: transform 0.3s ease; }
+.messengerImageWrap {
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+}
+.messengerImage {
+  width: 100%;
+  height: 200px;      /* ← plus haute sur desktop */
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
 .messengerImageWrap:hover .messengerImage { transform: scale(1.04); }
 
-.messengerZoomHint { position: absolute; bottom: 8px; right: 10px; background: rgba(0,0,0,0.55); color: white; font-size: 0.68rem; padding: 3px 8px; border-radius: 10px; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+.messengerZoomHint {
+  position: absolute;
+  bottom: 8px;
+  right: 10px;
+  background: rgba(0,0,0,0.55);
+  color: white;
+  font-size: 0.68rem;
+  padding: 3px 8px;
+  border-radius: 10px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
 .messengerImageWrap:hover .messengerZoomHint { opacity: 1; }
 
-.stockBadge { position: absolute; top: 8px; left: 8px; font-size: 0.65rem; font-weight: 700; padding: 3px 8px; border-radius: 10px; letter-spacing: 0.02em; }
+
+
+
+.stockBadge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 10px;
+  letter-spacing: 0.02em;
+}
 .stockBadgeGreen { background: #dcfce7; color: #16a34a; }
 .stockBadgeGray  { background: #f3f4f6; color: #6b7280; }
 
-.messengerComment { font-size: 0.8rem; color: #444 !important; -webkit-text-fill-color: #444 !important; line-height: 1.5; margin: 8px 10px 4px !important; padding: 0 !important; }
+.messengerComment {
+  font-size: 0.8rem;
+  color: #444 !important;
+  -webkit-text-fill-color: #444 !important;
+  line-height: 1.5;
+  margin: 8px 10px 4px !important;
+  padding: 0 !important;
+}
 
-.messengerFooter { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px 10px; border-top: 1px solid #fce7f3; }
-.messengerPrice { font-size: 0.95rem; font-weight: 700; color: var(--brand-pink) !important; -webkit-text-fill-color: var(--brand-pink) !important; }
+.messengerFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px 10px;
+  border-top: 1px solid #fce7f3;
+}
+
+.messengerPrice {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--brand-pink) !important;
+  -webkit-text-fill-color: var(--brand-pink) !important;
+}
 
 .jpBtn {
   background: linear-gradient(135deg, #ff69b4, #e91e8c);
@@ -246,11 +400,23 @@
   box-shadow: 0 3px 10px rgba(255, 105, 180, 0.4);
   white-space: nowrap;
 }
-.jpBtn:hover  { transform: scale(1.05); }
+.jpBtn:hover  { transform: scale(1.05); box-shadow: 0 5px 16px rgba(255,105,180,0.55); }
 .jpBtn:active { transform: scale(0.97); }
 
+.cartBadge {
+  background: var(--brand-pink);
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-right: auto;
+  margin-left: 8px;
+}
+
 /* ══════════════════════════════════════════════════════════
-   POPUP CONFIRMATION
+   POP-UP CONFIRMATION (dans le chat, relative à .chatCard)
    ══════════════════════════════════════════════════════════ */
 
 .popupOverlay {
@@ -264,119 +430,240 @@
   border-radius: 20px;
   animation: fadeIn 0.2s ease;
 }
-.popup { background: white; border-radius: 20px; padding: 22px 18px; width: 78%; display: flex; flex-direction: column; align-items: center; gap: 8px; animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
-.popupImg { width: 100px; height: 100px; object-fit: cover; border-radius: 14px; border: 2px solid #fce7f3; }
-.popupTitle { font-size: 0.9rem; font-weight: 700; color: #1a1a1a !important; -webkit-text-fill-color: #1a1a1a !important; margin: 0 !important; }
-.popupName  { font-size: 0.82rem; color: #555 !important; -webkit-text-fill-color: #555 !important; margin: 0 !important; }
-.popupPrice { font-size: 1rem; font-weight: 700; color: var(--brand-pink) !important; -webkit-text-fill-color: var(--brand-pink) !important; margin: 0 !important; }
-.popupBtns  { display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 6px; }
-.popupOk { background: linear-gradient(135deg, #ff69b4, #e91e8c); color: white !important; -webkit-text-fill-color: white !important; border: none; border-radius: 20px; padding: 10px; font-size: 0.84rem; font-weight: 600; cursor: pointer; }
-.popupCancel { background: none; border: 1px solid #ddd; border-radius: 20px; padding: 9px; font-size: 0.78rem; color: #888 !important; -webkit-text-fill-color: #888 !important; cursor: pointer; }
 
-/* ══════════════════════════════════════════════════════════
-   ZOOM IMAGE
-   ══════════════════════════════════════════════════════════ */
-
-.zoomOverlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.88); display: flex; align-items: center; justify-content: center; z-index: 99999; animation: fadeIn 0.2s ease; cursor: pointer; }
-.zoomPopup { background: white; border-radius: 20px; padding: 16px; width: min(88vw, 480px); display: flex; flex-direction: column; align-items: center; gap: 10px; animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); text-align: center; cursor: default; }
-.zoomImg { width: 100%; max-height: 60vh; object-fit: contain; border-radius: 14px; }
-.zoomName  { font-size: 1rem; font-weight: 700; color: #1a1a1a !important; -webkit-text-fill-color: #1a1a1a !important; margin: 0 !important; }
-.zoomPrice { font-size: 1.1rem; font-weight: 700; color: var(--brand-pink) !important; -webkit-text-fill-color: var(--brand-pink) !important; margin: 0 !important; }
-.zoomClose { background: none; border: 1px solid #ddd; border-radius: 20px; padding: 8px 20px; font-size: 0.8rem; color: #888 !important; -webkit-text-fill-color: #888 !important; cursor: pointer; margin-top: 2px; }
-
-/* ══════════════════════════════════════════════════════════
-   ANIMATIONS
-   ══════════════════════════════════════════════════════════ */
-
-@keyframes blink   { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-@keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
-@keyframes popIn   { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-/* ══════════════════════════════════════════════════════════
-   TABLETTE (501px - 768px)
-   ══════════════════════════════════════════════════════════ */
-
-@media (min-width: 501px) and (max-width: 768px) {
-  .chatCard { width: 360px; height: 560px; }
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
+.popup {
+  background: white;
+  border-radius: 20px;
+  padding: 22px 18px;
+  width: 78%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+@keyframes popIn {
+  from { transform: scale(0.7); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.popupImg {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 2px solid #fce7f3;
+}
+
+.popupTitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1a1a1a !important;
+  -webkit-text-fill-color: #1a1a1a !important;
+  margin: 0 !important;
+}
+.popupName {
+  font-size: 0.82rem;
+  color: #555 !important;
+  -webkit-text-fill-color: #555 !important;
+  margin: 0 !important;
+}
+.popupPrice {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--brand-pink) !important;
+  -webkit-text-fill-color: var(--brand-pink) !important;
+  margin: 0 !important;
+}
+
+.popupBtns {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.popupOk {
+  background: linear-gradient(135deg, #ff69b4, #e91e8c);
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+  border: none;
+  border-radius: 20px;
+  padding: 10px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.popupOk:hover { transform: scale(1.02); }
+
+.popupCancel {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  padding: 9px;
+  font-size: 0.78rem;
+  color: #888 !important;
+  -webkit-text-fill-color: #888 !important;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.popupCancel:hover { background: #f9f9f9; }
+
 /* ══════════════════════════════════════════════════════════
-   MOBILE (≤ 500px) — PLEIN ÉCRAN COMME MESSENGER
+   ZOOM IMAGE — PLEIN ÉCRAN (fixed sur toute la page)
    ══════════════════════════════════════════════════════════ */
 
+.zoomOverlay {
+  position: fixed;       /* ← fixed, pas absolute — sort de .chatCard */
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;        /* au-dessus de tout */
+  animation: fadeIn 0.2s ease;
+  cursor: pointer;
+}
+
+.zoomPopup {
+  background: white;
+  border-radius: 20px;
+  padding: 16px;
+  width: min(88vw, 480px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  text-align: center;
+  cursor: default;
+}
+
+.zoomImg {
+  width: 100%;
+  max-height: 60vh;       /* ← grande image */
+  object-fit: contain;
+  border-radius: 14px;
+}
+
+.zoomName {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a1a !important;
+  -webkit-text-fill-color: #1a1a1a !important;
+  margin: 0 !important;
+}
+.zoomPrice {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--brand-pink) !important;
+  -webkit-text-fill-color: var(--brand-pink) !important;
+  margin: 0 !important;
+}
+.zoomClose {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  padding: 8px 20px;
+  font-size: 0.8rem;
+  color: #888 !important;
+  -webkit-text-fill-color: #888 !important;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-top: 2px;
+}
+.zoomClose:hover { background: #f9f9f9; }
+
+:global(body[data-chat-open]) .wrapper {
+  display: none !important;
+}
+
+
+
+
+
+/* ─────────────────────────────────────────────────────────
+   MOBILE — plein écran
+   ───────────────────────────────────────────────────────── */
 @media (max-width: 500px) {
-
-  /* Wrapper : reste fixe en bas à droite pour le trigger */
   .wrapper {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 10001;
-    align-items: flex-end;
+    position: static;   /* ← était fixed implicitement via bottom/right */
+    bottom: unset;
+    right: unset;
   }
 
-  .hintBubble {
-    position: fixed;
-    bottom: 90px;
-    right: 16px;
-    white-space: nowrap;
-    max-width: calc(100vw - 32px);
-    z-index: 10001;
-    margin-bottom: 0;
-  }
-
-  .trigger {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 10001;
-  }
-
-  /* Chat card : plein écran */
   .chatCard {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    width: 100% !important;
-    height: 100% !important;
+    width: 100vw !important;
+    height: 100dvh !important;   /* ← dvh évite le bug barre navigateur mobile */
     border-radius: 0;
     max-height: none;
-    z-index: 99998;
-    display: flex;
-    flex-direction: column;
   }
 
-  /* Header : ne rétrécit jamais */
-  .header {
-    flex-shrink: 0;
+  .trigger {
+    z-index: 9999;
+    position: fixed;   /* si pas déjà présent sur mobile */
+    bottom: 150px;
+    right: 20px;     /* ← au-dessus du chatCard fermé */
+    z-index: 10001;
   }
 
-  /* Body : prend tout l'espace disponible, min-height:0 est CRITIQUE */
-  .chatBody {
-    flex: 1 1 0;
-    min-height: 0;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+  .hintBubble {
+    position: fixed;
+    bottom: 210px;
+    right: 16px;
+    white-space: nowrap;
+    max-width: calc(100vw - 32px);  /* ← ne dépasse pas l'écran */
+    z-index: 10001;
   }
 
-  /* Footer : colle en bas, ne rétrécit jamais */
+  /* Input ne se cache pas derrière le clavier virtuel */
   .footer {
-    flex-shrink: 0;
-    padding: 12px 12px env(safe-area-inset-bottom, 12px);
-    background: white;
-    border-top: 1px solid #eee;
+    padding-bottom: env(safe-area-inset-bottom, 12px);
   }
 
-  .message { max-width: 90%; font-size: 0.9rem; }
-  .messengerCard { width: 95%; }
-  .messengerImage { height: 220px; }
-  .messengerZoomHint { opacity: 1; }
+  /* Messages plus lisibles sur petit écran */
+  .message {
+    max-width: 90%;
+    font-size: 0.9rem;
+  }
+
+  .messengerCard {
+    width: 95%;
+  }
+
+  .messengerImage {
+    height: 200px;
+  }
 }
 
-/* WhatsApp masqué quand chat ouvert */
-:global(body[data-chat-open]) .whatsappContainer {
-  display: none !important;
+/* Sur mobile : afficher le hint en permanence */
+@media (max-width: 500px) {
+  .messengerZoomHint { opacity: 1; }
+  .messengerImage { height: 220px; }
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   TABLETTE (501px - 768px)
+   ───────────────────────────────────────────────────────── */
+@media (min-width: 501px) and (max-width: 768px) {
+  .chatCard {
+    width: 360px;
+    height: 560px;
+  }
 }
