@@ -17,10 +17,12 @@ export default function FloatingAI() {
       return;
     }
 
-    // Bloquer le scroll arrière-plan
-    document.body.style.overflow = "hidden";
-    document.body.style.position = "fixed";
-    document.body.style.width = "100%";
+    // Bloquer le scroll arrière-plan — mobile seulement
+    if (window.innerWidth < 501) {
+      document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.width = "100%";
+    }
 
     // visualViewport pour iOS clavier
     const vv = window.visualViewport;
@@ -28,7 +30,7 @@ export default function FloatingAI() {
 
     const update = () => {
       if (!cardRef.current) return;
-      if (window.innerWidth > 500) return; // ← desktop : on ne touche pas
+      if (window.innerWidth >= 501) return;
       cardRef.current.style.height = `${vv.height}px`;
       cardRef.current.style.top = `${vv.offsetTop}px`;
     };
@@ -40,6 +42,7 @@ export default function FloatingAI() {
     return () => {
       vv.removeEventListener("resize", update);
       vv.removeEventListener("scroll", update);
+      // Cleanup — toujours remettre les styles quand on ferme
       document.body.style.overflow = "";
       document.body.style.position = "";
       document.body.style.width = "";
