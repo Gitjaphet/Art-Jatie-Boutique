@@ -195,27 +195,38 @@ export default function FloatingAI() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, step]);
 
+  const chatCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) {
       document.body.setAttribute("data-chat-open", "true");
       document.body.style.overflow = "hidden";
 
-      // Solution iOS : écoute le resize du viewport quand le clavier monte
-      const handleResize = () => {
-        const chatCard = document.querySelector(`[class*="chatCard"]`) as HTMLElement;
-        if (chatCard) {
-          chatCard.style.height = `${window.innerHeight}px`;
-        }
+      const isMobile = window.innerWidth <= 500;
+      if (!isMobile) return;
+
+      const applyViewport = () => {
+        const vv = window.visualViewport;
+        if (!vv || !chatCardRef.current) return;
+        chatCardRef.current.style.height = `${vv.height}px`;
+        chatCardRef.current.style.top = `${vv.offsetTop}px`;
       };
 
-      window.addEventListener("resize", handleResize);
-      handleResize(); // appel initial
+      window.visualViewport?.addEventListener("resize", applyViewport);
+      window.visualViewport?.addEventListener("scroll", applyViewport);
+      setTimeout(applyViewport, 50);
 
-      return () => window.removeEventListener("resize", handleResize);
+      return () => {
+        window.visualViewport?.removeEventListener("resize", applyViewport);
+        window.visualViewport?.removeEventListener("scroll", applyViewport);
+      };
     } else {
       document.body.removeAttribute("data-chat-open");
       document.body.style.overflow = "";
+      if (chatCardRef.current) {
+        chatCardRef.current.style.height = "";
+        chatCardRef.current.style.top = "";
+      }
     }
   }, [isOpen]);
 
@@ -453,7 +464,7 @@ export default function FloatingAI() {
       {/* Fenêtre de chat */}
       {/* Fenêtre de chat — via portal pour éviter le stacking context du wrapper */}
       {isOpen && typeof document !== "undefined" && createPortal(
-        <div className={styles.chatCard}>
+        <div className={styles.chatCard} ref={chatCardRef}>
           <div className={styles.header}>
             <div className={styles.headerInfo}>
               <div className={styles.statusDot} />
