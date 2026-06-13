@@ -10,18 +10,39 @@ export default function FloatingAI() {
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.width = "";
+      return;
+    }
+
+    // Bloquer le scroll arrière-plan
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.width = "100%";
+
+    // visualViewport pour iOS clavier
     const vv = window.visualViewport;
     if (!vv) return;
+
     const update = () => {
       if (!cardRef.current) return;
       cardRef.current.style.height = `${vv.height}px`;
       cardRef.current.style.top = `${vv.offsetTop}px`;
     };
+
     vv.addEventListener("resize", update);
     vv.addEventListener("scroll", update);
     update();
-    return () => { vv.removeEventListener("resize", update); vv.removeEventListener("scroll", update); };
+
+    return () => {
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.width = "";
+    };
   }, [isOpen]);
 
   const send = () => {
