@@ -143,7 +143,7 @@ export default function CommandeModal({ product, onClose, onSuccess }: Props) {
     borderLeft: "3px solid #f59e0b", color: "#b45309", fontSize: "12px", borderRadius: "0 4px 4px 0"
   };
 
-  return (
+  return createPortal(
     <div className={styles.overlay} onClick={handleOverlayClick}>
       <div className={styles.modal}>
         {/* HEADER */}
@@ -176,7 +176,7 @@ export default function CommandeModal({ product, onClose, onSuccess }: Props) {
         <div className={styles.body}>
           <p className={styles.sectionTitle}>Votre sélection</p>
 
-          {/* TAILLE — Système de tags */}
+          {/* TAILLE */}
           <div className={styles.field}>
             <label className={styles.label}>Taille *</label>
             <div style={chipContainerStyle}>
@@ -196,12 +196,12 @@ export default function CommandeModal({ product, onClose, onSuccess }: Props) {
             </div>
             {isSizeChanged && (
               <div style={warningStyle}>
-                ⚠️ <strong>Attention :</strong> Si vous changez ou ajoutez une taille personnalisée, il se pourrait que le tarif change en fonction de votre choix. Nous vous enverrons le prix exact via WhatsApp ou email.
+                ⚠️ <strong>Attention :</strong> Si vous changez ou ajoutez une taille personnalisée, il se pourrait que le tarif change. Nous vous enverrons le prix exact via WhatsApp ou email.
               </div>
             )}
           </div>
 
-          {/* COULEUR — Système de tags */}
+          {/* COULEUR */}
           <div className={styles.field} style={{ marginTop: "16px" }}>
             <label className={styles.label}>Couleur *</label>
             <div style={chipContainerStyle}>
@@ -221,7 +221,7 @@ export default function CommandeModal({ product, onClose, onSuccess }: Props) {
             </div>
             {isColorChanged && (
               <div style={warningStyle}>
-                💡 <strong>Personnalisation :</strong> Vous avez modifié les couleurs. Veuillez décrire dans le champ "Message" ci-dessous quelle couleur par défaut vous souhaitez remplacer (ou contactez-nous pour en discuter).
+                💡 <strong>Personnalisation :</strong> Vous avez modifié les couleurs. Veuillez décrire dans le champ "Message" ci-dessous quelle couleur vous souhaitez.
               </div>
             )}
           </div>
@@ -314,6 +314,7 @@ export default function CommandeModal({ product, onClose, onSuccess }: Props) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
