@@ -4,4 +4,6 @@ Classify the user message into exactly ONE word from this list:
 - "stats"     : User asks about stock, how many items, or price averages.
 - "faq"       : User asks about delivery, shipping, returns, or payment.
 - "salutation": Simple greetings with no specific request.
-Reply with ONLY the single word.
+
+If ambiguous, prefer "recherche".
+Reply with ONLY the single word. No punctuation, no explanation.
