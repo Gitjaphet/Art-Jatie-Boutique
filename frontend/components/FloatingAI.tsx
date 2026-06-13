@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import styles from "./FloatingAI.module.css";
 import { chatWithJatie } from "@/lib/api";
 import { useCartStore } from "@/lib/cart";
+import { useVisualViewport } from "@/hooks/useVisualViewport";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -190,6 +191,11 @@ export default function FloatingAI() {
   ]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const viewportHeight = useVisualViewport();
+  const isMobile = typeof window !== "undefined" && window.innerWidth <= 500;
+  const chatCardStyle: React.CSSProperties = isMobile
+    ? { height: `${viewportHeight}px`, top: 0 }
+    : {};
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -199,8 +205,7 @@ export default function FloatingAI() {
   useEffect(() => {
     if (isOpen) {
       document.body.setAttribute("data-chat-open", "true");
-      // Empêche le scroll du body derrière le chat sur mobile
-      document.body.style.overflow = "hidden";
+      // overflow:hidden retiré — causait des bugs de scroll sur iOS
     } else {
       document.body.removeAttribute("data-chat-open");
       document.body.style.overflow = "";
@@ -437,11 +442,12 @@ export default function FloatingAI() {
       {zoomedProduct && (
         <ZoomPopup product={zoomedProduct} onClose={() => setZoomedProduct(null)} />
       )}
+      
 
       {/* Fenêtre de chat */}
       {/* Fenêtre de chat — via portal pour éviter le stacking context du wrapper */}
       {isOpen && typeof document !== "undefined" && createPortal(
-        <div className={styles.chatCard}>
+        <div className={styles.chatCard} style={chatCardStyle}>
           <div className={styles.header}>
             <div className={styles.headerInfo}>
               <div className={styles.statusDot} />

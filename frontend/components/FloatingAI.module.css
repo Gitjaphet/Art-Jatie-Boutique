@@ -96,11 +96,12 @@
    CHAT CARD — DESKTOP (grande fenêtre)
    ───────────────────────────────────────────────────────── */
 .chatCard {
-  position: absolute;
-  bottom: 85px;
+  position: fixed;           /* ← fixed au lieu de absolute */
+  bottom: 0;
   right: 0;
-  width: 420px;          /* ← plus large */
-  height: 620px;         /* ← plus haute */
+  width: 420px;
+  /* ⚠️ height retiré ici — géré en inline style via le hook sur mobile */
+  height: 620px;
   background: white;
   border-radius: 20px;
   overflow: hidden;
@@ -161,12 +162,13 @@
   padding: 14px;
   background: #fdfaf7;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;  /* ← scroll fluide iOS */
   display: flex;
   flex-direction: column;
   gap: 8px;
-  min-height: 0;  /* important pour que flex:1 marche avec overflow */
+  min-height: 0;  /* crucial pour que flex:1 + overflow-y:auto fonctionne */
+  overscroll-behavior: contain; /* ← évite le scroll du body derrière */
 }
-
 .messagesContainer {
   display: flex;
   flex-direction: column;
@@ -597,11 +599,10 @@
    ───────────────────────────────────────────────────────── */
 @media (max-width: 500px) {
   .wrapper {
-    position: static;   /* ← était fixed implicitement via bottom/right */
-    bottom: unset;
-    right: unset;
+    position: static;
   }
 
+  /* ⚠️ Pas de height ici — tout est géré via inline style par le hook */
   .chatCard {
     position: fixed;
     top: 0;
@@ -609,16 +610,17 @@
     right: 0;
     bottom: 0;
     width: 100vw !important;
-    height: 100dvh !important;   /* ← dvh évite le bug barre navigateur mobile */
+    /* height: 100dvh retiré — remplacé par le hook JS */
     border-radius: 0;
     max-height: none;
+    /* Transition douce quand le clavier apparaît */
+    transition: height 0.15s ease-out;
   }
 
   .trigger {
-    z-index: 9999;
-    position: fixed;   /* si pas déjà présent sur mobile */
+    position: fixed;
     bottom: 150px;
-    right: 20px;     /* ← au-dessus du chatCard fermé */
+    right: 20px;
     z-index: 10001;
   }
 
@@ -627,16 +629,16 @@
     bottom: 210px;
     right: 16px;
     white-space: nowrap;
-    max-width: calc(100vw - 32px);  /* ← ne dépasse pas l'écran */
+    max-width: calc(100vw - 32px);
     z-index: 10001;
   }
 
-  /* Input ne se cache pas derrière le clavier virtuel */
   .footer {
-    padding-bottom: env(safe-area-inset-bottom, 12px);
+    /* Safe area iOS (encoche/Dynamic Island) */
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    flex-shrink: 0; /* ← empêche le footer de se comprimer */
   }
 
-  /* Messages plus lisibles sur petit écran */
   .message {
     max-width: 90%;
     font-size: 0.9rem;
