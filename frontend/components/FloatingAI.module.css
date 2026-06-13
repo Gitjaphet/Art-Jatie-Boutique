@@ -632,9 +632,17 @@
     z-index: 10001;
   }
 
+  .chatBody {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
   /* Input ne se cache pas derrière le clavier virtuel */
   .footer {
-    padding-bottom: env(safe-area-inset-bottom, 12px);
+    flex-shrink: 0;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    /* ← colle le footer juste au-dessus du clavier */
   }
 
   /* Messages plus lisibles sur petit écran */

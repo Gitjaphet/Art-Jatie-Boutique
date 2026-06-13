@@ -199,8 +199,11 @@ export default function FloatingAI() {
   useEffect(() => {
     if (isOpen) {
       document.body.setAttribute("data-chat-open", "true");
+      // Empêche le scroll du body derrière le chat sur mobile
+      document.body.style.overflow = "hidden";
     } else {
       document.body.removeAttribute("data-chat-open");
+      document.body.style.overflow = "";
     }
   }, [isOpen]);
 
