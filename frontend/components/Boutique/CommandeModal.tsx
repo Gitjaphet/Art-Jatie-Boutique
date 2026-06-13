@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import styles from "./CommandeModal.module.css";
 import { useAuth } from "../../lib/googleAuth";
+import { createPortal } from "react-dom";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 

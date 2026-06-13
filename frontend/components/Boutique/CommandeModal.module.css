@@ -396,6 +396,6 @@
   .overlay {
     align-items: flex-end;
     padding: 0;
-    z-index: 99999;
+    
   }
 }
