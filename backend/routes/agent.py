@@ -12,6 +12,7 @@ router = APIRouter()
 class ChatRequest(BaseModel):
     message: str
     historique_commande: Optional[Dict[str, Any]] = None
+    history: Optional[list] = None
 
 
 @router.post("/chat")
@@ -25,6 +26,7 @@ async def chat(body: ChatRequest):
             run_multi_agent,
             message=body.message,
             historique_commande=body.historique_commande,
+            history=body.history or [],
         )
         logging.info(f"[ROUTER] Total : {time.time() - t0:.2f}s")
         return {

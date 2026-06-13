@@ -10,6 +10,7 @@ export default function FloatingAI() {
   const [messages, setMessages] = useState([{ from: "bot", text: "Bonjour !" }]);
   const cardRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [historiqueCommande, setHistoriqueCommande] = useState<Record<string, any> | null>(null);
   const [clientId] = useState(() => {
     if (typeof window === "undefined") return "anonymous";
     let id = localStorage.getItem("jatie_client_id");
@@ -64,8 +65,13 @@ export default function FloatingAI() {
     setMessages(prev => [...prev, { from: "user", text: userText }]);
     setIsLoading(true);
     try {
-      const result = await chatWithJatie(userText, clientId, "web");
+      const formattedHistory = messages.map(m => ({
+        role: m.from === "bot" ? "assistant" : "user",
+        content: m.text,
+      }));
+      const result = await chatWithJatie(userText, clientId, "web", historiqueCommande, formattedHistory);
       setMessages(prev => [...prev, { from: "bot", text: result.response }]);
+      setHistoriqueCommande(result.historique_commande ?? null);
     } catch {
       setMessages(prev => [...prev, { from: "bot", text: "Désolée, problème technique 😅" }]);
     } finally {

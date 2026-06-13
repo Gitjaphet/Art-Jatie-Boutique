@@ -127,14 +127,17 @@ export async function getProductBySlug(slug: string) {
 export async function chatWithJatie(
   message: string,
   clientWhatsapp: string,
-  channel: string = "web"
-) {
+  channel: string = "web",
+  historiqueCommande: Record<string, any> | null = null,
+  history: { role: string; content: string }[] = []
+){
   const res = await fetch(`${API_URL}/agent/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       message,
-      history: [],
+      history,
+      historique_commande: historiqueCommande,
     }),
   });
   if (!res.ok) throw new Error("Erreur agent IA");

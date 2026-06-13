@@ -5,7 +5,6 @@ import json
 import logging
 import httpx
 from ai.core.token_logger import log_llm_call
-from ai.core.retry import llm_retry
 from ai.core.prompts import ROUTER
 
 _GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
@@ -59,8 +58,10 @@ def llm2_router(token_log: list, message: str, history: list = None) -> dict | N
             },
         },
     ]
+
+    # Construire les messages
     messages_payload = [
-         {"role": "system", "content": ROUTER}
+        {"role": "system", "content": ROUTER}
     ]
     if history:
         for msg in history[-4:]:
@@ -68,24 +69,22 @@ def llm2_router(token_log: list, message: str, history: list = None) -> dict | N
             content = msg.get("content", "") or ""
             if role in ("user", "assistant") and content.strip():
                 messages_payload.append({"role": role, "content": content[:500]})
-                messages_payload.append({"role": "user", "content": message})
-                body = {
-                    "model": "llama-3.3-70b-versatile",
-                    "messages": messages_payload,
-                    "tools": tools,
-                    "tool_choice": "required",
-                    "max_tokens": 200,
-                    "temperature": 0,
-                }
 
-    @llm_retry
-    def _call() -> httpx.Response:
-        r = httpx.post(_GROQ_URL, headers=headers, json=body, timeout=30)
-        r.raise_for_status()
-        return r
+    # Toujours ajouter le message actuel à la fin
+    messages_payload.append({"role": "user", "content": message})
+
+    body = {
+        "model": "llama-3.3-70b-versatile",
+        "messages": messages_payload,
+        "tools": tools,
+        "tool_choice": "required",
+        "max_tokens": 200,
+        "temperature": 0,
+    }
 
     try:
-        response = _call()
+        response = httpx.post(_GROQ_URL, headers=headers, json=body, timeout=30)
+        response.raise_for_status()
         data = response.json()
         latence = (time.time() - t0) * 1000
         tokens_in = data["usage"]["prompt_tokens"]
