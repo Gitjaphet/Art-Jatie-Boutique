@@ -609,7 +609,7 @@
     right: 0;
     bottom: 0;
     width: 100vw !important;
-    height: 100dvh !important;   /* ← dvh évite le bug barre navigateur mobile */
+    height: 100vh !important;   /* ← dvh évite le bug barre navigateur mobile */
     border-radius: 0;
     max-height: none;
     z-index: 99998;

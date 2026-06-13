@@ -199,8 +199,20 @@ export default function FloatingAI() {
   useEffect(() => {
     if (isOpen) {
       document.body.setAttribute("data-chat-open", "true");
-      // Empêche le scroll du body derrière le chat sur mobile
       document.body.style.overflow = "hidden";
+
+      // Solution iOS : écoute le resize du viewport quand le clavier monte
+      const handleResize = () => {
+        const chatCard = document.querySelector(`[class*="chatCard"]`) as HTMLElement;
+        if (chatCard) {
+          chatCard.style.height = `${window.innerHeight}px`;
+        }
+      };
+
+      window.addEventListener("resize", handleResize);
+      handleResize(); // appel initial
+
+      return () => window.removeEventListener("resize", handleResize);
     } else {
       document.body.removeAttribute("data-chat-open");
       document.body.style.overflow = "";
