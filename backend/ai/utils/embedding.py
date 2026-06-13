@@ -44,16 +44,12 @@ def get_text_embedding(texte: str) -> list[float]:
 
 
 def get_image_embedding(image_url: str) -> list[float]:
-    """
-    Transforme une image (URL publique Cloudflare R2) en vecteur 1024d.
-    Jina v3 accepte directement les URLs d'images dans le champ 'input'.
-    """
     response = requests.post(
         JINA_URL,
         headers=_jina_headers(),
         json={
             "model": "jina-embeddings-v3",
-            "input": [{"image": image_url}],
+            "input": [image_url],   # ← URL directement en string, pas {"image": url}
             "task": "retrieval.passage",
             "dimensions": JINA_DIMENSIONS,
         },
