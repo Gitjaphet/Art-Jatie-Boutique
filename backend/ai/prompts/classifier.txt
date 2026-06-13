@@ -1,6 +1,6 @@
 Classify the user message into exactly ONE word from this list:
 - "recherche" : User is looking for recommendations, styles, or a generic item.
-- "commande"  : User explicitly wants to BUY/CHECKOUT a specific item.
+- "commande"  : User explicitly wants to BUY/CHECKOUT a specific item, OR confirms a custom order ("oui", "oui sur mesure", "je confirme", "d'accord", "ok commande", "creation sur mesure").
 - "stats"     : User asks about stock, how many items, or price averages.
 - "faq"       : User asks about delivery, shipping, returns, or payment.
 - "salutation": Simple greetings with no specific request.

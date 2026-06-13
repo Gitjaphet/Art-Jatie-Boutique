@@ -49,7 +49,7 @@ def llm2_router(token_log: list, message: str, history: list = None) -> dict | N
                     "properties": {
                         "operation": {
                             "type": "string",
-                            "enum": ["count", "stock_total", "valeur_stock", "prix_moyen", "min_price", "max_price", "stock_faible", "rupture", "par_categorie", "par_genre"],
+                            "enum": ["count", "count_by_category", "stock_total", "valeur_stock", "prix_moyen", "min_price", "max_price", "stock_faible", "rupture", "par_categorie", "par_genre"],
                         },
                         "filtre_categorie": {"type": "string"},
                         "filtre_genre":     {"type": "string"},
@@ -64,16 +64,19 @@ def llm2_router(token_log: list, message: str, history: list = None) -> dict | N
     ]
     if history:
         for msg in history[-4:]:
-            messages_payload.append({"role": msg["role"], "content": msg["content"]})
-    messages_payload.append({"role": "user", "content": message})
-    body = {
-        "model": "llama-3.3-70b-versatile",
-        "messages": messages_payload,
-        "tools": tools,
-        "tool_choice": "required",
-        "max_tokens": 200,
-        "temperature": 0,
-    }
+            role = msg.get("role", "")
+            content = msg.get("content", "") or ""
+            if role in ("user", "assistant") and content.strip():
+                messages_payload.append({"role": role, "content": content[:500]})
+                messages_payload.append({"role": "user", "content": message})
+                body = {
+                    "model": "llama-3.3-70b-versatile",
+                    "messages": messages_payload,
+                    "tools": tools,
+                    "tool_choice": "required",
+                    "max_tokens": 200,
+                    "temperature": 0,
+                }
 
     @llm_retry
     def _call() -> httpx.Response:
