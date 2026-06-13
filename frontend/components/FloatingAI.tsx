@@ -60,11 +60,23 @@ export default function FloatingAI() {
   return createPortal(
     <div className={styles.card} ref={cardRef}>
       <div className={styles.header}>
-        <span>Jatie</span>
+        <div className={styles.headerInfo}>
+          <div className={styles.avatar}>J</div>
+          <div>
+            <div className={styles.headerName}>Jatie ✨</div>
+            <div className={styles.headerStatus}>● En ligne</div>
+          </div>
+        </div>
         <button onClick={() => setIsOpen(false)}>✕</button>
       </div>
       <div className={styles.body}>
-        {messages.map((m, i) => <div key={i} className={m.from === "bot" ? styles.bot : styles.user}>{m.text}</div>)}
+        {messages.map((m, i) => (
+          <div key={i} className={m.from === "bot" ? styles.botRow : styles.userRow}>
+            {m.from === "bot" && <div className={styles.avatarSmall}>J</div>}
+            <div className={m.from === "bot" ? styles.bot : styles.user}>{m.text}</div>
+            {m.from === "user" && <div className={styles.avatarSmallUser}>C</div>}
+          </div>
+        ))}
       </div>
       <div className={styles.footer}>
         <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder="Écrire…" />
