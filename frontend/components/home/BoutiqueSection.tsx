@@ -25,6 +25,8 @@ interface Product {
   on_order?: boolean;
   slug?: string;
   category?: string;
+  sizesArray?: string[];
+  colorsArray?: string[];
 }
 
 /* Badge color mapping */
@@ -243,8 +245,8 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
             ...product,
             priceAr,
             tag: product.tag || "100% FAIT EN MAIN",
-            sizesArray: [],
-            colorsArray: [],
+            sizesArray: product.sizesArray || [],
+            colorsArray: product.colorsArray || [],
           }}
           onClose={() => setShowOrderModal(false)}
           onSuccess={() => {
