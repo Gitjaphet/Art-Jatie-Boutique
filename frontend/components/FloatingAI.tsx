@@ -2,12 +2,20 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import styles from "./FloatingAI.module.css";
+import { chatWithJatie } from "@/lib/api";
 
 export default function FloatingAI() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([{ from: "bot", text: "Bonjour !" }]);
   const cardRef = useRef<HTMLDivElement>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [clientId] = useState(() => {
+    if (typeof window === "undefined") return "anonymous";
+    let id = localStorage.getItem("jatie_client_id");
+    if (!id) { id = "visitor_" + Date.now(); localStorage.setItem("jatie_client_id", id); }
+    return id;
+  });
 
   useEffect(() => {
     if (!isOpen) {
@@ -49,17 +57,34 @@ export default function FloatingAI() {
     };
   }, [isOpen]);
 
-  const send = () => {
-    if (!input.trim()) return;
-    setMessages(prev => [...prev, { from: "user", text: input }, { from: "bot", text: "Bonjour !" }]);
+  const send = async () => {
+    if (!input.trim() || isLoading) return;
+    const userText = input.trim();
     setInput("");
+    setMessages(prev => [...prev, { from: "user", text: userText }]);
+    setIsLoading(true);
+    try {
+      const result = await chatWithJatie(userText, clientId, "web");
+      setMessages(prev => [...prev, { from: "bot", text: result.response }]);
+    } catch {
+      setMessages(prev => [...prev, { from: "bot", text: "Désolée, problème technique 😅" }]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  if (!isOpen) return <button className={styles.trigger} onClick={() => setIsOpen(true)}>
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-  </svg>
-</button>
+  if (!isOpen) return (
+    <>
+      <div className={styles.notif}>
+        Discutez avec Art Jatie ✨
+      </div>
+      <button className={styles.trigger} onClick={() => setIsOpen(true)}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+      </button>
+    </>
+  );
 
   return createPortal(
     <div className={styles.card} ref={cardRef}>
@@ -81,9 +106,17 @@ export default function FloatingAI() {
             {m.from === "user" && <div className={styles.avatarSmallUser}>C</div>}
           </div>
         ))}
+        {isLoading && (   // ← ICI
+          <div className={styles.botRow}>
+            <div className={styles.avatarSmall}>J</div>
+            <div className={styles.bot}>
+              <span className={styles.typing}>Jatie écrit…</span>
+            </div>
+          </div>
+        )}
       </div>
       <div className={styles.footer}>
-        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder="Écrire…" />
+        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder="Écrire…" disabled={isLoading} />
         <button onClick={send}>➤</button>
       </div>
     </div>,
