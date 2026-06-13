@@ -199,15 +199,11 @@ export default function FloatingAI() {
   useEffect(() => {
     if (isOpen) {
       document.body.setAttribute("data-chat-open", "true");
-      document.body.style.overflow = "hidden";
-      
-      // ← NOUVEAU : On met le focus sur l'input après un court instant
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 150); 
+      // Sur iOS, touch-action suffit — pas overflow:hidden
+      document.body.style.touchAction = "none";
     } else {
       document.body.removeAttribute("data-chat-open");
-      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
     }
   }, [isOpen]);
 

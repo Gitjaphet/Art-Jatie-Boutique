@@ -609,11 +609,21 @@
     left: 0;
     right: 0;
     bottom: 0;
-    width: 100% !important;      /* ← 100% au lieu de 100vw */
-    height: 100% !important;     /* ← 100% au lieu de 100dvh */
+    width: 100% !important;
+    height: 100dvh !important;      /* ← dvh, pas vh ni % */
+    max-height: 100dvh !important;
     border-radius: 0;
-    max-height: none;
-    z-index: 99999;              /* S'assure qu'il passe au-dessus de tout */
+    display: flex;
+    flex-direction: column;
+    z-index: 99999;
+    /* PAS de overflow: hidden ici — c'est chatBody qui scroll */
+  }
+
+  .chatBody {
+    flex: 1 1 0;         /* ← 1 1 0, pas juste flex:1 */
+    min-height: 0;       /* ← crucial : permet à flex-child de rétrécir */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .trigger {
@@ -635,9 +645,13 @@
 
   /* Input ne se cache pas derrière le clavier virtuel */
   .footer {
-    padding-bottom: env(safe-area-inset-bottom, 12px);
+    flex-shrink: 0;                              /* ne rétrécit jamais */
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
   }
 
+  .header {
+    flex-shrink: 0;                              /* ne rétrécit jamais */
+  }
   /* Messages plus lisibles sur petit écran */
   .message {
     max-width: 90%;
