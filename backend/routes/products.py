@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, BackgroundTasks
 from sqlmodel import Session, select
 from typing import List, Optional
 import json
@@ -6,12 +6,13 @@ from models.models import Product, Settings, Color, ProductColorLink
 from database import get_session
 import re
 from utils.r2 import upload_image_to_r2
+from ai.utils.vectorisation import vectoriser_produit
 
 router = APIRouter()
 
 
 # ─── HELPER : Génération automatique de slug ──────────────────────────────────
-def generate_slug(name: str) -> str:  # ← NOUVEAU : fonction de génération de slug
+def generate_slug(name: str) -> str:
     slug = name.lower()
     slug = slug.replace("é","e").replace("è","e").replace("ê","e")
     slug = slug.replace("à","a").replace("â","a")
@@ -23,34 +24,24 @@ def generate_slug(name: str) -> str:  # ← NOUVEAU : fonction de génération d
 
 
 # ─── HELPER : Slug unique (évite les doublons) ────────────────────────────────
-def get_unique_slug(name: str, session: Session, exclude_id: Optional[int] = None) -> str:  # ← NOUVEAU
+def get_unique_slug(name: str, session: Session, exclude_id: Optional[int] = None) -> str:
     base_slug = generate_slug(name)
     slug = base_slug
     counter = 1
     while True:
         query = select(Product).where(Product.slug == slug)
         if exclude_id:
-            query = query.where(Product.id != exclude_id)  # ← NOUVEAU : ignore le produit en cours lors d'un update
+            query = query.where(Product.id != exclude_id)
         existing = session.exec(query).first()
         if not existing:
             break
-        slug = f"{base_slug}-{counter}"  # ← NOUVEAU : robe-rouge-2, robe-rouge-3...
+        slug = f"{base_slug}-{counter}"
         counter += 1
     return slug
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# IMPORTANT : /by-slug et /generate-slugs DOIVENT être AVANT /{product_id}
-# sinon FastAPI essaie de convertir "by-slug" en int → erreur 422
-# ─────────────────────────────────────────────────────────────────────────────
-
-
-
-
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# ROUTES EXISTANTES (inchangées sauf ajout du slug)
+# ROUTES LECTURE
 # ─────────────────────────────────────────────────────────────────────────────
 
 @router.get("/")
@@ -88,19 +79,58 @@ def get_products(
     return result
 
 
-# ← NOUVEAU : route pour générer les slugs des produits existants (à appeler une seule fois)
+@router.get("/{slug}")
+def get_product_by_slug(slug: str, session: Session = Depends(get_session)):
+    from sqlalchemy.orm import selectinload
+    product = session.exec(
+        select(Product)
+        .options(selectinload(Product.colors_list))
+        .where(Product.slug == slug)
+    ).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Produit introuvable")
+    return product
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ROUTES UTILITAIRES
+# ─────────────────────────────────────────────────────────────────────────────
+
 @router.post("/generate-slugs")
 def generate_all_slugs(session: Session = Depends(get_session)):
-    """Génère les slugs manquants pour tous les produits existants en base"""
+    """Génère les slugs manquants pour tous les produits existants en base."""
     products = session.exec(select(Product)).all()
     count = 0
     for p in products:
-        if not p.slug:  # ← NOUVEAU : ne touche pas les slugs déjà existants
+        if not p.slug:
             p.slug = get_unique_slug(p.name, session, exclude_id=p.id)
             session.add(p)
             count += 1
     session.commit()
     return {"message": f"{count} slugs générés avec succès"}
+
+
+@router.post("/generate-embeddings")
+def generate_all_embeddings(
+    background_tasks: BackgroundTasks,
+    session: Session = Depends(get_session)
+):
+    """
+    Vectorise TOUS les produits existants (à appeler une seule fois en migration,
+    ou pour resynchroniser la table product_embedding).
+    Traitement en background pour ne pas bloquer la réponse HTTP.
+    """
+    products = session.exec(select(Product)).all()
+
+    def _run():
+        for p in products:
+            try:
+                vectoriser_produit(p)
+            except Exception as e:
+                print(f"[generate-embeddings] Erreur produit #{p.id}: {e}")
+
+    background_tasks.add_task(_run)
+    return {"message": f"Vectorisation de {len(products)} produits lancée en arrière-plan."}
 
 
 @router.post("/seed")
@@ -128,7 +158,7 @@ def seed_initial_data(session: Session = Depends(get_session)):
     ]
 
     for p in test_products:
-        p.slug = get_unique_slug(p.name, session)  # ← NOUVEAU : slug généré aussi pour le seed
+        p.slug = get_unique_slug(p.name, session)
         session.add(p)
     session.commit()
 
@@ -149,21 +179,13 @@ def fix_zero_stock(session: Session = Depends(get_session)):
     return {"message": f"{count} produits mis à jour"}
 
 
-# ← NOUVEAU : route par slug pour la page détail produit
-@router.get("/{slug}")
-def get_product_by_slug(slug: str, session: Session = Depends(get_session)):
-    from sqlalchemy.orm import selectinload
-    product = session.exec(
-        select(Product)
-        .options(selectinload(Product.colors_list))
-        .where(Product.slug == slug)
-    ).first()
-    if not product:
-        raise HTTPException(status_code=404, detail="Produit introuvable")
-    return product
+# ─────────────────────────────────────────────────────────────────────────────
+# CREATE
+# ─────────────────────────────────────────────────────────────────────────────
 
 @router.post("/")
 async def create_product(
+    background_tasks: BackgroundTasks,       # ← NOUVEAU : vectorisation async
     name: str = Form(...),
     tag: str = Form(...),
     genre: str = Form(...),
@@ -196,11 +218,11 @@ async def create_product(
             ids = json.loads(color_ids)
             actual_colors = session.exec(select(Color).where(Color.id.in_(ids))).all()
 
-        slug = get_unique_slug(name, session)  # ← NOUVEAU : génère le slug automatiquement
+        slug = get_unique_slug(name, session)
 
         new_product = Product(
             name=name,
-            slug=slug,          # ← NOUVEAU : slug ajouté à la création
+            slug=slug,
             tag=tag,
             genre=genre,
             category=category,
@@ -225,6 +247,12 @@ async def create_product(
         session.add(new_product)
         session.commit()
         session.refresh(new_product)
+
+        # ── Vectorisation en arrière-plan (ne bloque pas la réponse) ──────
+        # On capture les valeurs nécessaires avant la fin de la session
+        product_snapshot = new_product
+        background_tasks.add_task(_vectoriser_safe, product_snapshot)
+
         return new_product
 
     except Exception as e:
@@ -232,12 +260,14 @@ async def create_product(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-
-
+# ─────────────────────────────────────────────────────────────────────────────
+# UPDATE
+# ─────────────────────────────────────────────────────────────────────────────
 
 @router.put("/{product_id}")
 async def update_product(
     product_id: int,
+    background_tasks: BackgroundTasks,       # ← NOUVEAU
     name: str = Form(...),
     tag: Optional[str] = Form(None),
     genre: str = Form(...),
@@ -273,7 +303,6 @@ async def update_product(
     product.on_order = on_order
     product.stock_quantity = stock_quantity
 
-    # ← NOUVEAU : régénère le slug si le nom du produit a changé
     if not product.slug or product.name != name:
         product.slug = get_unique_slug(name, session, exclude_id=product_id)
 
@@ -299,11 +328,23 @@ async def update_product(
     session.add(product)
     session.commit()
     session.refresh(product)
+
+    # ── Re-vectorisation en arrière-plan ──────────────────────────────────
+    background_tasks.add_task(_vectoriser_safe, product)
+
     return product
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# DELETE
+# ─────────────────────────────────────────────────────────────────────────────
+
+# DELETE — version finale propre
 @router.delete("/{product_id}")
-def delete_product(product_id: int, session: Session = Depends(get_session)):
+def delete_product(
+    product_id: int,
+    session: Session = Depends(get_session)   # ← BackgroundTasks retiré
+):
     product = session.get(Product, product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Produit introuvable")
@@ -313,3 +354,18 @@ def delete_product(product_id: int, session: Session = Depends(get_session)):
     return {"message": "Produit supprimé avec succès"}
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# HELPER INTERNE : vectorisation sécurisée (absorbe les erreurs Jina)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _vectoriser_safe(product: Product) -> None:
+    """
+    Wrapper autour de vectoriser_produit qui absorbe toutes les exceptions
+    pour ne jamais faire planter le background task et donc ne jamais
+    affecter la réponse HTTP déjà envoyée au dashboard.
+    """
+    try:
+        vectoriser_produit(product)
+    except Exception as e:
+        # Log uniquement — l'erreur n'est pas remontée au client
+        print(f"[vectorisation] ⚠ Échec embedding produit #{product.id} ({product.name}): {e}")
