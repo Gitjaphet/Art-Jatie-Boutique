@@ -605,29 +605,30 @@
 
   .chatCard {
     position: fixed;
-    top: 0;
+    top: 0;           /* sera overridé par JS */
     left: 0;
     right: 0;
-    bottom: 0;
+    overflow: visible;
     width: 100% !important;
-    height: 100dvh !important;      /* ← dvh, pas vh ni % */
-    max-height: 100dvh !important;
+    height: 100dvh !important;  /* fallback initial, JS prend le relais */
     border-radius: 0;
     display: flex;
     flex-direction: column;
     z-index: 99999;
-    /* PAS de overflow: hidden ici — c'est chatBody qui scroll */
+    /* PAS de overflow: hidden */
+    will-change: height; /* perf : évite les repaints */
   }
 
   .chatBody {
-    flex: 1 1 0;         /* ← 1 1 0, pas juste flex:1 */
-    min-height: 0;       /* ← crucial : permet à flex-child de rétrécir */
+    flex: 1 1 0;      /* absorbe tout l'espace disponible */
+    min-height: 0;    /* CRUCIAL sur iOS */
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain; /* évite le scroll de la page derrière */
   }
 
   .trigger {
-    z-index: 9999;
+    
     position: fixed;   /* si pas déjà présent sur mobile */
     bottom: 150px;
     right: 20px;     /* ← au-dessus du chatCard fermé */
@@ -645,12 +646,12 @@
 
   /* Input ne se cache pas derrière le clavier virtuel */
   .footer {
-    flex-shrink: 0;                              /* ne rétrécit jamais */
+    flex: 0 0 auto;   /* taille fixe, ne rétrécit jamais */
     padding-bottom: max(12px, env(safe-area-inset-bottom));
   }
 
   .header {
-    flex-shrink: 0;                              /* ne rétrécit jamais */
+    flex: 0 0 auto;   /* taille fixe, ne rétrécit jamais */
   }
   /* Messages plus lisibles sur petit écran */
   .message {

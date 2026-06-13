@@ -191,16 +191,48 @@ export default function FloatingAI() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const chatCardRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, step]);
 
 
   useEffect(() => {
+    if (!isOpen) return;
+
+    const updateHeight = () => {
+      if (!chatCardRef.current) return;
+      
+      // visualViewport donne la hauteur RÉELLE visible (clavier exclu)
+      const vv = window.visualViewport;
+      if (!vv) return;
+
+      const isMobile = window.innerWidth <= 500;
+      if (!isMobile) return;
+
+      // Hauteur visible = hauteur viewport visuel
+      // offsetTop = décalage du viewport (quand le clavier est ouvert sur iOS)
+      const visibleHeight = vv.height;
+      const offsetTop = vv.offsetTop;
+
+      chatCardRef.current.style.height = `${visibleHeight}px`;
+      chatCardRef.current.style.top = `${offsetTop}px`;
+    };
+
+    window.visualViewport?.addEventListener("resize", updateHeight);
+    window.visualViewport?.addEventListener("scroll", updateHeight);
+    updateHeight(); // Appel initial
+
+    return () => {
+      window.visualViewport?.removeEventListener("resize", updateHeight);
+      window.visualViewport?.removeEventListener("scroll", updateHeight);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
     if (isOpen) {
       document.body.setAttribute("data-chat-open", "true");
-      // Sur iOS, touch-action suffit — pas overflow:hidden
-      document.body.style.touchAction = "none";
+      
     } else {
       document.body.removeAttribute("data-chat-open");
       document.body.style.touchAction = "";
@@ -441,7 +473,7 @@ export default function FloatingAI() {
       {/* Fenêtre de chat */}
       {/* Fenêtre de chat — via portal pour éviter le stacking context du wrapper */}
       {isOpen && typeof document !== "undefined" && createPortal(
-        <div className={styles.chatCard}>
+        <div className={styles.chatCard} ref={chatCardRef}>
           <div className={styles.header}>
             <div className={styles.headerInfo}>
               <div className={styles.statusDot} />
