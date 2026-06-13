@@ -10,7 +10,7 @@ Appelé automatiquement après chaque create / update produit dans le router.
 import psycopg2
 from typing import Optional
 from models.models import Product
-from utils.embedding import get_combined_embedding
+from ai.utils.embedding import get_combined_embedding
 
 # ── Import de la config DB psycopg2 (même que dans ton script manuel) ──────
 from ai.core.db import db_config
