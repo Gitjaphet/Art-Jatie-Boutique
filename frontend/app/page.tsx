@@ -122,7 +122,7 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      
+      <Header />
       <main>
         <Hero />
         <StatsBar />
@@ -132,7 +132,7 @@ export default async function HomePage() {
         <BoutiqueSection products={boutiqueProducts} />
         <Testimonials />
       </main>
-     
+      <Footer />
     </>
   );
 }
