@@ -184,8 +184,8 @@ export default function CommandeClient({
                 filters.view === "list" ? styles.listView : styles.grid
               }
             >
-              // On rend TOUS les produits filtrés dans le DOM (SEO),
-              // et on masque visuellement ceux au-delà de visibleCount via CSS
+              {/* On rend TOUS les produits filtrés dans le DOM (SEO),
+                et on masque visuellement ceux au-delà de visibleCount via CSS */}
               {products.length === 0 ? (
                 <p className={styles.noResults}>
                   Aucun produit ne correspond à vos filtres.

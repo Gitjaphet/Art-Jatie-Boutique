@@ -123,7 +123,7 @@ export default function BoutiqueClient({
     return result;
   }, [filters, allProducts]);
 
-  const visibleProducts = products.slice(0, visibleCount);
+ 
 
   return (
     <main className={styles.pageMain}>
@@ -160,7 +160,7 @@ export default function BoutiqueClient({
           <section className={styles.content}>
             <div className={styles.topToolbar}>
               <span className={styles.resultsCount}>
-                {`Affichage de 1–${visibleProducts.length} sur ${products.length} résultats`}
+                {`Affichage de 1–${Math.min(visibleCount, products.length)} sur ${products.length} résultats`}
               </span>
               <div className={styles.toolbarRight}>
                 <select
@@ -192,18 +192,23 @@ export default function BoutiqueClient({
             </div>
 
             <div className={filters.view === "list" ? styles.listView : styles.grid}>
-              {visibleProducts.length === 0 ? (
+              
+              {products.length === 0 ? (
                 <p className={styles.noResults}>
                   Aucun produit ne correspond à vos filtres.
                 </p>
               ) : (
-                visibleProducts.map((product) => (
-                  <ProductCard
+                products.map((product, index) => (
+                  <div
                     key={product.id}
-                    product={product}
-                    listView={filters.view === "list"}
-                    commandeMode={product.on_order}
-                  />
+                    className={index >= visibleCount ? styles.hiddenProduct : undefined}
+                  >
+                    <ProductCard
+                      product={product}
+                      listView={filters.view === "list"}
+                      commandeMode={true}
+                    />
+                  </div>
                 ))
               )}
             </div>
