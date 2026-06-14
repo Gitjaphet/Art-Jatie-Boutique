@@ -147,8 +147,13 @@ export default function Footer() {
         <div className={styles.container}>
           <div className={styles.bottomFlex}>
             <p className={styles.copyright}>
-              © {new Date().getFullYear()} Art Jatie. Conçu avec passion à
-              Madagascar.
+              © {new Date().getFullYear()} Art Jatie. Conçu avec passion par
+              <a
+                href="mailto:japhetvaleureux@gmail.com"
+                className={styles.authorLink}
+              >
+                {" "}Japhet Valeureux BEZANAKA
+              </a>
             </p>
             <div className={styles.legalLinks}>
               <Link href="/mentions">Mentions Légales</Link>
