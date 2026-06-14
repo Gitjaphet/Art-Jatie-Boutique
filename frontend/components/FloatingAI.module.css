@@ -42,6 +42,7 @@
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
   white-space: nowrap;
   animation: float 3s ease-in-out infinite;
+  z-index: 9996;
 }
 
 .notif::after {
