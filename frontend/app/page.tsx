@@ -29,10 +29,12 @@ const jsonLd = {
   image: "https://www.artjatie.com/images/logo/art_jatie.png",
   telephone: "+261320225170",
   email: "contact@artjatie.com",
+  priceRange: "Ar 15 000 – Ar 150 000",
   address: {
     "@type": "PostalAddress",
     streetAddress: "Seganinga",
     addressLocality: "Nosy Be",
+    postalCode: "207",
     addressCountry: "MG",
   },
   openingHoursSpecification: [
