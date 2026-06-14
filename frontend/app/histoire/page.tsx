@@ -3,21 +3,21 @@ import HistoirePage from "./HistoirePage";
 
 // Définition des métadonnées pour un SEO optimal
 export const metadata: Metadata = {
-  title: "Notre Histoire & Savoir-Faire | Art Jatie",
+  title: "Notre Histoire | Art Jatie — Crochet Artisanal Nosy Be, Madagascar",
   description:
-    "Découvrez l'histoire d'Art Jatie, une marque née d'une passion pour le crochet et l'artisanat malgache. Des créations faites main, authentiques et durables.",
+    "Découvrez l'histoire d'Art Jatie, née à Nosy Be, Madagascar. Créations crochet faites main par nos artisanes malgaches. Tenues, sacs et maillots uniques depuis 2023.",
   openGraph: {
-    title: "L'Histoire d'Art Jatie | Artisanat Malgache",
+    title: "L'Histoire d'Art Jatie | Crochet Artisanal Nosy Be",
     description:
-      "Chaque maille raconte une histoire. Plongez dans les valeurs, le processus de création et l'univers de notre fondatrice BEVAO Noeline Jennita.",
-    url: "https://artjatie.com/histoire",
+      "Chaque maille raconte une histoire. L'univers d'Art Jatie, atelier de crochet à Seganinga, Nosy Be — fondé par BEVAO Noeline Jennita.",
+    url: "https://www.artjatie.com/histoire",
     siteName: "Art Jatie Boutique",
     images: [
       {
-        url: "/images/hero/art-jatie-plage.png", // Image mise en avant lors du partage sur les réseaux
+        url: "/images/hero/art-jatie-plage.png",
         width: 1200,
         height: 630,
-        alt: "Collection Art Jatie",
+        alt: "Art Jatie — Atelier de crochet artisanal à Nosy Be, Madagascar",
       },
     ],
     type: "website",

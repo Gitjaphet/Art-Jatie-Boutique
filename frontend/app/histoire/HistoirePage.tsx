@@ -134,7 +134,7 @@ export default function HistoirePage() {
               fill
               className={styles.histoireImage}
             />
-            <div className={styles.histoireBadge}>Depuis 2020</div>
+            <div className={styles.histoireBadge}>Depuis 2023</div>
           </div>
 
           <div className={styles.histoireTexte}>
@@ -145,23 +145,23 @@ export default function HistoirePage() {
               du fil et du coeur
             </h2>
             <p className={styles.paragraph}>
-              Art Jatie est née en 2026 d&apos;une passion profonde pour
-              l&apos;artisanat malgache et le crochet. Ce qui a commencé comme
-              un hobby dans un petit atelier familial s&apos;est transformé en
-              une marque reconnue pour la qualité et l&apos;authenticité de ses
-              créations.
+              Art Jatie est née en 2023 à Lazaret CUR Belle Rose, Diego-Suarez, d'une passion profonde
+              pour l'artisanat malgache et le crochet. Ce qui a commencé comme un hobby
+              dans un petit atelier familial s'est transformé en une marque reconnue à
+              Madagascar pour la qualité et l'authenticité de ses créations.
             </p>
             <p className={styles.paragraph}>
-              Inspirée par la richesse culturelle de Madagascar et les tendances
-              de la mode internationale, Art Jatie crée des pièces uniques qui
-              allient tradition et modernité. Chaque création est le fruit de
-              longues heures de travail manuel, de passion et d&apos;un
-              savoir-faire transmis avec fierté.
+              Inspirée par la richesse culturelle de Madagascar et les tendances de la mode
+              internationale, Art Jatie crée des pièces uniques qui allient tradition et modernité.
+              Chaque tenue, sac ou maillot de bain en crochet est le fruit de longues heures
+              de travail manuel, tissé à la main avec des fils soigneusement sélectionnés.
             </p>
             <p className={styles.paragraph}>
-              Aujourd&apos;hui, Art Jatie habille des femmes, des hommes et des
-              enfants à Madagascar et à travers le monde, portant haut les
-              couleurs de l&apos;artisanat malgache.
+              En 2025, l'atelier a posé ses valises à Seganinga, Nosy Be, pour se rapprocher
+              d'une clientèle internationale et s'épanouir dans l'écrin naturel de l'île aux
+              parfums. Aujourd'hui, Art Jatie habille des femmes, des hommes et des enfants
+              à travers toute Madagascar et à l'international — portant haut les couleurs
+              du savoir-faire artisanal malgache.
             </p>
           </div>
         </div>
