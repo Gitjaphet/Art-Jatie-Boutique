@@ -148,14 +148,14 @@ export default function ContactPage() {
           </p>
 
           <div className={styles.contactBlocks}>
-            <a href="mailto:contact@artjatie.mg" className={styles.contactBlock}>
+            <a href="mailto:contact@artjatie.com" className={styles.contactBlock}>
                 <div className={styles.contactBlockBg} aria-hidden="true" />
                 <div className={styles.contactIcon}>
                 <IconMail className={styles.contactIconSvg} />
                 </div>
                 <div className={styles.contactInfo}>
                 <span className={styles.contactLabel}>Email</span>
-                <span className={styles.contactValue}>contact@artjatie.mg</span>
+                <span className={styles.contactValue}>contact@artjatie.com</span>
                 </div>
             </a>
 
@@ -481,7 +481,7 @@ export default function ContactPage() {
             Madagascar
             <br />
             <br />
-            contact@artjatie.mg
+            contact@artjatie.com
             <br />
             +261 34 30 513 60
           </p>
