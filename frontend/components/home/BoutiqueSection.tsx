@@ -118,7 +118,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
           <div className={styles.productImageWrapper}>
             <Image
               src={product.image}
-              alt={product.name}
+              alt={`${product.name} — crochet artisanal Art Jatie`}
               className={styles.mainProductImg}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
