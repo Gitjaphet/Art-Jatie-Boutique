@@ -103,7 +103,7 @@ export default function CommandeClient({
     return result;
   }, [filters, initialProducts]);
 
-  const visibleProducts = products.slice(0, visibleCount);
+
 
   return (
     <main className={styles.pageMain}>
@@ -140,7 +140,7 @@ export default function CommandeClient({
           <section className={styles.content}>
             <div className={styles.topToolbar}>
               <span className={styles.resultsCount}>
-                {`Affichage de 1–${visibleProducts.length} sur ${products.length} résultats`}
+                {`Affichage de 1–${Math.min(visibleCount, products.length)} sur ${products.length} résultats`}
               </span>
               <div className={styles.toolbarRight}>
                 <select
@@ -184,18 +184,24 @@ export default function CommandeClient({
                 filters.view === "list" ? styles.listView : styles.grid
               }
             >
-              {visibleProducts.length === 0 ? (
+              // On rend TOUS les produits filtrés dans le DOM (SEO),
+              // et on masque visuellement ceux au-delà de visibleCount via CSS
+              {products.length === 0 ? (
                 <p className={styles.noResults}>
                   Aucun produit ne correspond à vos filtres.
                 </p>
               ) : (
-                visibleProducts.map((product) => (
-                  <ProductCard
+                products.map((product, index) => (
+                  <div
                     key={product.id}
-                    product={product}
-                    listView={filters.view === "list"}
-                    commandeMode={true}
-                  />
+                    className={index >= visibleCount ? styles.hiddenProduct : undefined}
+                  >
+                    <ProductCard
+                      product={product}
+                      listView={filters.view === "list"}
+                      commandeMode={true}
+                    />
+                  </div>
                 ))
               )}
             </div>

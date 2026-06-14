@@ -20,6 +20,10 @@
   margin-bottom: 30px;
 }
 
+.hiddenProduct {
+  display: none;
+}
+
 .breadcrumbs a {
   color: #999;
   text-decoration: none;
