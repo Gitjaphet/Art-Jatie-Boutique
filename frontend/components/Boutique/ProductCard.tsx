@@ -108,9 +108,9 @@ const handleAddToCart = (e: React.MouseEvent) => {
       >
         {/* Image */}
         <Link 
-          href={`/produit/${product.slug}${commandeMode ? "?mode=sur-mesure" : ""}`} 
-          className={styles.imageWrapper}
-        >
+            href={`/produit/${product.slug}`} 
+            className={styles.imageWrapper}
+          >
           <Image
             src={product.image}
             alt={product.name}
