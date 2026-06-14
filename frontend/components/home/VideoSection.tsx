@@ -316,11 +316,12 @@ export default function VideoSection() {
 
                 <video
                   ref={videoRef}
-                  src="/videos/hero/coulisses.mp4"
+                  src={isVisible ? "/videos/hero/coulisses.mp4" : undefined}
                   autoPlay
                   loop
                   muted={isMuted}
                   playsInline
+                  preload="none"
                   className={styles.video}
                 />
 
