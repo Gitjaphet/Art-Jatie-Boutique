@@ -13,7 +13,7 @@ const HERO_IMAGES = [
   {
     src: "/images/hero/crochet-sac-madame.jpeg",
     label: "Sac Madame",
-    price: "85 000 Ar",
+    price: "25 000 Ar",
     pos: { top: "15%", left: "55%" },
     size: { w: 200, h: 260 },
     delay: 0,
@@ -22,7 +22,7 @@ const HERO_IMAGES = [
   {
     src: "/images/hero/crochet-vetement-efant.jpeg",
     label: "Robe Enfant Fuchsia",
-    price: "42 000 Ar",
+    price: "25 000 Ar",
     pos: { top: "12%", right: "8%" },
     size: { w: 160, h: 210 },
     delay: 0.15,
@@ -31,7 +31,7 @@ const HERO_IMAGES = [
   {
     src: "/images/hero/crochet-tenue-plage.jpeg",
     label: "Ensemble Tournesol",
-    price: "68 000 Ar",
+    price: "40 000 Ar",
     pos: { bottom: "18%", left: "53%" },
     size: { w: 180, h: 235 },
     delay: 0.3,
@@ -40,7 +40,7 @@ const HERO_IMAGES = [
   {
     src: "/images/hero/crochet-vetement-plage.jpeg",
     label: "Top & Short Émeraude",
-    price: "38 000 Ar",
+    price: "40 000 Ar",
     pos: { bottom: "10%", right: "10%" },
     size: { w: 150, h: 190 },
     delay: 0.45,
