@@ -11,7 +11,7 @@ def mock_exchange_rate():
     with patch("ai.data.stats.get_exchange_rate", return_value=4500.0):
         yield
 
-# ── Fixture base de données IA ─────────────────────────────────────────────
+# ── Fixture base de données IA k─────────────────────────────────────────────
 
 @pytest.fixture(name="ai_session")
 def ai_session_fixture(ai_engine):
