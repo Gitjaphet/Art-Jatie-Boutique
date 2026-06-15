@@ -9,7 +9,7 @@ python-dotenv
 httpx2
 gunicorn
 bcrypt
-prometheus-fastapi-instrumentator
+prometheus-fastapi-instrumentator==6.1.0
 langchain
 langchain-core
 boto3
