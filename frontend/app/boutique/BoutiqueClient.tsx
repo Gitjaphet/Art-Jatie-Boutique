@@ -206,7 +206,7 @@ export default function BoutiqueClient({
                     <ProductCard
                       product={product}
                       listView={filters.view === "list"}
-                      commandeMode={true}
+                      
                     />
                   </div>
                 ))
