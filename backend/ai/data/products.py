@@ -67,6 +67,7 @@ def get_products(
                 "badge": p.badge,
                 "sur_commande": p.on_order,
                 "description": p.description or "",
+                "image": p.image or "",
             }
             for p in produits
         ]
@@ -147,6 +148,7 @@ def recherche_semantique(texte: str, top_k: int = 5) -> list[dict]:
             "badge": p.badge,
             "sur_commande": p.on_order,
             "description": p.description or "",
+            "image": p.image or "",
             "score_semantique": scores.get(p.id, 0),
         }
         for p in produits

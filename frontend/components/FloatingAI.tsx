@@ -108,7 +108,14 @@ export default function FloatingAI() {
         {messages.map((m, i) => (
           <div key={i} className={m.from === "bot" ? styles.botRow : styles.userRow}>
             {m.from === "bot" && <div className={styles.avatarSmall}>J</div>}
-            <div className={m.from === "bot" ? styles.bot : styles.user}>{m.text}</div>
+            <div className={m.from === "bot" ? styles.bot : styles.user}>
+              {m.from === "bot" ? (
+                <span dangerouslySetInnerHTML={{ __html: m.text.replace(
+                  / (https?:\/\/\S+)/g,
+                  '<img src="$1" alt="produit" style="width:100%;border-radius:8px;margin-top:6px;" />'
+                )}} />
+              ) : m.text}
+            </div>
             {m.from === "user" && <div className={styles.avatarSmallUser}>C</div>}
           </div>
         ))}
