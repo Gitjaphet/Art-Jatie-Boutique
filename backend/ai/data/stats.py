@@ -36,7 +36,7 @@ def get_stats(operation: str, filtre_categorie: str = "", filtre_genre: str = ""
                 if cat not in cats:
                     cats[cat] = {"en_stock": [], "sur_commande": []}
                 if p.stock_quantity > 0:
-                    cats[cat]["en_stock"].append(p.name)
+                    cats[cat]["en_stock"].append({"nom": p.name, "stock": p.stock_quantity})
                 elif p.on_order:
                     cats[cat]["sur_commande"].append(p.name)
             total_stock = sum(len(v["en_stock"]) for v in cats.values())
