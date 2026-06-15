@@ -34,11 +34,20 @@ def get_stats(operation: str, filtre_categorie: str = "", filtre_genre: str = ""
             for p in produits:
                 cat = p.category or "Autre"
                 if cat not in cats:
-                    cats[cat] = {"count": 0, "produits": []}
-                cats[cat]["count"] += 1
-                cats[cat]["produits"].append(p.name)
-            total = len(produits)
-            return {"resultat": cats, "total": total, "label": "Variétés par catégorie", "exchange_rate": exchange_rate}
+                    cats[cat] = {"en_stock": [], "sur_commande": []}
+                if p.stock_quantity > 0:
+                    cats[cat]["en_stock"].append(p.name)
+                elif p.on_order:
+                    cats[cat]["sur_commande"].append(p.name)
+            total_stock = sum(len(v["en_stock"]) for v in cats.values())
+            total_commande = sum(len(v["sur_commande"]) for v in cats.values())
+            return {
+                "resultat": cats,
+                "total_en_stock": total_stock,
+                "total_sur_commande": total_commande,
+                "label": "Variétés par catégorie",
+                "exchange_rate": exchange_rate
+            }
         if operation == "valeur_stock":
             val = sum(p.price_ar * p.stock_quantity for p in produits)
             return {"resultat": avec_euro(val), "label": "Valeur totale du stock"}

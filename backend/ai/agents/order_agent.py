@@ -12,7 +12,7 @@ _GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 _FALLBACK = "Désolé, notre système de commande rencontre une petite perturbation technique."
 
 
-def llm4_commande(token_log: list, message: str, historique_commande: dict, commande_result: dict = None) -> str:
+def llm4_commande(token_log: list, message: str, historique_commande: dict, commande_result: dict = None, history: list = None) -> str:
     t0 = time.time()
     if commande_result:
         prompt = ORDER_CONFIRM.format(
@@ -20,9 +20,17 @@ def llm4_commande(token_log: list, message: str, historique_commande: dict, comm
         )
     else:
         champs_manquants = [k for k, v in historique_commande.items() if not v]
+        historique_conversation = ""
+        if history:
+            historique_conversation = "\n".join([
+                f"{m['role'].upper()}: {m['content']}"
+                for m in history[-6:]
+                if m.get("content", "").strip()
+            ])
         prompt = ORDER_COLLECT.format(
             historique=json.dumps(historique_commande, ensure_ascii=False),
             champs_manquants=champs_manquants,
+            historique_conversation=historique_conversation,
         )
     headers = {
         "Authorization": f"Bearer {os.getenv('GROQ_API_KEY')}",

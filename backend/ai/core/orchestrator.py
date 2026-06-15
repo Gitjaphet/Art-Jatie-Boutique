@@ -158,7 +158,7 @@ def run_multi_agent(
             if commande_result.get("succes"):
                 historique_commande = None
         else:
-            reponse = llm4_commande(token_log, message, historique_commande)
+            reponse = llm4_commande(token_log, message, historique_commande, history=history)
 
     # ── FAQ ───────────────────────────────────────────────────────────
     elif intent == "faq":
