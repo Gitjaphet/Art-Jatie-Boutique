@@ -19,3 +19,5 @@ pytest
 pytest-asyncio
 tenacity>=9.0.0
 python-json-logger>=2.0.7
+fastapi==0.111.0
+starlette==0.37.2
