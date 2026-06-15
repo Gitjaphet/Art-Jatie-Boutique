@@ -82,7 +82,7 @@ export default function FloatingAI() {
   if (!isOpen) return (
     <>
       <div className={styles.notif}>
-        Discutez avec Art Jatie ✨
+        Discutez avec votre assistant IA✨
       </div>
       <button className={styles.trigger} onClick={() => setIsOpen(true)}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
