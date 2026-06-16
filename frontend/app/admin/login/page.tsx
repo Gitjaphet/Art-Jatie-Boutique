@@ -13,11 +13,13 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
     useEffect(() => {
-    const script = document.createElement("script");
-    script.src = `https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`;
-    document.body.appendChild(script);
-    return () => { document.body.removeChild(script); };
-  }, []);
+      const script = document.createElement("script");
+      script.src = `https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`;
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
+      return () => { document.body.removeChild(script); };
+    }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,21 +27,30 @@ export default function AdminLoginPage() {
     setError("");
 
     try {
-      const recaptchaToken = await new Promise<string>((resolve) => {
-        (window as any).grecaptcha.ready(() => {
-          (window as any).grecaptcha
-            .execute(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY, { action: "login" })
-            .then(resolve);
-        });
+      const recaptchaToken = await new Promise<string>((resolve, reject) => {
+        const waitForgrecaptcha = (retries = 10) => {
+          if ((window as any).grecaptcha && (window as any).grecaptcha.ready) {
+            (window as any).grecaptcha.ready(() => {
+              (window as any).grecaptcha
+                .execute(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY, { action: "login" })
+                .then(resolve);
+            });
+          } else if (retries > 0) {
+            setTimeout(() => waitForgrecaptcha(retries - 1), 300);
+          } else {
+            reject(new Error("reCAPTCHA non chargé"));
+          }
+        };
+        waitForgrecaptcha();
       });
 
+      // Utilise l'URL de Render définie dans Vercel, sinon se rabat sur localhost
       const formData = new URLSearchParams();
       formData.append("username", email);
       formData.append("password", password);
       formData.append("recaptcha_token", recaptchaToken);
 
-      // Utilise l'URL de Render définie dans Vercel, sinon se rabat sur localhost
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.artjatie.com";
 
       const res = await fetch(`${apiUrl}/auth/login`, {
         method: "POST",
