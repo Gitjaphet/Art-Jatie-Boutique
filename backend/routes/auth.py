@@ -9,7 +9,6 @@ from core.auth import verify_password, create_access_token
 from core.limiter import limiter
 
 router = APIRouter()
-
 async def verify_recaptcha(token: str) -> bool:
     async with httpx.AsyncClient() as client:
         res = await client.post(
@@ -17,6 +16,8 @@ async def verify_recaptcha(token: str) -> bool:
             data={"secret": os.getenv("RECAPTCHA_SECRET_KEY"), "response": token},
         )
         result = res.json()
+        import logging
+        logging.getLogger("recaptcha").info(f"reCAPTCHA result: {result}")
         return result.get("success") and result.get("score", 0) >= 0.1
 
 @router.post("/login")
