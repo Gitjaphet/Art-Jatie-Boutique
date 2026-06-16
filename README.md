@@ -31,7 +31,7 @@
 
 | Couche | Technologie |
 |---|---|
-| Frontend | Next.js · TypeScript · Tailwind CSS |
+| Frontend | Next.js · TypeScript · CSS Module |
 | Backend | FastAPI · Python |
 | Base de données | PostgreSQL + pgvector |
 | IA | Multi-agent LLM · Embeddings Jina v3 |
