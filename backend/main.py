@@ -6,7 +6,9 @@ from contextlib import asynccontextmanager
 from ai.core.logging_config import setup_logging
 import os
 import httpx
-
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from core.limiter import limiter
 from database import create_db_and_tables
 from routes import products, settings, auth, users, orders, mvola, colors, clients, agent
 
@@ -32,6 +34,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 Instrumentator().instrument(app).expose(app)
 
 # 2. On configure les Middlewares
@@ -54,7 +59,7 @@ app.add_middleware(
 # 3. Les routes globales
 @app.get("/")
 def home():
-    return {"message": "L'API Art Jatie est en ligne ! 🇲🇬"}
+    return {"message": "L'API Art Jatie est en ligne ! "}
 
 
 @app.get("/health")
@@ -62,7 +67,7 @@ def health():
     return {"status": "ok"}
 
 
-# 📥 Nouvelle route de téléchargement forcé via Flux de données (Streaming)
+# Nouvelle route de téléchargement forcé via Flux de données (Streaming)
 @app.get("/download-image")
 async def download_image_endpoint(url: str = Query(..., description="URL complète de l'image")):
     try:

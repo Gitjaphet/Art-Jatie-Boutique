@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/panier", "/api/"],
+      disallow: ["/panier", "/api/", "/admin/"],
     },
     sitemap: "https://www.artjatie.com/sitemap.xml",
   };

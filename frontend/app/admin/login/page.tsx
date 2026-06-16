@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import styles from "./login.module.css";
@@ -12,6 +12,12 @@ export default function AdminLoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+    useEffect(() => {
+    const script = document.createElement("script");
+    script.src = `https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`;
+    document.body.appendChild(script);
+    return () => { document.body.removeChild(script); };
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,9 +25,18 @@ export default function AdminLoginPage() {
     setError("");
 
     try {
+      const recaptchaToken = await new Promise<string>((resolve) => {
+        (window as any).grecaptcha.ready(() => {
+          (window as any).grecaptcha
+            .execute(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY, { action: "login" })
+            .then(resolve);
+        });
+      });
+
       const formData = new URLSearchParams();
       formData.append("username", email);
       formData.append("password", password);
+      formData.append("recaptcha_token", recaptchaToken);
 
       // Utilise l'URL de Render définie dans Vercel, sinon se rabat sur localhost
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";

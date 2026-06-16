@@ -1,11 +1,20 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlmodel import Session, select
 from pydantic import BaseModel
 from models.models import User
 from database import get_session
-from core.auth import get_password_hash
+from core.auth import get_password_hash, decode_access_token
 
 router = APIRouter()
+
+def get_current_admin(authorization: str = Header(None), session: Session = Depends(get_session)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Non authentifié.")
+    token = authorization.split(" ")[1]
+    payload = decode_access_token(token)
+    if not payload or not payload.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Accès refusé.")
+    return payload
 
 class CreateUserRequest(BaseModel):
     email: str
@@ -16,12 +25,12 @@ class ChangePasswordRequest(BaseModel):
     new_password: str
 
 @router.get("/")
-def get_users(session: Session = Depends(get_session)):
+def get_users(session: Session = Depends(get_session), admin=Depends(get_current_admin)):
     users = session.exec(select(User)).all()
     return [{"id": u.id, "email": u.email, "is_admin": u.is_admin} for u in users]
 
 @router.post("/")
-def create_user(body: CreateUserRequest, session: Session = Depends(get_session)):
+def create_user(body: CreateUserRequest, session: Session = Depends(get_session), admin=Depends(get_current_admin)):
     existing = session.exec(select(User).where(User.email == body.email)).first()
     if existing:
         raise HTTPException(status_code=400, detail="Cet email est déjà utilisé.")
@@ -35,12 +44,12 @@ def create_user(body: CreateUserRequest, session: Session = Depends(get_session)
     session.refresh(new_user)
     return {"id": new_user.id, "email": new_user.email, "is_admin": new_user.is_admin}
 
-# ✅ NOUVEAU : Changer le mot de passe
 @router.patch("/{user_id}/password")
 def change_password(
     user_id: int,
     body: ChangePasswordRequest,
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    admin=Depends(get_current_admin)
 ):
     user = session.get(User, user_id)
     if not user:
@@ -53,7 +62,7 @@ def change_password(
     return {"message": "Mot de passe modifié avec succès."}
 
 @router.delete("/{user_id}")
-def delete_user(user_id: int, session: Session = Depends(get_session)):
+def delete_user(user_id: int, session: Session = Depends(get_session), admin=Depends(get_current_admin)):
     user = session.get(User, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur introuvable.")
