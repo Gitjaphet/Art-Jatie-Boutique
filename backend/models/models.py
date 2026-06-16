@@ -2,7 +2,7 @@ from sqlmodel import SQLModel, Field, Relationship
 from typing import List, Optional
 from datetime import datetime
 
-# --- CONFIGURATION (Taux de change) ---
+# --- CONFIGURATION (Taux de changes) ---
 class Settings(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     exchange_rate_eur: float = Field(default=4500.0)
