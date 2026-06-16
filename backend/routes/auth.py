@@ -17,7 +17,7 @@ async def verify_recaptcha(token: str) -> bool:
             data={"secret": os.getenv("RECAPTCHA_SECRET_KEY"), "response": token},
         )
         result = res.json()
-        return result.get("success") and result.get("score", 0) >= 0.5
+        return result.get("success") and result.get("score", 0) >= 0.1
 
 @router.post("/login")
 @limiter.limit("5/minute")
