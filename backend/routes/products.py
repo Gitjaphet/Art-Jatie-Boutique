@@ -6,6 +6,8 @@ from models.models import Product, Settings, Color, ProductColorLink, Review, Re
 from database import get_session
 from sqlalchemy import func
 from core.auth import get_current_admin
+import httpx
+import os
 import re
 from utils.r2 import upload_image_to_r2
 from ai.utils.vectorisation import vectoriser_produit
@@ -376,6 +378,18 @@ def _vectoriser_safe(product: Product) -> None:
 # ROUTES AVIS CLIENTS (Reviews)
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _trigger_revalidate(path: str) -> None:
+    """Demande à Next.js de régénérer immédiatement une page (ISR à la demande)."""
+    try:
+        revalidate_url = os.getenv("FRONTEND_REVALIDATE_URL")
+        secret = os.getenv("REVALIDATE_SECRET")
+        if not revalidate_url or not secret:
+            return
+        httpx.post(revalidate_url, json={"path": path, "secret": secret}, timeout=5.0)
+    except Exception as e:
+        print(f"[revalidate] Échec de la revalidation pour {path}: {e}")
+
+
 @router.post("/{product_id}/reviews", status_code=201)
 def create_review(product_id: int, payload: ReviewCreate, session: Session = Depends(get_session)):
     product = session.get(Product, product_id)
@@ -457,6 +471,11 @@ def approve_review(
     review.is_approved = True
     session.add(review)
     session.commit()
+
+    product = session.get(Product, review.product_id)
+    if product and product.slug:
+        _trigger_revalidate(f"/produit/{product.slug}")
+
     return {"message": "Avis approuvé"}
 
 
@@ -469,6 +488,14 @@ def delete_review(
     review = session.get(Review, review_id)
     if not review:
         raise HTTPException(status_code=404, detail="Avis introuvable")
+
+    was_approved = review.is_approved
+    product = session.get(Product, review.product_id)
+
     session.delete(review)
     session.commit()
+
+    if was_approved and product and product.slug:
+        _trigger_revalidate(f"/produit/{product.slug}")
+
     return {"message": "Avis supprimé"}
