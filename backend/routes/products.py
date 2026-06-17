@@ -385,7 +385,7 @@ def _trigger_revalidate(path: str) -> None:
         secret = os.getenv("REVALIDATE_SECRET")
         if not revalidate_url or not secret:
             return
-        httpx.post(revalidate_url, json={"path": path, "secret": secret}, timeout=5.0)
+        httpx.post(revalidate_url, json={"path": path, "secret": secret}, timeout=5.0, follow_redirects=True)
     except Exception as e:
         print(f"[revalidate] Échec de la revalidation pour {path}: {e}")
 
