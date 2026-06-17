@@ -293,7 +293,7 @@ export default function ReviewsSection({
         </div>
       )}
 
-      {/* Success message */}
+      {/* Success messages */}
       {submitted && (
         <div style={{
           background: "rgba(22, 163, 74, 0.07)",
