@@ -1,16 +1,6 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: false, // false pour 587 (STARTTLS)
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
-
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -19,6 +9,16 @@ export async function POST(request: Request) {
     if (!prenom || !nom || !email || !sujet || !message) {
       return NextResponse.json({ error: "Champs manquants" }, { status: 400 });
     }
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT),
+      secure: Number(process.env.SMTP_PORT) === 465,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
 
     const sujetLabels: Record<string, string> = {
       commande: "Commande sur mesure",
