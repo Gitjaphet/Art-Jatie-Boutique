@@ -526,7 +526,7 @@ export default function AdminDashboard() {
         </div>
       </aside>
 
-      {/* ── MAIN ── */}
+      {/* ── MAINS ── */}
       <main className={styles.main}>
         <header className={styles.topbar}>
           <h1 className={styles.pageTitle}>{TITLES[activeTab]}</h1>
