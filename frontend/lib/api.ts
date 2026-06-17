@@ -143,3 +143,83 @@ export async function chatWithJatie(
   if (!res.ok) throw new Error("Erreur agent IA");
   return res.json();
 }
+
+
+// --- AVIS CLIENTS (Reviews) ---
+export interface ProductReview {
+  id: number;
+  author_name: string;
+  rating: number;
+  title?: string | null;
+  comment: string;
+  created_at: string;
+}
+
+export interface ReviewAggregate {
+  average_rating: number;
+  review_count: number;
+}
+
+export async function getProductReviews(productId: number): Promise<ProductReview[]> {
+  const res = await fetch(`${API_URL}/products/${productId}/reviews`, {
+    next: { revalidate: 1800 },
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function getProductReviewAggregate(productId: number): Promise<ReviewAggregate | null> {
+  const res = await fetch(`${API_URL}/products/${productId}/reviews/aggregate`, {
+    next: { revalidate: 1800 },
+  });
+  if (!res.ok) return null;
+  const data: ReviewAggregate = await res.json();
+  return data.review_count > 0 ? data : null;
+}
+
+export async function submitProductReview(
+  productId: number,
+  payload: { author_name: string; rating: number; title?: string; comment: string }
+) {
+  const res = await fetch(`${API_URL}/products/${productId}/reviews`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error("Échec de l'envoi de l'avis");
+  return res.json();
+}
+
+
+// --- ADMIN — Modération des avis (token requis) ---
+function getAdminToken(): string {
+  const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
+  if (!token) throw new Error("Non authentifié");
+  return token;
+}
+
+export async function getPendingReviews(): Promise<any[]> {
+  const res = await fetch(`${API_URL}/products/admin/reviews/pending`, {
+    headers: { Authorization: `Bearer ${getAdminToken()}` },
+  });
+  if (!res.ok) throw new Error("Accès refusé ou erreur serveur");
+  return res.json();
+}
+
+export async function approveReview(reviewId: number) {
+  const res = await fetch(`${API_URL}/products/admin/reviews/${reviewId}/approve`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${getAdminToken()}` },
+  });
+  if (!res.ok) throw new Error("Échec de l'approbation");
+  return res.json();
+}
+
+export async function deleteReview(reviewId: number) {
+  const res = await fetch(`${API_URL}/products/admin/reviews/${reviewId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${getAdminToken()}` },
+  });
+  if (!res.ok) throw new Error("Échec de la suppression");
+  return res.json();
+}

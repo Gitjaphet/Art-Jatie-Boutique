@@ -15,6 +15,7 @@ import OrdersTab from "@/components/dashboard/OrdersTab";
 import CartOrdersTab from "@/components/dashboard/CartOrdersTab";
 import ClientsTab from "../../../components/dashboard/ClientsTab";
 import PosHistoryTab from "../../../components/dashboard/PosHistoryTab";
+import ReviewsTab from "../../../components/dashboard/ReviewsTab";
 
 type SettingsData = {
   exchange_rate_eur?: string | number;
@@ -198,6 +199,11 @@ const I = {
       <path d="M12 17V7" />
     </svg>
   ),
+  Star: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  ),
 
 };
 
@@ -250,6 +256,7 @@ type Tab =
   | "cart_orders"
   | "pos_history"
   | "clients"
+  | "reviews"
   | "users"
   | "settings";
 
@@ -275,6 +282,7 @@ const TABS: {
     Icon: I.Calendar,
   },
   { id: "clients", label: "Base Clients", shortLabel: "Clients", Icon: I.ContactBook },
+  { id: "reviews", label: "Avis clients", shortLabel: "Avis", Icon: I.Star },
   { id: "users", label: "Utilisateurs", shortLabel: "Users", Icon: I.Users },
   {
     id: "orders",
@@ -298,6 +306,7 @@ const TITLES: Record<Tab, string> = {
   products: "Gestion du catalogue",
   planning: "Planning des commandes",
   clients: "CRM - Base Clients",
+  reviews: "Modération des avis clients",
   users: "Gestion des utilisateurs",
   orders: "Commandes sur mesure",
   cart_orders: "Commandes panier",
@@ -570,6 +579,7 @@ export default function AdminDashboard() {
           {activeTab === "orders" && <OrdersTab toast={toast} />}
           {activeTab === "cart_orders" && <CartOrdersTab toast={toast} />}
           {activeTab === "clients" && <ClientsTab toast={toast} />}
+          {activeTab === "reviews" && <ReviewsTab toast={toast} products={products} />}
                     {activeTab === "settings" && (
             <SettingsTab
               initialSettings={settings}

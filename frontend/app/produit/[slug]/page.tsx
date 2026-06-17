@@ -1,4 +1,4 @@
-import { getProductBySlug, getProducts } from "@/lib/api";
+import { getProductBySlug, getProducts, getProductReviews, getProductReviewAggregate } from "@/lib/api";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Suspense } from "react";
@@ -68,6 +68,11 @@ export default async function ProductPage({
     );
   }
 
+   const [reviews, aggregate] = await Promise.all([
+    getProductReviews(product.id),
+    getProductReviewAggregate(product.id),
+  ]);
+
   // Schema.org Product
   const jsonLd = {
   "@context": "https://schema.org",
@@ -135,6 +140,30 @@ export default async function ProductPage({
   },
 };
 
+  if (aggregate) {
+    (jsonLd as any).aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: aggregate.average_rating,
+      reviewCount: aggregate.review_count,
+    };
+  }
+
+  if (reviews.length > 0) {
+    (jsonLd as any).review = reviews.slice(0, 10).map((r) => ({
+      "@type": "Review",
+      author: { "@type": "Person", name: r.author_name },
+      datePublished: r.created_at.split("T")[0],
+      reviewRating: {
+        "@type": "Rating",
+        ratingValue: r.rating,
+        bestRating: 5,
+        worstRating: 1,
+      },
+      reviewBody: r.comment,
+      ...(r.title ? { name: r.title } : {}),
+    }));
+  }
+
   return (
     <>
       {/* Schema.org injecté dans le <head> */}
@@ -143,7 +172,7 @@ export default async function ProductPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Suspense fallback={null}>
-        <ProductDetailWrapper product={product} />
+        <ProductDetailWrapper product={product} reviews={reviews} aggregate={aggregate} />
       </Suspense>
     </>
   );

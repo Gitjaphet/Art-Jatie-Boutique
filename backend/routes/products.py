@@ -2,8 +2,10 @@ from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, B
 from sqlmodel import Session, select
 from typing import List, Optional
 import json
-from models.models import Product, Settings, Color, ProductColorLink
+from models.models import Product, Settings, Color, ProductColorLink, Review, ReviewCreate
 from database import get_session
+from sqlalchemy import func
+from core.auth import get_current_admin
 import re
 from utils.r2 import upload_image_to_r2
 from ai.utils.vectorisation import vectoriser_produit
@@ -369,3 +371,104 @@ def _vectoriser_safe(product: Product) -> None:
     except Exception as e:
         # Log uniquement — l'erreur n'est pas remontée au client
         print(f"[vectorisation] ⚠ Échec embedding produit #{product.id} ({product.name}): {e}")
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ROUTES AVIS CLIENTS (Reviews)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.post("/{product_id}/reviews", status_code=201)
+def create_review(product_id: int, payload: ReviewCreate, session: Session = Depends(get_session)):
+    product = session.get(Product, product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Produit introuvable")
+
+    if not (1 <= payload.rating <= 5):
+        raise HTTPException(status_code=422, detail="La note doit être comprise entre 1 et 5")
+
+    review = Review(
+        product_id=product_id,
+        author_name=payload.author_name.strip()[:100],
+        author_email=payload.author_email,
+        rating=payload.rating,
+        title=payload.title,
+        comment=payload.comment.strip(),
+        is_approved=False,
+    )
+    session.add(review)
+    session.commit()
+    session.refresh(review)
+    return {"message": "Avis soumis, en attente de modération", "id": review.id}
+
+
+@router.get("/{product_id}/reviews")
+def list_reviews(product_id: int, session: Session = Depends(get_session)):
+    statement = (
+        select(Review)
+        .where(Review.product_id == product_id, Review.is_approved == True)
+        .order_by(Review.created_at.desc())
+    )
+    reviews = session.exec(statement).all()
+    # On ne renvoie jamais author_email publiquement
+    return [
+        {
+            "id": r.id,
+            "author_name": r.author_name,
+            "rating": r.rating,
+            "title": r.title,
+            "comment": r.comment,
+            "created_at": r.created_at,
+        }
+        for r in reviews
+    ]
+
+
+@router.get("/{product_id}/reviews/aggregate")
+def get_review_aggregate(product_id: int, session: Session = Depends(get_session)):
+    statement = select(func.avg(Review.rating), func.count(Review.id)).where(
+        Review.product_id == product_id, Review.is_approved == True
+    )
+    avg_rating, count = session.exec(statement).one()
+    return {
+        "average_rating": round(float(avg_rating), 1) if avg_rating else 0.0,
+        "review_count": count or 0,
+    }
+
+
+# ── ADMIN — protégé par JWT (is_admin requis) ──
+
+@router.get("/admin/reviews/pending")
+def list_pending_reviews(
+    session: Session = Depends(get_session),
+    current_admin: dict = Depends(get_current_admin),
+):
+    statement = select(Review).where(Review.is_approved == False).order_by(Review.created_at.desc())
+    return session.exec(statement).all()
+
+
+@router.patch("/admin/reviews/{review_id}/approve")
+def approve_review(
+    review_id: int,
+    session: Session = Depends(get_session),
+    current_admin: dict = Depends(get_current_admin),
+):
+    review = session.get(Review, review_id)
+    if not review:
+        raise HTTPException(status_code=404, detail="Avis introuvable")
+    review.is_approved = True
+    session.add(review)
+    session.commit()
+    return {"message": "Avis approuvé"}
+
+
+@router.delete("/admin/reviews/{review_id}")
+def delete_review(
+    review_id: int,
+    session: Session = Depends(get_session),
+    current_admin: dict = Depends(get_current_admin),
+):
+    review = session.get(Review, review_id)
+    if not review:
+        raise HTTPException(status_code=404, detail="Avis introuvable")
+    session.delete(review)
+    session.commit()
+    return {"message": "Avis supprimé"}

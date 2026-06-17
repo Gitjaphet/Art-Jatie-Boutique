@@ -15,11 +15,11 @@ export type Product = {
   category: string;
   colors: string;
   price_ar: number;
-  old_price_ar?: number; // ✅ Ajouté
-  description?: string;  // ✅ Ajouté
+  old_price_ar?: number; 
+  description?: string;  
   badge: string;
   image: string;
-  images?: string;       // ✅ Ajouté
+  images?: string;       
   tag?: string;
   sizes?: string;
   stock_quantity?: number;
@@ -141,12 +141,12 @@ const I = {
 };
 
 function Badge({ b }: { b?: string }) {
-  if (!b) return null; // ✅ S'il n'y a pas de badge, on n'affiche rien
+  if (!b) return null; // S'il n'y a pas de badge, on n'affiche rien
 
   const map: Record<string, [string, string, string]> = {
     Nouveau: ["var(--blue)", "var(--blue-dim)", "rgba(37,99,235,0.2)"],
     Derniers: ["var(--red)", "var(--red-dim)", "rgba(220,38,38,0.2)"],
-    Promo: ["#e91e8c", "#fce4f0", "rgba(233,30,140,0.2)"], // ✅ Rose pour Promo
+    Promo: ["#e91e8c", "#fce4f0", "rgba(233,30,140,0.2)"],
   };
   
   const [color, bg, border] = map[b] || ["var(--text-secondary)", "var(--surface2)", "var(--border)"];
@@ -171,7 +171,7 @@ function buildProductFormData(product: Product, newStock: number): FormData {
   fd.append("category", product.category);
   fd.append("price_ar", String(product.price_ar));
   
-  // ✅ On renvoie les nouveaux champs pour ne pas les écraser
+  // On renvoie les nouveaux champs pour ne pas les écraser
   if (product.old_price_ar) fd.append("old_price_ar", String(product.old_price_ar));
   if (product.description) fd.append("description", product.description);
   
@@ -182,7 +182,7 @@ function buildProductFormData(product: Product, newStock: number): FormData {
   fd.append("on_order", String(product.on_order ?? false));
   fd.append("stock_quantity", String(newStock));
 
-  // ✅ TRÈS IMPORTANT : On dit au backend de conserver les images actuelles !
+  // TRÈS IMPORTANT : On dit au backend de conserver les images actuelles !
   const existingImages = product.images || product.image;
   if (existingImages) fd.append("retained_images", existingImages);
 
@@ -207,7 +207,7 @@ function StockCell({
   const stockColor = qty === 0 ? "#ef4444" : qty <= 2 ? "#f97316" : "#16a34a";
   const stockBg = qty === 0 ? "#fff5f5" : qty <= 2 ? "#fff7ed" : "#f0fdf4";
 
-  // ✅ Si l'article est "Sur commande", on affiche juste un label non éditable
+  // Si l'article est "Sur commande", on affiche juste un label non éditable
   if (product.on_order) {
     return (
       <div style={{
@@ -397,7 +397,7 @@ function StockCellMobile({
   const qty = product.stock_quantity ?? 0;
   const stockColor = qty === 0 ? "#ef4444" : qty <= 2 ? "#f97316" : "#16a34a";
 
-  // ✅ Pareil pour le mobile
+  // Pareil pour le mobile
   if (product.on_order) {
     return (
       <div style={{
@@ -419,7 +419,7 @@ function StockCellMobile({
     try {
       const res = await fetch(`${API}/products/${product.id}`, {
         method: "PUT",
-        body: buildProductFormData(product, value), // ✅ FormData complet
+        body: buildProductFormData(product, value), // FormData complet
       });
       if (!res.ok) throw new Error();
       toast("Stock mis à jour.", "success");

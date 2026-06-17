@@ -7,6 +7,7 @@ import { useCartStore } from "@/lib/cart";
 import styles from "./ProductDetail.module.css";
 import CommandeModal from "@/components/Boutique/CommandeModal";
 import { useAuth } from "@/lib/googleAuth";
+import ReviewsSection from "./ReviewsSection";
 
 const COLOR_MAP: Record<string, string> = {
   Beige: "#D4B896", Blanc: "#F5F5F5", Bleu: "#4A90D9",
@@ -308,9 +309,13 @@ function AddToCartSection({
 export default function ProductDetailPage({
   product,
   isSurMesure,
+  reviews = [],
+  aggregate = null,
 }: {
   product: any;
   isSurMesure: boolean;
+  reviews?: any[];
+  aggregate?: { average_rating: number; review_count: number } | null;
 }) {
   const colors = product.colorsArray ?? (product.colors ? product.colors.split(",").map((c: string) => c.trim()) : []);
   const sizes = product.sizesArray ?? (product.sizes ? product.sizes.split(",").map((s: string) => s.trim()) : []);
@@ -478,6 +483,12 @@ export default function ProductDetailPage({
           </div>
         </div>
       </div>
+
+      <ReviewsSection
+        productId={product.id}
+        reviews={reviews}
+        aggregate={aggregate}
+      />
     </div>
   );
 }

@@ -3,6 +3,10 @@ from datetime import datetime, timedelta
 from typing import Optional
 from jose import jwt
 import os
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+security = HTTPBearer()
 
 SECRET_KEY = os.getenv("SECRET_KEY", "une-cle-secrete-super-longue-et-aleatoire")
 ALGORITHM = "HS256"
@@ -31,3 +35,18 @@ def decode_access_token(token: str) -> Optional[dict]:
         return payload
     except Exception:
         return None
+    
+def get_current_admin(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+    """Dépendance FastAPI : vérifie le token JWT et exige is_admin=True."""
+    payload = decode_access_token(credentials.credentials)
+    if not payload:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token invalide ou expiré",
+        )
+    if not payload.get("is_admin"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Accès réservé aux administrateurs",
+        )
+    return payload

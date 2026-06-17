@@ -49,6 +49,28 @@ class Product(SQLModel, table=True):
     stock_quantity: int = Field(default=1)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
+# --- AVIS CLIENTS (Reviews) ---
+class Review(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    product_id: int = Field(foreign_key="product.id", index=True)
+
+    author_name: str
+    author_email: Optional[str] = Field(default=None)  # jamais exposé publiquement
+
+    rating: int  # 1 à 5
+    title: Optional[str] = Field(default=None)
+    comment: str
+
+    is_approved: bool = Field(default=False, index=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class ReviewCreate(SQLModel):
+    author_name: str
+    author_email: Optional[str] = None
+    rating: int
+    title: Optional[str] = None
+    comment: str
 
 # --- UTILISATEURS (Admin) ---
 class User(SQLModel, table=True):
