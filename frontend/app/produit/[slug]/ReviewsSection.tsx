@@ -163,7 +163,7 @@ export default function ReviewsSection({
     <section style={{
       maxWidth: 1300,
       margin: "0 auto",
-      padding: "3.5rem 4rem 5rem",
+      padding: "2rem 1.25rem 3rem",
       borderTop: "1px solid #ede9e3",
       fontFamily: "'Helvetica Neue', sans-serif",
     }}>
