@@ -43,13 +43,11 @@ export default function RootLayout({
         }}
       >
         <GoogleAuthProvider>
-          {!isHome && <Header darkIcons={isLightPage} />}
-
-          <main style={{ paddingTop: !isHome ? "100px" : "0" }}>
-            {children}
-          </main>
-
-          {!isHome && <Footer />}
+          <Header darkIcons={isLightPage} />
+            <main style={{ paddingTop: isHome ? "0" : "100px" }}>
+              {children}
+            </main>
+          <Footer />
           <FloatingAI />
           <FloatingWhatsApp />
         </GoogleAuthProvider>

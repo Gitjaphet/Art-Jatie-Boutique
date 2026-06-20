@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import Hero from "@/components/home/Hero";
 import StatsBar from "@/components/home/StatsBar";
 import BubbleGrid from "@/components/home/BubbleGrid";
@@ -122,7 +120,7 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Header />
+     
       <main>
         <Hero />
         <StatsBar />
@@ -132,7 +130,7 @@ export default async function HomePage() {
         <BoutiqueSection products={boutiqueProducts} />
         <Testimonials />
       </main>
-      <Footer />
+      
     </>
   );
 }
