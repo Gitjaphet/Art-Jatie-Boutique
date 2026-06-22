@@ -8,6 +8,7 @@ import styles from "./ProductDetail.module.css";
 import CommandeModal from "@/components/Boutique/CommandeModal";
 import { useAuth } from "@/lib/googleAuth";
 import ReviewsSection from "./ReviewsSection";
+import ProductCarousel from "./ProductCarousel";
 
 const COLOR_MAP: Record<string, string> = {
   Beige: "#D4B896", Blanc: "#F5F5F5", Bleu: "#4A90D9",
@@ -483,6 +484,8 @@ export default function ProductDetailPage({
           </div>
         </div>
       </div>
+
+      <ProductCarousel currentSlug={product.slug} />
 
       <ReviewsSection
         productId={product.id}
