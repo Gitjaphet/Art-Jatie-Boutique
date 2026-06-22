@@ -59,12 +59,15 @@ export default function ProductCarousel({ currentSlug }: { currentSlug: string }
   }, []);
 
   const isHovered = useRef(false);
+  const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-  if (!loaded || products.length === 0) return;
-  if (!isHovered.current) startAutoplay(products.length);
-  return () => stopAutoplay();
-}, [loaded, products.length, startAutoplay, stopAutoplay]);
+    if (!loaded || products.length === 0) return;
+    // Vérifier si la souris est déjà dans la section au moment du chargement
+    isHovered.current = false;
+    startAutoplay(products.length);
+    return () => stopAutoplay();
+  }, [loaded, products.length, startAutoplay, stopAutoplay]);
 
   // Style 3D pour chaque card
   const getCardStyle = (index: number): React.CSSProperties => {
@@ -106,6 +109,7 @@ export default function ProductCarousel({ currentSlug }: { currentSlug: string }
 
   return (
     <section
+      ref={sectionRef}
       className={styles.section}
       aria-label="Vous aimerez aussi"
       onMouseEnter={() => {
