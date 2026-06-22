@@ -154,7 +154,7 @@ export default function Hero() {
           }}
         >
           <p className={styles.statEyebrow}>Clientes satisfaites</p>
-          <p className={styles.statValue}>500+ ★ 4.9</p>
+          <p className={styles.statValue}>100+ ★ 4.9</p>
         </div>
       </div>
 
