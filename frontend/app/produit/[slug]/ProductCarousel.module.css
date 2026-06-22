@@ -1,7 +1,7 @@
 /* ── Section ─────────────────────────────────────────────────────────────── */
 .section {
   width: 100%;
-  padding: 64px 0 56px;
+  padding: 56px 0 48px;
   border-top: 1px solid #e8e0d8;
 }
 
@@ -10,7 +10,7 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  padding: 0 32px 28px;
+  padding: 0 32px 24px;
 }
 
 .headerLeft {
@@ -42,10 +42,10 @@
 }
 
 .arrow {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border: 1px solid #d5ccc4;
-  background: transparent;
+  background: #fff;
   color: #1a1a1a;
   cursor: pointer;
   display: flex;
@@ -87,7 +87,7 @@
   display: none;
 }
 
-/* ── Card ────────────────────────────────────────────────────────────────── */
+/* ── Card — structure comme image 1 ─────────────────────────────────────── */
 .card {
   flex: 0 0 210px;
   scroll-snap-align: start;
@@ -95,68 +95,37 @@
   color: inherit;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  border-radius: 16px;               /* coins arrondis sur toute la card */
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 
-/* ── Image wrapper ───────────────────────────────────────────────────────── */
+.card:hover {
+  box-shadow: 0 10px 32px rgba(0,0,0,0.14);
+  transform: translateY(-4px);
+}
+
+/* ── Image — occupe le haut de la card ──────────────────────────────────── */
 .imageWrap {
   position: relative;
   width: 100%;
   aspect-ratio: 3 / 4;
   background: #f5f0eb;
   overflow: hidden;
-  border-radius: 3px;
-  transition: box-shadow 0.35s ease, transform 0.35s ease;
+  /* Pas de border-radius ici — c'est la card qui arrondit */
+  border-radius: 0;
+  flex-shrink: 0;
 }
 
-.card:hover .imageWrap {
-  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.2);
-  transform: translateY(-5px);
-}
-
-/* ── Image ───────────────────────────────────────────────────────────────── */
 .image {
   object-fit: cover;
   transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .card:hover .image {
-  transform: scale(1.07);
-}
-
-/* ── Overlay ─────────────────────────────────────────────────────────────── */
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(26, 26, 26, 0);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: 16px;
-  transition: background 0.3s ease;
-}
-
-.card:hover .overlay {
-  background: rgba(26, 26, 26, 0.3);
-}
-
-.overlayText {
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #fff;
-  background: rgba(26, 26, 26, 0.65);
-  padding: 6px 14px;
-  border-radius: 2px;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.25s ease 0.05s, transform 0.25s ease 0.05s;
-}
-
-.card:hover .overlayText {
-  opacity: 1;
-  transform: translateY(0);
+  transform: scale(1.06);
 }
 
 /* ── Badge ───────────────────────────────────────────────────────────────── */
@@ -172,19 +141,21 @@
   background: #1a1a1a;
   color: #fff;
   padding: 4px 9px;
-  border-radius: 2px;
+  border-radius: 3px;
 }
 
-/* ── Info ────────────────────────────────────────────────────────────────── */
+/* ── Info — fond blanc arrondi en bas comme image 1 ─────────────────────── */
 .info {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  padding: 0 2px;
+  gap: 4px;
+  padding: 14px 14px 16px;
+  background: #fff;
+  /* Les coins arrondis bas viennent de la card parent */
 }
 
 .tag {
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: #b89a7a;
@@ -193,44 +164,41 @@
 
 .name {
   font-size: 0.82rem;
-  font-weight: 500;
+  font-weight: 600;
   color: #1a1a1a;
-  line-height: 1.4;
+  line-height: 1.35;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   margin: 0;
-  transition: color 0.2s ease;
-}
-
-.card:hover .name {
-  color: #b89a7a;
 }
 
 .price {
   font-size: 0.8rem;
-  color: #888;
-  margin: 0;
+  color: #555;
+  margin: 2px 0 0;
+  font-weight: 500;
 }
 
 .currency {
   font-size: 0.72rem;
-  opacity: 0.8;
+  opacity: 0.75;
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
-  .section { padding: 48px 0 40px; }
-  .header { padding: 0 20px 20px; }
+  .section { padding: 40px 0 32px; }
+  .header { padding: 0 20px 18px; }
   .track { padding: 4px 20px 16px; gap: 12px; }
-  .card { flex: 0 0 155px; }
-  .title { font-size: 1.1rem; }
-  .arrow { width: 34px; height: 34px; }
+  .card { flex: 0 0 150px; border-radius: 12px; }
+  .title { font-size: 1.05rem; }
+  .arrow { width: 32px; height: 32px; }
+  .info { padding: 10px 10px 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .imageWrap, .image, .overlay, .overlayText, .arrow, .name {
+  .card, .image, .arrow {
     transition: none !important;
   }
 }
