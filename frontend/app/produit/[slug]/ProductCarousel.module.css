@@ -10,7 +10,7 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  padding: 0 32px 24px;
+  padding: 0 32px 32px;
 }
 
 .headerLeft {
@@ -71,61 +71,71 @@
   cursor: default;
 }
 
-/* ── Track ───────────────────────────────────────────────────────────────── */
-.track {
+/* ── Slider wrapper ──────────────────────────────────────────────────────── */
+.sliderWrap {
+  width: 100%;
+  overflow: hidden;
+  padding: 20px 0 40px;
+}
+
+.slider {
+  position: relative;
+  width: 100%;
+  height: 400px;
   display: flex;
-  gap: 16px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  padding: 4px 32px 24px;
-  scrollbar-width: none;
-  cursor: grab;
+  align-items: center;
+  justify-content: center;
 }
 
-.track::-webkit-scrollbar {
-  display: none;
-}
-
-/* ── Card — structure comme image 1 ─────────────────────────────────────── */
-.card {
-  flex: 0 0 210px;
-  scroll-snap-align: start;
-  text-decoration: none;
-  color: inherit;
+/* ── Item (card 3D) ──────────────────────────────────────────────────────── */
+.item {
+  position: absolute;
+  width: 220px;
+  height: 340px;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              filter 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 0.4s ease;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
   display: flex;
   flex-direction: column;
-  border-radius: 16px;               /* coins arrondis sur toute la card */
-  overflow: hidden;
-  background: #fff;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 
-.card:hover {
-  box-shadow: 0 10px 32px rgba(0,0,0,0.14);
-  transform: translateY(-4px);
+.itemActive {
+  cursor: default;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
 }
 
-/* ── Image — occupe le haut de la card ──────────────────────────────────── */
+/* Lien qui couvre toute la card */
+.cardLink {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ── Image ───────────────────────────────────────────────────────────────── */
 .imageWrap {
   position: relative;
   width: 100%;
-  aspect-ratio: 3 / 4;
+  flex: 1;
   background: #f5f0eb;
   overflow: hidden;
-  /* Pas de border-radius ici — c'est la card qui arrondit */
-  border-radius: 0;
-  flex-shrink: 0;
+  min-height: 0;
 }
 
 .image {
   object-fit: cover;
-  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-.card:hover .image {
-  transform: scale(1.06);
+.itemActive .image {
+  transform: scale(1.03);
 }
 
 /* ── Badge ───────────────────────────────────────────────────────────────── */
@@ -134,8 +144,8 @@
   top: 10px;
   left: 10px;
   z-index: 2;
-  font-size: 0.6rem;
-  font-weight: 600;
+  font-size: 0.58rem;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   background: #1a1a1a;
@@ -144,14 +154,11 @@
   border-radius: 3px;
 }
 
-/* ── Info — fond blanc arrondi en bas comme image 1 ─────────────────────── */
+/* ── Info ────────────────────────────────────────────────────────────────── */
 .info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 14px 14px 16px;
+  padding: 14px 16px 16px;
   background: #fff;
-  /* Les coins arrondis bas viennent de la card parent */
+  flex-shrink: 0;
 }
 
 .tag {
@@ -160,10 +167,12 @@
   text-transform: uppercase;
   color: #b89a7a;
   font-weight: 500;
+  display: block;
+  margin-bottom: 3px;
 }
 
 .name {
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   font-weight: 600;
   color: #1a1a1a;
   line-height: 1.35;
@@ -171,34 +180,59 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  margin: 0;
+  margin: 0 0 4px;
 }
 
 .price {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   color: #555;
-  margin: 2px 0 0;
+  margin: 0;
   font-weight: 500;
 }
 
 .currency {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   opacity: 0.75;
+}
+
+/* ── Dots ────────────────────────────────────────────────────────────────── */
+.dots {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  padding-top: 4px;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: none;
+  background: #d5ccc4;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.3s, transform 0.3s, width 0.3s;
+}
+
+.dotActive {
+  background: #1a1a1a;
+  width: 22px;
+  border-radius: 4px;
+  transform: none;
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .section { padding: 40px 0 32px; }
-  .header { padding: 0 20px 18px; }
-  .track { padding: 4px 20px 16px; gap: 12px; }
-  .card { flex: 0 0 150px; border-radius: 12px; }
+  .header { padding: 0 20px 24px; }
+  .slider { height: 340px; }
+  .item { width: 170px; height: 280px; }
   .title { font-size: 1.05rem; }
   .arrow { width: 32px; height: 32px; }
-  .info { padding: 10px 10px 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .card, .image, .arrow {
+  .item, .image, .arrow, .dot {
     transition: none !important;
   }
 }
