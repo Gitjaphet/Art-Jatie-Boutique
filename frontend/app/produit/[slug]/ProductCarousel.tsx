@@ -63,7 +63,7 @@ export default function ProductCarousel({ currentSlug }: { currentSlug: string }
   // Autoplay toutes les 5 secondes
   const startAutoplay = useCallback(() => {
     if (autoplayRef.current) clearInterval(autoplayRef.current);
-    autoplayRef.current = setInterval(scrollRight, 5000);
+    autoplayRef.current = setInterval(scrollRight, 1000);
   }, [scrollRight]);
 
   const stopAutoplay = () => {
