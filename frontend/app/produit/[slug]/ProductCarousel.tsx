@@ -20,7 +20,7 @@ type CarouselProduct = {
 export default function ProductCarousel({ currentSlug }: { currentSlug: string }) {
   const [products, setProducts] = useState<CarouselProduct[]>([]);
   const [loaded, setLoaded] = useState(false);
-  const [active, setActive] = useState(3);
+  const [active, setActive] = useState(2);
   const autoplayRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -30,29 +30,26 @@ export default function ProductCarousel({ currentSlug }: { currentSlug: string }
           .filter((p) => p.slug !== currentSlug)
           .slice(0, 10) as CarouselProduct[];
         setProducts(filtered);
-        setActive(Math.min(3, Math.floor(filtered.length / 2)));
+        setActive(2);
         setLoaded(true);
       })
       .catch(console.error);
   }, [currentSlug]);
 
-  const goNext = useCallback(() => {
-    setActive((prev) => (prev + 1 < products.length ? prev + 1 : prev));
-  }, [products.length]);
-
-  const goPrev = useCallback(() => {
-    setActive((prev) => (prev - 1 >= 0 ? prev - 1 : prev));
+  const goNext = useCallback((len: number) => {
+    setActive((prev) => (prev + 1 < len ? prev + 1 : 0));
   }, []);
 
-  const startAutoplay = useCallback(() => {
+  const goPrev = useCallback((len: number) => {
+    setActive((prev) => (prev - 1 >= 0 ? prev - 1 : len - 1));
+  }, []);
+
+  const startAutoplay = useCallback((len: number) => {
     if (autoplayRef.current) clearInterval(autoplayRef.current);
     autoplayRef.current = setInterval(() => {
-      setActive((prev) => {
-        if (prev + 1 < products.length) return prev + 1;
-        return 0; // retour au début
-      });
+      setActive((prev) => (prev + 1 < len ? prev + 1 : 0));
     }, 3000);
-  }, [products.length]);
+  }, []);
 
   const stopAutoplay = useCallback(() => {
     if (autoplayRef.current) {
@@ -62,36 +59,43 @@ export default function ProductCarousel({ currentSlug }: { currentSlug: string }
   }, []);
 
   useEffect(() => {
-    if (loaded && products.length > 0) startAutoplay();
+    if (loaded && products.length > 0) startAutoplay(products.length);
     return () => stopAutoplay();
   }, [loaded, products.length, startAutoplay, stopAutoplay]);
 
-  // Calcul du style 3D de chaque card selon sa position par rapport à active
+  // Style 3D pour chaque card
   const getCardStyle = (index: number): React.CSSProperties => {
     const diff = index - active;
     const absDiff = Math.abs(diff);
 
+    if (absDiff > 3) {
+      return { opacity: 0, pointerEvents: "none", zIndex: 0 };
+    }
+
     if (absDiff === 0) {
       return {
-        transform: "translateX(0) scale(1)",
+        transform: "translateX(-50%) scale(1) perspective(1000px) rotateY(0deg)",
         zIndex: 10,
         filter: "none",
         opacity: 1,
+        left: "50%",
       };
     }
 
     const direction = diff > 0 ? 1 : -1;
-    const translateX = direction * (130 * absDiff);
-    const scale = Math.max(1 - 0.18 * absDiff, 0.46);
-    const rotateY = direction * -1;
-    const blur = absDiff > 2 ? 8 : absDiff * 3;
-    const opacity = absDiff > 2 ? 0 : absDiff === 2 ? 0.4 : 0.7;
+    // Espacement: 260px par rang
+    const translateX = direction * (260 * absDiff);
+    const scale = 1 - 0.15 * absDiff;
+    const rotateY = direction * -8;
+    const blur = absDiff === 1 ? 1 : absDiff === 2 ? 3 : 6;
+    const opacity = absDiff === 1 ? 0.85 : absDiff === 2 ? 0.55 : 0.25;
 
     return {
-      transform: `translateX(${translateX}px) scale(${scale}) perspective(16px) rotateY(${rotateY}deg)`,
-      zIndex: -absDiff,
+      transform: `translateX(calc(-50% + ${translateX}px)) scale(${scale}) perspective(800px) rotateY(${rotateY}deg)`,
+      zIndex: 10 - absDiff,
       filter: `blur(${blur}px)`,
       opacity,
+      left: "50%",
     };
   };
 
@@ -102,7 +106,7 @@ export default function ProductCarousel({ currentSlug }: { currentSlug: string }
       className={styles.section}
       aria-label="Vous aimerez aussi"
       onMouseEnter={stopAutoplay}
-      onMouseLeave={startAutoplay}
+      onMouseLeave={() => startAutoplay(products.length)}
     >
       {/* Header */}
       <div className={styles.header}>
@@ -113,8 +117,7 @@ export default function ProductCarousel({ currentSlug }: { currentSlug: string }
         <div className={styles.arrows}>
           <button
             className={styles.arrow}
-            onClick={goPrev}
-            disabled={active === 0}
+            onClick={() => { stopAutoplay(); goPrev(products.length); startAutoplay(products.length); }}
             aria-label="Produit précédent"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -123,8 +126,7 @@ export default function ProductCarousel({ currentSlug }: { currentSlug: string }
           </button>
           <button
             className={styles.arrow}
-            onClick={goNext}
-            disabled={active === products.length - 1}
+            onClick={() => { stopAutoplay(); goNext(products.length); startAutoplay(products.length); }}
             aria-label="Produit suivant"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -153,7 +155,7 @@ export default function ProductCarousel({ currentSlug }: { currentSlug: string }
                   if (!isActive) {
                     stopAutoplay();
                     setActive(index);
-                    startAutoplay();
+                    startAutoplay(products.length);
                   }
                 }}
               >
@@ -161,8 +163,8 @@ export default function ProductCarousel({ currentSlug }: { currentSlug: string }
                   href={`/produit/${product.slug}`}
                   className={styles.cardLink}
                   tabIndex={isActive ? 0 : -1}
-                  aria-label={`${product.name} — ${product.rawPrice.toLocaleString("fr-FR")} Ar`}
                   onClick={(e) => !isActive && e.preventDefault()}
+                  aria-label={`${product.name} — ${product.rawPrice.toLocaleString("fr-FR")} Ar`}
                 >
                   <div className={styles.imageWrap}>
                     {product.badge && product.badge !== "En stock" && (
@@ -172,7 +174,7 @@ export default function ProductCarousel({ currentSlug }: { currentSlug: string }
                       src={imageUrl}
                       alt={product.name}
                       fill
-                      sizes="260px"
+                      sizes="240px"
                       className={styles.image}
                       priority={isActive}
                     />
@@ -192,14 +194,14 @@ export default function ProductCarousel({ currentSlug }: { currentSlug: string }
         </div>
       </div>
 
-      {/* Dots pagination */}
-      <div className={styles.dots} aria-label="Navigation carousel">
+      {/* Dots */}
+      <div className={styles.dots}>
         {products.map((_, i) => (
           <button
             key={i}
             className={`${styles.dot} ${i === active ? styles.dotActive : ""}`}
-            onClick={() => { stopAutoplay(); setActive(i); startAutoplay(); }}
-            aria-label={`Aller au produit ${i + 1}`}
+            onClick={() => { stopAutoplay(); setActive(i); startAutoplay(products.length); }}
+            aria-label={`Produit ${i + 1}`}
           />
         ))}
       </div>
