@@ -109,18 +109,9 @@ export default function ProductCarousel({ currentSlug }: { currentSlug: string }
 
   return (
     <section
-      ref={sectionRef}
-      className={styles.section}
-      aria-label="Vous aimerez aussi"
-      onMouseEnter={() => {
-        isHovered.current = true;
-        stopAutoplay();
-      }}
-      onMouseLeave={() => {
-        isHovered.current = false;
-        startAutoplay(products.length);
-      }}
-    >
+        className={styles.section}
+        aria-label="Vous aimerez aussi"
+      >
       {/* Header */}
       <div className={styles.header}>
         <div className={styles.headerLeft}>
@@ -164,6 +155,14 @@ export default function ProductCarousel({ currentSlug }: { currentSlug: string }
                 key={product.id}
                 className={`${styles.item} ${isActive ? styles.itemActive : ""}`}
                 style={getCardStyle(index)}
+                onMouseEnter={isActive ? () => {
+                  isHovered.current = true;
+                  stopAutoplay();
+                } : undefined}
+                onMouseLeave={isActive ? () => {
+                  isHovered.current = false;
+                  startAutoplay(products.length);
+                } : undefined}
                 onClick={() => {
                   if (!isActive) {
                     stopAutoplay();
