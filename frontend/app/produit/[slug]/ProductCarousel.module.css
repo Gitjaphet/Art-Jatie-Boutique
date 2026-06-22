@@ -1,17 +1,8 @@
-/* ── Section reveal ─────────────────────────────────────────────────────── */
+/* ── Section ─────────────────────────────────────────────────────────────── */
 .section {
   width: 100%;
   padding: 64px 0 56px;
   border-top: 1px solid #e8e0d8;
-  opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.sectionVisible {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 /* ── Header ─────────────────────────────────────────────────────────────── */
@@ -29,7 +20,7 @@
 }
 
 .eyebrow {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 500;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -37,9 +28,9 @@
 }
 
 .title {
-  font-size: 1.35rem;
+  font-size: 1.3rem;
   font-weight: 500;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
   color: #1a1a1a;
   margin: 0;
 }
@@ -47,8 +38,7 @@
 /* ── Flèches ─────────────────────────────────────────────────────────────── */
 .arrows {
   display: flex;
-  gap: 6px;
-  align-items: center;
+  gap: 8px;
 }
 
 .arrow {
@@ -62,47 +52,39 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: background 0.22s ease,
-              border-color 0.22s ease,
-              transform 0.18s ease;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
 }
 
 .arrow:hover:not(:disabled) {
   background: #1a1a1a;
   border-color: #1a1a1a;
   color: #fff;
-  transform: scale(1.06);
+  transform: scale(1.08);
 }
 
 .arrow:active:not(:disabled) {
-  transform: scale(0.96);
+  transform: scale(0.94);
 }
 
 .arrow:disabled {
-  opacity: 0.25;
+  opacity: 0.22;
   cursor: default;
 }
 
 /* ── Track ───────────────────────────────────────────────────────────────── */
 .track {
   display: flex;
-  gap: 18px;
+  gap: 16px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
-  padding: 6px 32px 20px;
+  padding: 4px 32px 24px;
   scrollbar-width: none;
   cursor: grab;
-  user-select: none;
 }
 
 .track::-webkit-scrollbar {
   display: none;
-}
-
-.dragging {
-  cursor: grabbing;
-  scroll-snap-type: none;
 }
 
 /* ── Card ────────────────────────────────────────────────────────────────── */
@@ -113,17 +95,7 @@
   color: inherit;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  /* Reveal individuel avec délai */
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.cardVisible {
-  opacity: 1;
-  transform: translateY(0);
+  gap: 10px;
 }
 
 /* ── Image wrapper ───────────────────────────────────────────────────────── */
@@ -133,28 +105,26 @@
   aspect-ratio: 3 / 4;
   background: #f5f0eb;
   overflow: hidden;
-  border-radius: 4px;
-  /* Micro-lift au hover */
-  transition: box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: 3px;
+  transition: box-shadow 0.35s ease, transform 0.35s ease;
 }
 
-.imageWrapActive {
-  box-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.18);
-  transform: translateY(-4px);
+.card:hover .imageWrap {
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.2);
+  transform: translateY(-5px);
 }
 
 /* ── Image ───────────────────────────────────────────────────────────────── */
 .image {
   object-fit: cover;
-  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.imageActive {
-  transform: scale(1.06);
+.card:hover .image {
+  transform: scale(1.07);
 }
 
-/* ── Overlay "Voir le produit" ───────────────────────────────────────────── */
+/* ── Overlay ─────────────────────────────────────────────────────────────── */
 .overlay {
   position: absolute;
   inset: 0;
@@ -162,29 +132,29 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding-bottom: 18px;
-  transition: background 0.35s ease;
+  padding-bottom: 16px;
+  transition: background 0.3s ease;
 }
 
-.overlayActive {
-  background: rgba(26, 26, 26, 0.28);
+.card:hover .overlay {
+  background: rgba(26, 26, 26, 0.3);
 }
 
 .overlayText {
-  font-size: 0.72rem;
-  font-weight: 500;
+  font-size: 0.68rem;
+  font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #fff;
-  background: rgba(26, 26, 26, 0.7);
+  background: rgba(26, 26, 26, 0.65);
   padding: 6px 14px;
   border-radius: 2px;
   opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.3s ease 0.05s, transform 0.3s ease 0.05s;
+  transform: translateY(10px);
+  transition: opacity 0.25s ease 0.05s, transform 0.25s ease 0.05s;
 }
 
-.overlayActive .overlayText {
+.card:hover .overlayText {
   opacity: 1;
   transform: translateY(0);
 }
@@ -195,7 +165,7 @@
   top: 10px;
   left: 10px;
   z-index: 2;
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -214,7 +184,7 @@
 }
 
 .tag {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: #b89a7a;
@@ -240,91 +210,27 @@
 
 .price {
   font-size: 0.8rem;
-  color: #666;
+  color: #888;
   margin: 0;
 }
 
 .currency {
   font-size: 0.72rem;
-  opacity: 0.75;
-}
-
-/* ── Scroll hint (mobile) ────────────────────────────────────────────────── */
-.scrollHint {
-  display: none;
-  justify-content: center;
-  padding-top: 12px;
-}
-
-.scrollLine {
-  width: 48px;
-  height: 2px;
-  background: #1a1a1a;
-  border-radius: 2px;
-  opacity: 0.18;
-  position: relative;
-  overflow: hidden;
-}
-
-.scrollLine::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: #1a1a1a;
-  width: 24px;
-  opacity: 0.7;
-  animation: scrollPulse 1.8s ease-in-out infinite;
-}
-
-@keyframes scrollPulse {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(200%); }
+  opacity: 0.8;
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
-  .section {
-    padding: 48px 0 40px;
-  }
-
-  .header {
-    padding: 0 20px 22px;
-  }
-
-  .track {
-    padding: 4px 20px 16px;
-    gap: 12px;
-  }
-
-  .card {
-    flex: 0 0 155px;
-  }
-
-  .scrollHint {
-    display: flex;
-  }
-
-  .title {
-    font-size: 1.1rem;
-  }
-
-  .arrow {
-    width: 34px;
-    height: 34px;
-  }
+  .section { padding: 48px 0 40px; }
+  .header { padding: 0 20px 20px; }
+  .track { padding: 4px 20px 16px; gap: 12px; }
+  .card { flex: 0 0 155px; }
+  .title { font-size: 1.1rem; }
+  .arrow { width: 34px; height: 34px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .section,
-  .card,
-  .image,
-  .imageWrap,
-  .overlay,
-  .overlayText,
-  .scrollLine::after {
+  .imageWrap, .image, .overlay, .overlayText, .arrow, .name {
     transition: none !important;
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
   }
 }

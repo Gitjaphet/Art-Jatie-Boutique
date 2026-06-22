@@ -19,33 +19,20 @@ type CarouselProduct = {
 
 export default function ProductCarousel({ currentSlug }: { currentSlug: string }) {
   const [products, setProducts] = useState<CarouselProduct[]>([]);
-  const [visible, setVisible] = useState(false);
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [loaded, setLoaded] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
-  const sectionRef = useRef<HTMLElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
-  const [isDragging, setIsDragging] = useState(false);
+  const isDragging = useRef(false);
   const dragStart = useRef({ x: 0, scrollLeft: 0 });
-
-  // Intersection Observer → reveal au scroll
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setVisible(true); },
-      { threshold: 0.15 }
-    );
-    if (sectionRef.current) observer.observe(sectionRef.current);
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     getProducts()
       .then((data) => {
         setProducts(
-          data
-            .filter((p) => p.slug !== currentSlug)
-            .slice(0, 20) as CarouselProduct[]
+          data.filter((p) => p.slug !== currentSlug).slice(0, 20) as CarouselProduct[]
         );
+        setLoaded(true);
       })
       .catch(console.error);
   }, [currentSlug]);
@@ -61,32 +48,30 @@ export default function ProductCarousel({ currentSlug }: { currentSlug: string }
     trackRef.current?.scrollBy({ left: dir === "left" ? -640 : 640, behavior: "smooth" });
   };
 
-  // Drag-to-scroll (desktop)
   const onMouseDown = (e: React.MouseEvent) => {
     const el = trackRef.current;
     if (!el) return;
-    setIsDragging(true);
+    isDragging.current = true;
     dragStart.current = { x: e.pageX - el.offsetLeft, scrollLeft: el.scrollLeft };
+    el.style.cursor = "grabbing";
   };
   const onMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
+    if (!isDragging.current) return;
     e.preventDefault();
     const el = trackRef.current;
     if (!el) return;
     const x = e.pageX - el.offsetLeft;
     el.scrollLeft = dragStart.current.scrollLeft - (x - dragStart.current.x);
   };
-  const stopDrag = () => setIsDragging(false);
+  const stopDrag = () => {
+    isDragging.current = false;
+    if (trackRef.current) trackRef.current.style.cursor = "grab";
+  };
 
-  if (products.length === 0) return null;
+  if (!loaded || products.length === 0) return null;
 
   return (
-    <section
-      ref={sectionRef}
-      className={`${styles.section} ${visible ? styles.sectionVisible : ""}`}
-      aria-label="Vous aimerez aussi"
-    >
-      {/* En-tête */}
+    <section className={styles.section} aria-label="Vous aimerez aussi">
       <div className={styles.header}>
         <div className={styles.headerLeft}>
           <span className={styles.eyebrow}>Découvrir</span>
@@ -99,7 +84,7 @@ export default function ProductCarousel({ currentSlug }: { currentSlug: string }
             disabled={!canScrollLeft}
             aria-label="Produits précédents"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <polyline points="15 18 9 12 15 6"/>
             </svg>
           </button>
@@ -109,24 +94,23 @@ export default function ProductCarousel({ currentSlug }: { currentSlug: string }
             disabled={!canScrollRight}
             aria-label="Produits suivants"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <polyline points="9 18 15 12 9 6"/>
             </svg>
           </button>
         </div>
       </div>
 
-      {/* Track scrollable */}
       <div
         ref={trackRef}
-        className={`${styles.track} ${isDragging ? styles.dragging : ""}`}
+        className={styles.track}
         onScroll={updateScrollButtons}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={stopDrag}
         onMouseLeave={stopDrag}
       >
-        {products.map((product, i) => {
+        {products.map((product) => {
           const imageUrl =
             product.image ||
             (product.imagesString ? product.imagesString.split(",")[0].trim() : "") ||
@@ -136,36 +120,27 @@ export default function ProductCarousel({ currentSlug }: { currentSlug: string }
             <Link
               key={product.id}
               href={`/produit/${product.slug}`}
-              className={`${styles.card} ${visible ? styles.cardVisible : ""}`}
-              style={{ transitionDelay: `${Math.min(i * 60, 360)}ms` }}
-              onMouseEnter={() => setActiveIndex(i)}
-              onMouseLeave={() => setActiveIndex(null)}
+              className={styles.card}
               aria-label={`${product.name} — ${product.rawPrice.toLocaleString("fr-FR")} Ar`}
             >
-              <div className={`${styles.imageWrap} ${activeIndex === i ? styles.imageWrapActive : ""}`}>
-                {/* Badge */}
+              <div className={styles.imageWrap}>
                 {product.badge && product.badge !== "En stock" && (
                   <span className={styles.badge}>{product.badge}</span>
                 )}
-
                 <Image
                   src={imageUrl}
                   alt={product.name}
                   fill
                   sizes="(max-width: 640px) 160px, 220px"
-                  className={`${styles.image} ${activeIndex === i ? styles.imageActive : ""}`}
+                  className={styles.image}
                 />
-
-                {/* Overlay au hover */}
-                <div className={`${styles.overlay} ${activeIndex === i ? styles.overlayActive : ""}`}>
+                <div className={styles.overlay}>
                   <span className={styles.overlayText}>Voir le produit</span>
                 </div>
               </div>
 
               <div className={styles.info}>
-                {product.tag && (
-                  <span className={styles.tag}>{product.tag}</span>
-                )}
+                {product.tag && <span className={styles.tag}>{product.tag}</span>}
                 <p className={styles.name}>{product.name}</p>
                 <p className={styles.price}>
                   {product.rawPrice.toLocaleString("fr-FR")} <span className={styles.currency}>Ar</span>
@@ -174,11 +149,6 @@ export default function ProductCarousel({ currentSlug }: { currentSlug: string }
             </Link>
           );
         })}
-      </div>
-
-      {/* Indicateur de scroll mobile */}
-      <div className={styles.scrollHint} aria-hidden="true">
-        <span className={styles.scrollLine} />
       </div>
     </section>
   );
