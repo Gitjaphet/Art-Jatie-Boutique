@@ -48,32 +48,34 @@ export default function ProductCarousel({ currentSlug }: { currentSlug: string }
   const scrollRight = useCallback(() => {
     const el = trackRef.current;
     if (!el) return;
-    // Si on est à la fin, retour au début
+    // Retour au début si on est à la fin
     if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 8) {
       el.scrollTo({ left: 0, behavior: "smooth" });
     } else {
-      el.scrollBy({ left: 240, behavior: "smooth" });
+      el.scrollBy({ left: 226, behavior: "smooth" }); // largeur card (210) + gap (16)
     }
   }, []);
 
-  const scrollLeft = () => {
-    trackRef.current?.scrollBy({ left: -240, behavior: "smooth" });
-  };
+  const scrollLeft = useCallback(() => {
+    trackRef.current?.scrollBy({ left: -226, behavior: "smooth" });
+  }, []);
 
-  // Autoplay toutes les 5 secondes
   const startAutoplay = useCallback(() => {
     if (autoplayRef.current) clearInterval(autoplayRef.current);
-    autoplayRef.current = setInterval(scrollRight, 1000);
+    autoplayRef.current = setInterval(scrollRight, 3000);
   }, [scrollRight]);
 
-  const stopAutoplay = () => {
-    if (autoplayRef.current) clearInterval(autoplayRef.current);
-  };
+  const stopAutoplay = useCallback(() => {
+    if (autoplayRef.current) {
+      clearInterval(autoplayRef.current);
+      autoplayRef.current = null;
+    }
+  }, []);
 
   useEffect(() => {
     if (loaded && products.length > 0) startAutoplay();
     return () => stopAutoplay();
-  }, [loaded, products.length, startAutoplay]);
+  }, [loaded, products.length, startAutoplay, stopAutoplay]);
 
   // Drag-to-scroll desktop
   const onMouseDown = (e: React.MouseEvent) => {
@@ -84,6 +86,7 @@ export default function ProductCarousel({ currentSlug }: { currentSlug: string }
     el.style.cursor = "grabbing";
     stopAutoplay();
   };
+
   const onMouseMove = (e: React.MouseEvent) => {
     if (!isDragging.current) return;
     e.preventDefault();
@@ -92,6 +95,7 @@ export default function ProductCarousel({ currentSlug }: { currentSlug: string }
     const x = e.pageX - el.offsetLeft;
     el.scrollLeft = dragStart.current.scrollLeft - (x - dragStart.current.x);
   };
+
   const stopDrag = () => {
     isDragging.current = false;
     if (trackRef.current) trackRef.current.style.cursor = "grab";
@@ -156,7 +160,6 @@ export default function ProductCarousel({ currentSlug }: { currentSlug: string }
               className={styles.card}
               aria-label={`${product.name} — ${product.rawPrice.toLocaleString("fr-FR")} Ar`}
             >
-              {/* Image en haut */}
               <div className={styles.imageWrap}>
                 {product.badge && product.badge !== "En stock" && (
                   <span className={styles.badge}>{product.badge}</span>
@@ -170,7 +173,6 @@ export default function ProductCarousel({ currentSlug }: { currentSlug: string }
                 />
               </div>
 
-              {/* Info en bas — fond blanc arrondi comme image 1 */}
               <div className={styles.info}>
                 {product.tag && <span className={styles.tag}>{product.tag}</span>}
                 <p className={styles.name}>{product.name}</p>
