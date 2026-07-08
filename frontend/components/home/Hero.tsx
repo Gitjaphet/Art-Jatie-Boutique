@@ -143,7 +143,7 @@ export default function Hero() {
               src={img.src}
               alt={img.label}
               fill
-              sizes="(max-width: 768px) 200px, 300px"
+              sizes={`(max-width: 339px) 90px, (max-width: 389px) 100px, (max-width: 430px) 118px, (max-width: 1024px) 160px, ${img.size.w}px`}
               style={{ objectFit: "cover" }}
             />
             <div className={styles.photoCardLabel}>
