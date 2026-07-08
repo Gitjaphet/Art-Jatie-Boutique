@@ -18,6 +18,7 @@
   --pink-light: #fae8ed;
   --taupe: #6b5f56;
   --rule: rgba(26, 23, 20, 0.1);
+  --pink-accessible: #d1527a;
 
   background: var(--cream);
   font-family: "DM Sans", sans-serif;
@@ -61,7 +62,7 @@
 .sectionTitle em {
   font-style: italic;
   font-weight: 400;
-  color: var(--pink);
+  color: var(--pink-accessible);
 }
 
 /* ─── LIST ────────────────────────────────────────────────────────────────── */
