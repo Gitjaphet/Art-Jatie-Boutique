@@ -30,44 +30,70 @@ export function GoogleAuthProvider({ children }: { children: ReactNode }) {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [onLoginSuccess, setOnLoginSuccess] = useState<(() => void) | null>(null);
 
+  // Ne charge que les données locales au montage — pas de script Google ici
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    document.head.appendChild(script);
-
     const saved = localStorage.getItem(KEY_USER);
     if (saved) {
       try { setUser(JSON.parse(saved)); } catch {}
     }
   }, []);
 
+  // Charge le script Google uniquement à l'ouverture de la modal
   useEffect(() => {
     if (!showLoginModal) return;
-    const timer = setTimeout(() => {
-      if ((window as any).google) {
-        (window as any).google.accounts.id.initialize({
-          client_id: CLIENT_ID,
-          callback: (response: any) => {
-            const payload = JSON.parse(atob(response.credential.split(".")[1]));
-            const newUser = { name: payload.name, email: payload.email, picture: payload.picture };
-            setUser(newUser);
-            localStorage.setItem(KEY_USER, JSON.stringify(newUser));
-            localStorage.setItem(KEY_CHOICE, "google");
-            setShowLoginModal(false);
-            if (onLoginSuccess) {
-              onLoginSuccess();
-              setOnLoginSuccess(null);
-            }
-          },
-        });
-        (window as any).google.accounts.id.renderButton(
-          document.getElementById("google-signin-btn"),
-          { theme: "outline", size: "large", text: "continue_with", width: 280, locale: "fr" }
-        );
-      }
-    }, 300);
-    return () => clearTimeout(timer);
+
+    const loadGoogleScript = () =>
+      new Promise<void>((resolve) => {
+        if ((window as any).google) {
+          resolve();
+          return;
+        }
+        const existing = document.getElementById("google-gsi-script");
+        if (existing) {
+          existing.addEventListener("load", () => resolve());
+          return;
+        }
+        const script = document.createElement("script");
+        script.id = "google-gsi-script";
+        script.src = "https://accounts.google.com/gsi/client";
+        script.async = true;
+        script.onload = () => resolve();
+        document.head.appendChild(script);
+      });
+
+    let cancelled = false;
+
+    loadGoogleScript().then(() => {
+      if (cancelled) return;
+      const timer = setTimeout(() => {
+        if ((window as any).google) {
+          (window as any).google.accounts.id.initialize({
+            client_id: CLIENT_ID,
+            callback: (response: any) => {
+              const payload = JSON.parse(atob(response.credential.split(".")[1]));
+              const newUser = { name: payload.name, email: payload.email, picture: payload.picture };
+              setUser(newUser);
+              localStorage.setItem(KEY_USER, JSON.stringify(newUser));
+              localStorage.setItem(KEY_CHOICE, "google");
+              setShowLoginModal(false);
+              if (onLoginSuccess) {
+                onLoginSuccess();
+                setOnLoginSuccess(null);
+              }
+            },
+          });
+          (window as any).google.accounts.id.renderButton(
+            document.getElementById("google-signin-btn"),
+            { theme: "outline", size: "large", text: "continue_with", width: 280, locale: "fr" }
+          );
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [showLoginModal, onLoginSuccess]);
 
   // ✅ LA VRAIE FIX : triggerLoginFlow reçoit le callback ET vérifie le choix mémorisé
