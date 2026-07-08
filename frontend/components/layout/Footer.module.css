@@ -177,7 +177,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 12px;
-  color: #666;
+  color: var(--gray-text);
 }
 
 .legalLinks {

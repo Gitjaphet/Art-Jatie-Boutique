@@ -15,6 +15,7 @@
   --color-accent: #e86b8c;
   --color-taupe: #a09d9a;
   --color-charcoal: #333;
+  --color-taupe-dark: #6e6b64;
   --font-display: "Playfair Display", serif;
 }
 
@@ -442,7 +443,7 @@
 }
 .statEyebrow {
   font-size: 11px;
-  color: var(--color-taupe);
+  color: var(--color-taupe-dark);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   margin-bottom: 2px;
