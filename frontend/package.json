@@ -8,6 +8,12 @@
     "start": "next start",
     "lint": "eslint"
   },
+  "browserslist": [
+    "> 0.5%",
+    "last 2 versions",
+    "not dead",
+    "not IE 11"
+  ],
   "dependencies": {
     "@headlessui/react": "^2.2.9",
     "@woocommerce/woocommerce-rest-api": "^1.0.2",
