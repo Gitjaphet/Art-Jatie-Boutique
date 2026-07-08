@@ -20,7 +20,7 @@
   font-size: 10px;
   letter-spacing: 0.25em;
   text-transform: uppercase;
-  color: var(--color-taupe, #a09d9a);
+  color: #6b5f56;
   margin-bottom: 16px;
   font-weight: 600;
 }
@@ -111,7 +111,7 @@
 
 .productInfo {
   font-size: 13px;
-  color: var(--color-taupe, #a09d9a);
+  color: #6b5f56;
   margin-top: 6px;
   font-weight: 300;
 }
@@ -155,23 +155,25 @@
 }
 
 .dot {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.dot::before {
+  content: "";
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: var(--color-sand, #e8e4df);
-  cursor: pointer;
   transition: all 0.3s ease;
-  padding: 0;
-  border: none;
-  /* Zone de tap élargie sans changer le visuel */
-  position: relative;
 }
-.dot::after {
-  content: "";
-  position: absolute;
-  inset: -8px;
-}
-.dotActive {
+.dotActive::before {
   background: var(--color-black, #1a1a1a);
   transform: scale(1.5);
 }
@@ -292,9 +294,10 @@
     gap: 10px;
   }
   .dot {
-    width: 7px;
-    height: 7px;
+    width: 8px;
+    height: 8px;
   }
+  
 }
 
 /* =========================================================================
@@ -469,7 +472,7 @@
   }
   .dotActive {
     width: 24px;
-    border-radius: 4px; /* pill shape sur le dot actif */
+    border-radius: 4px;
     transform: none;
   }
 }

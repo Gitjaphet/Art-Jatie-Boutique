@@ -161,7 +161,9 @@ export default function Footer() {
             </div>
           </div>
         </div>
-        <div className={styles.bigWatermark}>ART JATIE</div>
+        <div className={styles.bigWatermark} aria-hidden="true">
+          ART JATIE
+        </div>
       </div>
     </footer>
   );
