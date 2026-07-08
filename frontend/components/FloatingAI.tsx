@@ -84,7 +84,7 @@ export default function FloatingAI() {
       <div className={styles.notif}>
         Discutez avec votre assistant IA✨
       </div>
-      <button className={styles.trigger} onClick={() => setIsOpen(true)}>
+      <button className={styles.trigger} onClick={() => setIsOpen(true)} aria-label="Ouvrir l'assistant IA">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
         </svg>
@@ -102,7 +102,7 @@ export default function FloatingAI() {
             <div className={styles.headerStatus}>● En ligne</div>
           </div>
         </div>
-        <button onClick={() => setIsOpen(false)}>✕</button>
+        <button onClick={() => setIsOpen(false)} aria-label="Fermer le chat">✕</button>
       </div>
       <div className={styles.body}>
         {messages.map((m, i) => (
@@ -130,7 +130,7 @@ export default function FloatingAI() {
       </div>
       <div className={styles.footer}>
         <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder="Écrire…" disabled={isLoading} />
-        <button onClick={send}>➤</button>
+        <button onClick={send} aria-label="Envoyer le message">➤</button>
       </div>
     </div>,
     document.body
