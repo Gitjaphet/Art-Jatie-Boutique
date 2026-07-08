@@ -59,7 +59,17 @@ export default function Hero() {
   return (
     <section className={styles.heroRoot}>
       {/* Arrière-plan */}
-      <div className={styles.heroBackground} />
+      <div className={styles.heroBackground}>
+        <Image
+          src="/images/hero/art-jatie-plage.jpeg"
+          alt="Créatrice Art Jatie posant en tenue crochet sur la plage à Madagascar"
+          fill
+          priority
+          sizes="(max-width: 768px) 100vw, 768px"
+          style={{ objectFit: "cover", objectPosition: "center" }}
+          quality={80}
+        />
+      </div>
 
       {/* Dégradé de superposition */}
       <div className={styles.heroOverlay} />

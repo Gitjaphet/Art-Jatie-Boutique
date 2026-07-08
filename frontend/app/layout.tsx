@@ -2,10 +2,12 @@
 
 import { usePathname } from "next/navigation";
 import "@/css/globals.css";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-import FloatingWhatsApp from "@/components/FloatingWhatsApp";
-import FloatingAI from "@/components/FloatingAI";
+import dynamic from "next/dynamic";
+import Header from "@/components/layout/Header"; 
+
+const Footer = dynamic(() => import("@/components/layout/Footer"));
+const FloatingWhatsApp = dynamic(() => import("@/components/FloatingWhatsApp"), { ssr: false });
+const FloatingAI = dynamic(() => import("@/components/FloatingAI"), { ssr: false });
 import { GoogleAuthProvider } from "@/lib/googleAuth";
 
 export default function RootLayout({
@@ -28,8 +30,8 @@ export default function RootLayout({
     pathname.startsWith("/confidentialite") ||
     pathname.startsWith("/checkout") ||
     pathname.startsWith("/histoire") ||
-    pathname.startsWith("/guide") ||  // ← virgule au lieu de point-virgule
-    pathname === "/"                // ← maintenant évalué correctement
+    pathname.startsWith("/guide") ||  
+    pathname === "/"                
 
   return (
     <html lang="fr">

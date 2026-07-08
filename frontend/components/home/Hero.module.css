@@ -38,10 +38,6 @@
   transform: translateY(-50%);
   width: 768px;
   height: 1024px;
-  background-image: url("/images/hero/art-jatie-plage.jpeg");
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
   z-index: 1;
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 25%);
   mask-image: linear-gradient(to right, transparent 0%, black 25%);

@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import Hero from "@/components/home/Hero";
 import StatsBar from "@/components/home/StatsBar";
-import BubbleGrid from "@/components/home/BubbleGrid";
-import VideoSection from "@/components/home/VideoSection";
-import Testimonials from "@/components/home/Testimonials";
-import BoutiqueSection from "@/components/home/BoutiqueSection";
-import WhyUsSection from "@/components/home/WhyUsSection";
+
+const BubbleGrid = dynamic(() => import("@/components/home/BubbleGrid"));
+const WhyUsSection = dynamic(() => import("@/components/home/WhyUsSection"));
+const VideoSection = dynamic(() => import("@/components/home/VideoSection"));
+const BoutiqueSection = dynamic(() => import("@/components/home/BoutiqueSection"));
+const Testimonials = dynamic(() => import("@/components/home/Testimonials"));
 import { getProducts } from "@/lib/api";
 
 export const metadata: Metadata = {
