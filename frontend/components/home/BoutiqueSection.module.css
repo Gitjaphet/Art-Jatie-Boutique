@@ -12,7 +12,7 @@
   --taupe: #9a8c82;
   --rule: rgba(26, 23, 20, 0.08);
   --card-radius: 20px;
-  
+  --taupe-dark: #6e6259;
 
   background: #faf7f3;
   font-family: "DM Sans", sans-serif;
@@ -488,7 +488,7 @@
 
 .ctaHint {
   font-size: 11px;
-  color: var(--taupe);
+  color: var(--taupe-dark);
   font-weight: 300;
   letter-spacing: 0.05em;
   text-align: center;
