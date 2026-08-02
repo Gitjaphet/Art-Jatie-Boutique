@@ -30,6 +30,7 @@ export default function RootLayout({
     pathname.startsWith("/confidentialite") ||
     pathname.startsWith("/checkout") ||
     pathname.startsWith("/histoire") ||
+    pathname.startsWith("/formation") ||
     pathname.startsWith("/guide") ||  
     pathname === "/"                
 
