@@ -434,7 +434,7 @@ export default function FormationPage() {
           </div>
 
           <div className={styles.mediaCard}>
-            <span className={styles.mediaLabel}>Résultats</span>
+            
             <ResultsCarousel images={resultats} />
           </div>
         </div>
