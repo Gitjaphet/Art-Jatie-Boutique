@@ -11,31 +11,38 @@ const programme = [
   "La technique du granny square, la base de nos pièces signature",
   "Le montage en rond et le dégradé de couleurs",
   "Les finitions propres : bordures, lacets, pompons",
-  "Le choix et la réalisation de votre modèle : culotte, soutif, top, robe, short, sac ou chapeau",
+  "La confection de vos propres pièces : shorts, pantalons, robes, jupes, tops, bikinis, soutiens-gorge, jupes et robes de plage, sacs",
 ];
 
 const formules = [
   {
-    nom: "Séance à la carte",
-    prix: "5 000 Ar",
-    unite: "/ séance",
-    description:
-      "Idéal pour découvrir le crochet ou continuer à votre rythme, séance après séance.",
-    inclus: ["Encadrement personnalisé", "Prêt de matériel sur place"],
-    accent: false,
-  },
-  {
-    nom: "Forfait Weekend Complet",
-    prix: "25 000 Ar",
-    unite: "/ 2 jours",
-    description:
-      "Le programme complet du samedi au dimanche pour repartir avec une pièce terminée.",
-    inclus: [
-      "Matériel crochet complet fourni (aiguille, laine, ciseaux, marqueurs, ruban)",
-      "Groupe limité à 10 personnes",
-      "Suivi jusqu'à la finition de votre pièce",
+    nom: "Formation Complète",
+    tagline: "Le programme entier, du débutant à l'autonomie",
+    prix: "80 000 Ar",
+    unite: "au total",
+    meta: ["2 mois", "3 séances / semaine"],
+    paiement:
+      "Payable en 2 fois : 40 000 Ar à l'inscription, puis 40 000 Ar une semaine après le début des cours.",
+    piecesLabel: "Vous apprendrez à confectionner :",
+    pieces: [
+      "Shorts & pantalons",
+      "Robes & jupes",
+      "Tops, bikinis & soutiens-gorge",
+      "Jupes et robes de plage",
+      "Sacs",
     ],
     accent: true,
+  },
+  {
+    nom: "Cours à la carte",
+    tagline: "Un modèle à la fois, à votre rythme",
+    prix: "5 000 Ar",
+    unite: "/ séance et par modèle",
+    meta: ["Sans engagement", "Flexible"],
+    paiement: null,
+    piecesLabel: "Exemple :",
+    pieces: ["Un short = 5 000 Ar", "Un sac = 5 000 Ar"],
+    accent: false,
   },
 ];
 
@@ -82,20 +89,24 @@ const temoignages = [
 
 const resultats = [
   {
-    src: "/images/formation/resultats/piece-1.png",
+    src: "/images/formation/resultats/piece-1.jpg",
     alt: "Short en crochet motif granny square réalisé en formation",
   },
   {
-    src: "/images/formation/resultats/piece-2.png",
+    src: "/images/formation/resultats/piece-2.jpg",
     alt: "Haut de bikini en crochet réalisé par une élève débutante",
   },
   {
-    src: "/images/formation/resultats/piece-3.png",
+    src: "/images/formation/resultats/piece-3.jpg",
     alt: "Sac bandoulière en crochet réalisé pendant une formation Art Jatie",
   },
   {
-    src: "/images/formation/resultats/piece-4.png",
+    src: "/images/formation/resultats/piece-4.jpg",
     alt: "Ensemble crochet deux pièces terminé par une élève",
+  },
+  {
+    src: "/images/formation/resultats/piece-5.jpg",
+    alt: "Brassière en crochet vert réalisée par une débutante",
   },
 ];
 
@@ -105,20 +116,24 @@ const faq = [
     r: "Non. La formation est ouverte aux débutantes complètes : nous commençons par le point de base et la tenue du fil avant d'aborder le granny square.",
   },
   {
-    q: "Le matériel est-il fourni ?",
-    r: "Oui, pour le forfait weekend complet, tout le matériel (aiguille, laine, ciseaux, marqueurs, ruban) est inclus. Pour une séance à la carte, le matériel de base est prêté sur place.",
+    q: "Combien de temps dure la formation complète ?",
+    r: "2 mois, à raison de 3 séances par semaine, pour aller du point de base jusqu'à la confection autonome de vos pièces.",
   },
   {
-    q: "Combien de personnes par session ?",
-    r: "Les groupes sont volontairement limités à 10 personnes maximum, pour un encadrement individuel de qualité.",
+    q: "Puis-je payer en plusieurs fois ?",
+    r: "Oui, pour la formation complète (80 000 Ar) : 40 000 Ar à l'inscription, puis 40 000 Ar une semaine après le début des cours.",
+  },
+  {
+    q: "Quelle est la différence avec les cours à la carte ?",
+    r: "Le cours à la carte (5 000 Ar) se prend séance par séance et modèle par modèle, sans engagement — idéal si vous voulez juste apprendre une pièce précise ou avancer à votre rythme.",
   },
   {
     q: "Où se déroule la formation ?",
-    r: "Les sessions ont lieu sur place à Nosy Be. L'adresse exacte est communiquée après réservation par WhatsApp ou Messenger.",
+    r: "À Hell-Ville, quartier Senganinga, à Nosy Be. L'adresse précise est communiquée après réservation par WhatsApp ou Messenger.",
   },
   {
     q: "Puis-je choisir le modèle que je veux réaliser ?",
-    r: "Oui, une fois les bases acquises, vous choisissez votre modèle : culotte, soutif, top, robe, short, sac ou chapeau.",
+    r: "Oui. Au fil de la formation, vous choisissez parmi shorts, pantalons, robes, jupes, tops, bikinis, soutiens-gorge, jupes et robes de plage, ou sacs.",
   },
 ];
 
@@ -135,15 +150,15 @@ export default function FormationPage() {
       {/* HERO */}
       <section className={styles.hero}>
         <div>
-          <p className={styles.eyebrow}>Art Jatie — Nosy Be</p>
+          <p className={styles.eyebrow}>Art Jatie — Hell-Ville, Nosy Be</p>
           <h1 className={styles.h1}>
             Apprenez le crochet, point par point, jusqu&apos;à{" "}
             <em>votre propre création</em>
           </h1>
           <p className={styles.heroLead}>
-            Une formation en petit groupe à Nosy Be, pensée pour les
-            débutantes : vous repartez avec une technique solide et une
-            pièce faite de vos mains.
+            Une formation à Hell-Ville, quartier Senganinga (Nosy Be),
+            pensée pour les débutantes : vous repartez avec une technique
+            solide et des pièces faites de vos mains.
           </p>
           <div className={styles.heroActions}>
             <a
@@ -262,19 +277,36 @@ export default function FormationPage() {
               }`}
             >
               {f.accent && (
-                <span className={styles.badge}>La plus choisie</span>
+                <span className={styles.badge}>La plus complète</span>
               )}
               <h3 className={styles.h3}>{f.nom}</h3>
+              <p className={styles.formuleTagline}>{f.tagline}</p>
               <p className={styles.prix}>
                 {f.prix}
                 <span className={styles.prixUnite}>{f.unite}</span>
               </p>
-              <p>{f.description}</p>
-              <ul className={styles.inclusList}>
-                {f.inclus.map((inc) => (
-                  <li key={inc}>{inc}</li>
+
+              <div className={styles.formuleMeta}>
+                {f.meta.map((m) => (
+                  <span key={m} className={styles.metaPill}>
+                    {m}
+                  </span>
                 ))}
-              </ul>
+              </div>
+
+              {f.paiement && (
+                <p className={styles.paymentNote}>{f.paiement}</p>
+              )}
+
+              <div className={styles.formulePieces}>
+                <span className={styles.piecesLabel}>{f.piecesLabel}</span>
+                <ul className={styles.inclusList}>
+                  {f.pieces.map((p) => (
+                    <li key={p}>{p}</li>
+                  ))}
+                </ul>
+              </div>
+
               <a
                 href={WHATSAPP_LINK}
                 target="_blank"
@@ -334,7 +366,7 @@ export default function FormationPage() {
           </div>
 
           <div className={styles.mediaCard}>
-            
+            <span className={styles.mediaLabel}>Résultats</span>
             <ResultsCarousel images={resultats} />
           </div>
         </div>
@@ -365,8 +397,8 @@ export default function FormationPage() {
           Prête à créer votre première pièce ?
         </h2>
         <p>
-          Les places sont limitées à 10 personnes par session, à Nosy Be.
-          Réservez votre créneau dès maintenant.
+          Places limitées, à Hell-Ville (Senganinga), Nosy Be. Réservez
+          votre créneau dès maintenant.
         </p>
         <div className={styles.heroActions}>
           <a

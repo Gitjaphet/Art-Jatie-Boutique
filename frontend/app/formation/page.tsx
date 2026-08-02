@@ -4,16 +4,16 @@ import FormationPage from "./FormationPage";
 const SITE_URL = "https://artjatie.com";
 
 export const metadata: Metadata = {
-  title: "Formation Crochet à Nosy Be | Cours Débutant – Art Jatie",
+  title: "Formation Crochet à Nosy Be | Hell-Ville, Senganinga – Art Jatie",
   description:
-    "Apprenez le crochet à Nosy Be avec Art Jatie : cours pour débutantes, petits groupes de 10 personnes max, matériel inclus. Séance à 5 000 Ar ou forfait weekend à 25 000 Ar.",
+    "Cours de crochet à Hell-Ville (Senganinga), Nosy Be. Formation complète 2 mois à 80 000 Ar (shorts, robes, bikinis, sacs...) ou cours à la carte à 5 000 Ar/séance.",
   alternates: {
     canonical: `${SITE_URL}/formation`,
   },
   openGraph: {
     title: "Formation Crochet à Nosy Be – Art Jatie",
     description:
-      "Cours de crochet pour débutantes à Nosy Be. Apprenez à réaliser vos propres pièces (culotte, soutif, top, sac...) avec Art Jatie.",
+      "Formation complète (2 mois, 80 000 Ar) ou cours à la carte (5 000 Ar/séance) à Hell-Ville, Nosy Be. Apprenez à confectionner shorts, robes, bikinis, sacs et plus.",
     url: `${SITE_URL}/formation`,
     siteName: "Art Jatie",
     type: "website",
@@ -31,17 +31,26 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Formation Crochet à Nosy Be – Art Jatie",
     description:
-      "Cours de crochet pour débutantes à Nosy Be, petits groupes, matériel inclus.",
+      "Formation complète (2 mois, 80 000 Ar) ou cours à la carte (5 000 Ar/séance) à Hell-Ville, Nosy Be.",
     images: [`${SITE_URL}/images/formation/formation-crochet-nosybe-og.jpg`],
   },
   keywords: [
     "formation crochet Nosy Be",
-    "cours crochet Madagascar",
+    "cours crochet Hell-Ville",
+    "cours crochet Senganinga",
     "apprendre le crochet Nosy Be",
     "crochet débutant Nosy Be",
     "atelier crochet Madagascar",
     "Art Jatie formation",
   ],
+};
+
+const businessAddress = {
+  "@type": "PostalAddress",
+  streetAddress: "Senganinga",
+  addressLocality: "Hell-Ville",
+  addressRegion: "Nosy Be",
+  addressCountry: "MG",
 };
 
 // JSON-LD : Course + Provider + Breadcrumb.
@@ -50,9 +59,9 @@ export const metadata: Metadata = {
 const courseJsonLd = {
   "@context": "https://schema.org",
   "@type": "Course",
-  name: "Formation Crochet Débutant – Art Jatie",
+  name: "Formation Crochet – Art Jatie",
   description:
-    "Cours de crochet pour débutantes à Nosy Be : point de base, technique du granny square, finitions, et réalisation de vos propres pièces (culotte, soutif, top, robe, short, sac, chapeau).",
+    "Formation crochet à Hell-Ville (Senganinga), Nosy Be : point de base, granny square, finitions, et réalisation de vos propres pièces (shorts, pantalons, robes, jupes, tops, bikinis, soutiens-gorge, sacs).",
   provider: {
     "@type": "Organization",
     name: "Art Jatie",
@@ -62,44 +71,42 @@ const courseJsonLd = {
   hasCourseInstance: [
     {
       "@type": "CourseInstance",
+      name: "Formation complète",
       courseMode: "Onsite",
-      courseWorkload: "PT2H",
+      courseSchedule: {
+        "@type": "Schedule",
+        repeatFrequency: "P2D",
+        repeatCount: 24,
+      },
       location: {
         "@type": "Place",
         name: "Art Jatie",
-        address: {
-          "@type": "PostalAddress",
-          addressLocality: "Nosy Be",
-          addressCountry: "MG",
-        },
+        address: businessAddress,
+      },
+      offers: {
+        "@type": "Offer",
+        price: "80000",
+        priceCurrency: "MGA",
+        availability: "https://schema.org/InStock",
+        description:
+          "Formation complète, 2 mois, 3 séances par semaine. Paiement en 2 fois possible : 40 000 Ar à l'inscription puis 40 000 Ar une semaine après le début des cours.",
+      },
+    },
+    {
+      "@type": "CourseInstance",
+      name: "Cours à la carte",
+      courseMode: "Onsite",
+      location: {
+        "@type": "Place",
+        name: "Art Jatie",
+        address: businessAddress,
       },
       offers: {
         "@type": "Offer",
         price: "5000",
         priceCurrency: "MGA",
         availability: "https://schema.org/InStock",
-        description: "Tarif à la séance",
-      },
-    },
-    {
-      "@type": "CourseInstance",
-      courseMode: "Onsite",
-      courseWorkload: "P2D",
-      location: {
-        "@type": "Place",
-        name: "Art Jatie",
-        address: {
-          "@type": "PostalAddress",
-          addressLocality: "Nosy Be",
-          addressCountry: "MG",
-        },
-      },
-      offers: {
-        "@type": "Offer",
-        price: "25000",
-        priceCurrency: "MGA",
-        availability: "https://schema.org/InStock",
-        description: "Forfait weekend complet (2 jours), matériel inclus",
+        description: "Tarif à la séance, par modèle réalisé.",
       },
     },
   ],
