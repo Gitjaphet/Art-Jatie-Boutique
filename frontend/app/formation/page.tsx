@@ -105,6 +105,17 @@ const courseJsonLd = {
   ],
 };
 
+const videoJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  name: "Aperçu d'une session de formation crochet Art Jatie à Nosy Be",
+  description:
+    "Immersion dans une session de formation crochet en petit groupe avec Art Jatie, à Nosy Be.",
+  thumbnailUrl: [`${SITE_URL}/images/formation/video-poster.jpg`],
+  uploadDate: "2026-07-01",
+  contentUrl: `${SITE_URL}/videos/formation/session-apercu.mp4`,
+};
+
 const breadcrumbJsonLd = {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
@@ -134,6 +145,10 @@ export default function Page() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(videoJsonLd) }}
       />
       <FormationPage />
     </>

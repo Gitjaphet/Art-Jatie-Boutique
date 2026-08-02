@@ -465,6 +465,95 @@
   color: var(--rose);
 }
 
+/* ─── EN IMAGES : vidéo + carrousel photos ───────────────────────────── */
+.sectionLead {
+  font-size: 0.85rem;
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1.7;
+  max-width: 560px;
+  margin: 0 0 28px;
+}
+
+.mediaGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.mediaCard {
+  position: relative;
+  background: var(--white);
+  height: 560px;
+  overflow: hidden;
+}
+
+.mediaLabel {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 2;
+  background: var(--charcoal);
+  color: var(--white);
+  font-size: 0.63rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+}
+
+.mediaVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: var(--charcoal);
+}
+
+/* Défilement vertical continu, dupliqué à 200% et translaté de -50%
+   pour une boucle parfaitement homogène. Pause au survol pour laisser
+   le temps de regarder une pièce. */
+.ticker {
+  height: 100%;
+  overflow: hidden;
+}
+.tickerTrack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: tickerScroll 26s linear infinite;
+}
+.ticker:hover .tickerTrack {
+  animation-play-state: paused;
+}
+.tickerItem {
+  flex-shrink: 0;
+  height: 280px;
+}
+.tickerImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@keyframes tickerScroll {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tickerTrack {
+    animation: none;
+  }
+}
+
 /* ─── FAQ (accordéon natif, style aligné sur .accItem) ───────────────── */
 .faqList {
   display: flex;
@@ -566,8 +655,12 @@
   }
   .reasonsGrid,
   .formulesGrid,
-  .temoignagesGrid {
+  .temoignagesGrid,
+  .mediaGrid {
     grid-template-columns: 1fr;
+  }
+  .mediaCard {
+    height: 420px;
   }
 }
 
@@ -613,6 +706,12 @@
   .collageItem2 {
     width: 100%;
     aspect-ratio: 16 / 11;
+  }
+  .mediaCard {
+    height: 320px;
+  }
+  .tickerItem {
+    height: 200px;
   }
 }
 

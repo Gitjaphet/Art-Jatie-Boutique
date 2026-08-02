@@ -79,6 +79,29 @@ const temoignages = [
   },
 ];
 
+const resultats = [
+  {
+    src: "/images/formation/resultats/piece-1.jpg",
+    alt: "Short en crochet motif granny square réalisé en formation",
+  },
+  {
+    src: "/images/formation/resultats/piece-2.jpg",
+    alt: "Haut de bikini en crochet réalisé par une élève débutante",
+  },
+  {
+    src: "/images/formation/resultats/piece-3.jpg",
+    alt: "Sac bandoulière en crochet réalisé pendant une formation Art Jatie",
+  },
+  {
+    src: "/images/formation/resultats/piece-4.jpg",
+    alt: "Ensemble crochet deux pièces terminé par une élève",
+  },
+  {
+    src: "/images/formation/resultats/piece-5.jpg",
+    alt: "Brassière en crochet vert réalisée par une débutante",
+  },
+];
+
 const faq = [
   {
     q: "Faut-il déjà savoir crocheter pour s'inscrire ?",
@@ -284,9 +307,59 @@ export default function FormationPage() {
         </div>
       </section>
 
+      <ChainDivider />
+
+      {/* EN IMAGES : vidéo + défilement photos résultats */}
+      <section className={styles.section}>
+        <SectionHeader num="06" tag="En images" />
+        <h2 className={styles.sectionTitle}>Voyez la formation en action</h2>
+        <p className={styles.sectionLead}>
+          Une session filmée pour comprendre l&apos;ambiance, et un aperçu de
+          ce que nos élèves repartent avec.
+        </p>
+        <div className={styles.mediaGrid}>
+          <div className={styles.mediaCard}>
+            <span className={styles.mediaLabel}>Immersion</span>
+            <video
+              className={styles.mediaVideo}
+              poster="/images/formation/video-poster.jpg"
+              controls
+              muted
+              loop
+              playsInline
+              preload="metadata"
+            >
+              <source
+                src="/videos/formation/session-apercu.mp4"
+                type="video/mp4"
+              />
+            </video>
+          </div>
+
+          <div className={styles.mediaCard}>
+            <span className={styles.mediaLabel}>Résultats</span>
+            <div className={styles.ticker}>
+              <div className={styles.tickerTrack}>
+                {[...resultats, ...resultats].map((r, i) => (
+                  <div key={`${r.src}-${i}`} className={styles.tickerItem}>
+                    <Image
+                      src={r.src}
+                      alt={r.alt}
+                      width={480}
+                      height={340}
+                      className={styles.tickerImg}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* FAQ */}
       <section className={styles.section}>
-        <SectionHeader num="06" tag="Questions fréquentes" />
+        <SectionHeader num="07" tag="Questions fréquentes" />
         <h2 className={styles.sectionTitle}>Vous vous demandez peut-être</h2>
         <div className={styles.faqList}>
           {faq.map((item) => (
@@ -301,7 +374,7 @@ export default function FormationPage() {
       {/* CTA FINAL */}
       <section className={styles.finalCta}>
         <div className={styles.sectionHeader}>
-          <span className={styles.sectionNum}>07</span>
+          <span className={styles.sectionNum}>08</span>
           <span className={styles.sectionLine}></span>
           <span className={styles.sectionTag}>Réservation</span>
         </div>
