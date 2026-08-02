@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "https://artjatie.com/og-contact.jpg",
+        url: "https://artjatie.com/images/hero/art-jatie-plage.jpeg",
         width: 1200,
         height: 630,
         alt: "Art Jatie - Atelier crochet artisanal Nosy Be",
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Contactez-nous | Art Jatie Boutique",
     description: "Atelier crochet artisanal à Nosy Be, Madagascar.",
-    images: ["https://artjatie.com/art-jatie-plage.jpeg"],
+    images: ["https://artjatie.com/images/hero/art-jatie-plage.jpeg"],
   },
 };
 

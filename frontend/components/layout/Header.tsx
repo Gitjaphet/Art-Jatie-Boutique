@@ -11,6 +11,7 @@ import CartBadge from "./CartBadge";
 const NAV_LINKS = [
   { href: "/boutique", label: "Boutique" },
   { href: "/commande", label: "Sur Mesure" },
+  { href: "/formation", label: "Formation" },
   { href: "/histoire", label: "À propos" },
   { href: "/galerie", label: "Galerie" },
   { href: "/contact", label: "Contactez-nous" },
