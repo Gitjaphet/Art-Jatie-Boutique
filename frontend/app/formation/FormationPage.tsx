@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import styles from "./FormationPage.module.css";
+import ResultsCarousel from "./ResultsCarousel";
 
 const WHATSAPP_LINK =
   "https://wa.me/261000000000?text=Bonjour%20Art%20Jatie%2C%20je%20suis%20intéressé(e)%20par%20la%20formation%20crochet";
@@ -81,20 +82,24 @@ const temoignages = [
 
 const resultats = [
   {
-    src: "/images/formation/resultats/piece-1.png",
+    src: "/images/formation/resultats/piece-1.jpg",
     alt: "Short en crochet motif granny square réalisé en formation",
   },
   {
-    src: "/images/formation/resultats/piece-2.png",
+    src: "/images/formation/resultats/piece-2.jpg",
     alt: "Haut de bikini en crochet réalisé par une élève débutante",
   },
   {
-    src: "/images/formation/resultats/piece-3.png",
+    src: "/images/formation/resultats/piece-3.jpg",
     alt: "Sac bandoulière en crochet réalisé pendant une formation Art Jatie",
   },
   {
-    src: "/images/formation/resultats/piece-4.png",
+    src: "/images/formation/resultats/piece-4.jpg",
     alt: "Ensemble crochet deux pièces terminé par une élève",
+  },
+  {
+    src: "/images/formation/resultats/piece-5.jpg",
+    alt: "Brassière en crochet vert réalisée par une débutante",
   },
 ];
 
@@ -334,21 +339,7 @@ export default function FormationPage() {
 
           <div className={styles.mediaCard}>
             <span className={styles.mediaLabel}>Résultats</span>
-            <div className={styles.ticker}>
-              <div className={styles.tickerTrack}>
-                {[...resultats, ...resultats].map((r, i) => (
-                  <div key={`${r.src}-${i}`} className={styles.tickerItem}>
-                    <Image
-                      src={r.src}
-                      alt={r.alt}
-                      width={480}
-                      height={340}
-                      className={styles.tickerImg}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
+            <ResultsCarousel images={resultats} />
           </div>
         </div>
       </section>
