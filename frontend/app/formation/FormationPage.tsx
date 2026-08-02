@@ -89,24 +89,20 @@ const temoignages = [
 
 const resultats = [
   {
-    src: "/images/formation/resultats/piece-1.jpg",
+    src: "/images/formation/resultats/piece-1.png",
     alt: "Short en crochet motif granny square réalisé en formation",
   },
   {
-    src: "/images/formation/resultats/piece-2.jpg",
+    src: "/images/formation/resultats/piece-2.png",
     alt: "Haut de bikini en crochet réalisé par une élève débutante",
   },
   {
-    src: "/images/formation/resultats/piece-3.jpg",
+    src: "/images/formation/resultats/piece-3.png",
     alt: "Sac bandoulière en crochet réalisé pendant une formation Art Jatie",
   },
   {
-    src: "/images/formation/resultats/piece-4.jpg",
+    src: "/images/formation/resultats/piece-4.png",
     alt: "Ensemble crochet deux pièces terminé par une élève",
-  },
-  {
-    src: "/images/formation/resultats/piece-5.jpg",
-    alt: "Brassière en crochet vert réalisée par une débutante",
   },
 ];
 
@@ -366,7 +362,7 @@ export default function FormationPage() {
           </div>
 
           <div className={styles.mediaCard}>
-            <span className={styles.mediaLabel}>Résultats</span>
+        
             <ResultsCarousel images={resultats} />
           </div>
         </div>
