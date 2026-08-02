@@ -494,7 +494,7 @@
   position: absolute;
   top: 16px;
   left: 16px;
-  z-index: 2;
+  z-index: 3;
   background: var(--charcoal);
   color: var(--white);
   font-size: 0.63rem;
@@ -512,69 +512,80 @@
   background: var(--charcoal);
 }
 
-/* Défilement horizontal, une image à la fois : chaque image reste 4s
-   à l'écran puis glisse vers la suivante. Piste dupliquée à 200% et
-   animée jusqu'à -50% pour boucler sans coupure visible.
-   NB : les paliers ci-dessous (16%, 20%, 36%...) sont calés sur 5
-   images uniques — si tu changes le nombre d'images dans `resultats`,
-   il faut recalculer les paliers (voir commentaire dans le keyframe). */
-.ticker {
-  height: 100%;
+/* Carrousel : une image à la fois, flèches précédent/suivant,
+   défilement automatique toutes les 4s (voir ResultsCarousel.tsx). */
+.carousel {
+  position: absolute;
+  inset: 0;
   overflow: hidden;
-  position: relative;
 }
-.tickerTrack {
+.carouselTrack {
   display: flex;
-  flex-direction: row;
   height: 100%;
-  width: 100%;
-  animation: tickerSlide 20s ease-in-out infinite;
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.ticker:hover .tickerTrack {
-  animation-play-state: paused;
-}
-.tickerItem {
+.carouselSlide {
+  position: relative;
   flex: 0 0 100%;
   height: 100%;
 }
-.tickerImg {
-  width: 100%;
-  height: 100%;
+.carouselImg {
   object-fit: cover;
-  display: block;
 }
 
-/* 5 images uniques x 4s = 20s de cycle. Chaque palier "plat" (même
-   valeur répétée) = temps de pause ; chaque saut de valeur = le glissement. */
-@keyframes tickerSlide {
-  0%,
-  16% {
-    transform: translateX(0%);
-  }
-  20%,
-  36% {
-    transform: translateX(-10%);
-  }
-  40%,
-  56% {
-    transform: translateX(-20%);
-  }
-  60%,
-  76% {
-    transform: translateX(-30%);
-  }
-  80%,
-  96% {
-    transform: translateX(-40%);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
+.carouselArrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(30, 27, 24, 0.55);
+  color: var(--white);
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.carouselArrow:hover {
+  background: var(--rose);
+}
+.carouselArrowLeft {
+  left: 14px;
+}
+.carouselArrowRight {
+  right: 14px;
+}
+
+.carouselDots {
+  position: absolute;
+  bottom: 16px;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.carouselDot {
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  border: none;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+.carouselDotActive {
+  background: var(--white);
+  transform: scale(1.3);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tickerTrack {
-    animation: none;
+  .carouselTrack {
+    transition: none;
   }
 }
 
