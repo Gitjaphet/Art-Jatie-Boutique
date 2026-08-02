@@ -627,6 +627,71 @@
   }
 }
 
+/* ─── TABLEAU ACCESSOIRES (même pattern que les tableaux du reste du site) ─── */
+.tableWrap {
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.tableThead tr {
+  border-bottom: 1px solid var(--border);
+  background: var(--cream-dark);
+}
+.tableThead th {
+  padding: 12px 20px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: left;
+}
+.tableTbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.tableTbody tr:last-child {
+  border-bottom: none;
+}
+.tableTbody tr:hover {
+  background: var(--rose-dim);
+}
+.tableCell {
+  padding: 14px 20px;
+  font-size: 0.85rem;
+  vertical-align: middle;
+}
+.itemName {
+  font-weight: 500;
+  color: var(--ink);
+}
+.itemDetail {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: 300;
+  margin-top: 2px;
+}
+.itemPrice {
+  font-weight: 600;
+  color: var(--ink);
+}
+.totalRow {
+  background: var(--cream-mid);
+}
+.totalRow .itemName {
+  font-weight: 700;
+}
+.itemPriceTotal {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--rose);
+}
+
 /* ─── FAQ (accordéon natif, style aligné sur .accItem) ───────────────── */
 .faqList {
   display: flex;
@@ -734,6 +799,9 @@
   }
   .mediaCard {
     height: 420px;
+  }
+  .tableCell {
+    padding: 12px 14px;
   }
 }
 

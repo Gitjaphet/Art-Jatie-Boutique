@@ -46,6 +46,19 @@ const formules = [
   },
 ];
 
+const accessoires = [
+  { nom: "Ciseaux", prix: "3 000 Ar" },
+  { nom: "Crochet en fer", detail: "/ pièce", prix: "5 000 Ar" },
+  { nom: "Mètre ruban", detail: "grand modèle", prix: "3 000 Ar" },
+  { nom: "Mètre ruban", detail: "petit modèle", prix: "2 000 Ar" },
+  { nom: "Marqueurs à laine", detail: "sachet de 6", prix: "3 000 Ar" },
+  { nom: "Aiguille", detail: "grande", prix: "1 500 Ar" },
+  { nom: "Aiguille", detail: "moyenne", prix: "1 000 Ar" },
+  { nom: "Aiguille", detail: "petite", prix: "500 Ar" },
+  { nom: "Pelote de fil à coton", prix: "4 000 Ar" },
+  { nom: "Pelote de fil à coton blanc", prix: "4 500 Ar" },
+];
+
 const etapes = [
   {
     titre: "Réservez votre place",
@@ -122,6 +135,10 @@ const faq = [
   {
     q: "Quelle est la différence avec les cours à la carte ?",
     r: "Le cours à la carte (5 000 Ar) se prend séance par séance et modèle par modèle, sans engagement — idéal si vous voulez juste apprendre une pièce précise ou avancer à votre rythme.",
+  },
+  {
+    q: "Dois-je acheter mon propre matériel ?",
+    r: "Vous pouvez vous procurer votre matériel directement chez Art Jatie (voir les tarifs accessoires ci-dessus) — le kit complet revient à 21 000 Ar.",
   },
   {
     q: "Où se déroule la formation ?",
@@ -316,11 +333,66 @@ export default function FormationPage() {
         </div>
       </section>
 
+      {/* ACCESSOIRES */}
+      <section className={styles.section}>
+        <SectionHeader num="05" tag="Matériel" />
+        <h2 className={styles.sectionTitle}>Tarifs des accessoires</h2>
+        <p className={styles.sectionLead}>
+          Pas encore équipée ? Procurez-vous votre matériel directement chez
+          Art Jatie.
+        </p>
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead className={styles.tableThead}>
+              <tr>
+                <th>Accessoire</th>
+                <th>Prix</th>
+              </tr>
+            </thead>
+            <tbody className={styles.tableTbody}>
+              {accessoires.map((a) => (
+                <tr key={`${a.nom}-${a.detail ?? ""}`}>
+                  <td className={styles.tableCell}>
+                    <span className={styles.itemName}>{a.nom}</span>
+                    {a.detail && (
+                      <span className={styles.itemDetail}>{a.detail}</span>
+                    )}
+                  </td>
+                  <td className={styles.tableCell}>
+                    <span className={styles.itemPrice}>{a.prix}</span>
+                  </td>
+                </tr>
+              ))}
+              <tr className={styles.totalRow}>
+                <td className={styles.tableCell}>
+                  <span className={styles.itemName}>
+                    Kit complet — tout le matériel
+                  </span>
+                </td>
+                <td className={styles.tableCell}>
+                  <span className={styles.itemPriceTotal}>21 000 Ar</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div className={styles.heroActions} style={{ marginTop: "1.75rem" }}>
+          <a
+            href={WHATSAPP_LINK}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.ctaSecondary}
+          >
+            Commander mon matériel
+          </a>
+        </div>
+      </section>
+
       <ChainDivider />
 
       {/* TEMOIGNAGES */}
       <section className={styles.section}>
-        <SectionHeader num="05" tag="Témoignages" />
+        <SectionHeader num="06" tag="Témoignages" />
         <h2 className={styles.sectionTitle}>Ce qu&apos;en disent nos élèves</h2>
         <div className={styles.temoignagesGrid}>
           {temoignages.map((t) => (
@@ -336,7 +408,7 @@ export default function FormationPage() {
 
       {/* EN IMAGES : vidéo + défilement photos résultats */}
       <section className={styles.section}>
-        <SectionHeader num="06" tag="En images" />
+        <SectionHeader num="07" tag="En images" />
         <h2 className={styles.sectionTitle}>Voyez la formation en action</h2>
         <p className={styles.sectionLead}>
           Une session filmée pour comprendre l&apos;ambiance, et un aperçu de
@@ -362,7 +434,7 @@ export default function FormationPage() {
           </div>
 
           <div className={styles.mediaCard}>
-        
+            <span className={styles.mediaLabel}>Résultats</span>
             <ResultsCarousel images={resultats} />
           </div>
         </div>
@@ -370,7 +442,7 @@ export default function FormationPage() {
 
       {/* FAQ */}
       <section className={styles.section}>
-        <SectionHeader num="07" tag="Questions fréquentes" />
+        <SectionHeader num="08" tag="Questions fréquentes" />
         <h2 className={styles.sectionTitle}>Vous vous demandez peut-être</h2>
         <div className={styles.faqList}>
           {faq.map((item) => (
@@ -385,7 +457,7 @@ export default function FormationPage() {
       {/* CTA FINAL */}
       <section className={styles.finalCta}>
         <div className={styles.sectionHeader}>
-          <span className={styles.sectionNum}>08</span>
+          <span className={styles.sectionNum}>09</span>
           <span className={styles.sectionLine}></span>
           <span className={styles.sectionTag}>Réservation</span>
         </div>
