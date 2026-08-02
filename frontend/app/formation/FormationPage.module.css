@@ -512,25 +512,30 @@
   background: var(--charcoal);
 }
 
-/* Défilement vertical continu, dupliqué à 200% et translaté de -50%
-   pour une boucle parfaitement homogène. Pause au survol pour laisser
-   le temps de regarder une pièce. */
+/* Défilement horizontal, une image à la fois : chaque image reste 4s
+   à l'écran puis glisse vers la suivante. Piste dupliquée à 200% et
+   animée jusqu'à -50% pour boucler sans coupure visible.
+   NB : les paliers ci-dessous (16%, 20%, 36%...) sont calés sur 5
+   images uniques — si tu changes le nombre d'images dans `resultats`,
+   il faut recalculer les paliers (voir commentaire dans le keyframe). */
 .ticker {
   height: 100%;
   overflow: hidden;
+  position: relative;
 }
 .tickerTrack {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  animation: tickerScroll 26s linear infinite;
+  flex-direction: row;
+  height: 100%;
+  width: 100%;
+  animation: tickerSlide 20s ease-in-out infinite;
 }
 .ticker:hover .tickerTrack {
   animation-play-state: paused;
 }
 .tickerItem {
-  flex-shrink: 0;
-  height: 280px;
+  flex: 0 0 100%;
+  height: 100%;
 }
 .tickerImg {
   width: 100%;
@@ -539,12 +544,31 @@
   display: block;
 }
 
-@keyframes tickerScroll {
-  from {
-    transform: translateY(0);
+/* 5 images uniques x 4s = 20s de cycle. Chaque palier "plat" (même
+   valeur répétée) = temps de pause ; chaque saut de valeur = le glissement. */
+@keyframes tickerSlide {
+  0%,
+  16% {
+    transform: translateX(0%);
   }
-  to {
-    transform: translateY(-50%);
+  20%,
+  36% {
+    transform: translateX(-10%);
+  }
+  40%,
+  56% {
+    transform: translateX(-20%);
+  }
+  60%,
+  76% {
+    transform: translateX(-30%);
+  }
+  80%,
+  96% {
+    transform: translateX(-40%);
+  }
+  100% {
+    transform: translateX(-50%);
   }
 }
 
@@ -709,9 +733,6 @@
   }
   .mediaCard {
     height: 320px;
-  }
-  .tickerItem {
-    height: 200px;
   }
 }
 
