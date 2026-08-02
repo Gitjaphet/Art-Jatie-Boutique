@@ -1,146 +1,242 @@
 /*
-  Palette dérivée directement des photos de laine Art Jatie
-  (teal océan, corail du fil, moutarde, sable) plutôt que d'un
-  crème + terracotta générique.
+  Tokens repris tels quels du reste du site (cf. page Livraison) pour une
+  cohérence totale — plus de palette teal/corail isolée.
 */
 .page {
-  --ink: #1c2b2e;
-  --teal: #1f6e68;
-  --teal-deep: #123f3c;
-  --coral: #e2664f;
-  --mustard: #e2a23c;
-  --sand: #f8f2e2;
-  --sand-line: #e7dcc2;
-  --white: #fffdf8;
+  --cream: #faf7f4;
+  --cream-mid: #f4ede6;
+  --cream-dark: #ede4d8;
+  --rose: #e05070;
+  --rose-dim: rgba(224, 80, 112, 0.12);
+  --rose-hover: #c8415f;
+  --charcoal: #1e1b18;
+  --ink: #2d2926;
+  --muted: #8a807a;
+  --border: #e2d9d0;
+  --white: #ffffff;
+  --green: #1a8f4e;
+  --amber: #c47b1e;
 
-  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
-  --font-body: "Work Sans", "Segoe UI", system-ui, sans-serif;
-
-  background: var(--white);
+  background: var(--cream);
   color: var(--ink);
-  font-family: var(--font-body);
+  font-family: "Jost", "Helvetica Neue", sans-serif;
 }
 
-.eyebrow {
-  font-family: var(--font-body);
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+/* ─── BREADCRUMB ─────────────────────────────────────────────────────── */
+.breadcrumb {
+  max-width: 1450px;
+  margin: 0 auto;
+  padding: 16px 40px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--teal);
-  margin: 0 0 0.75rem;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+.breadcrumb a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.breadcrumb a:hover {
+  color: var(--rose);
+}
+.breadcrumb span {
+  color: var(--ink);
+  opacity: 0.7;
+}
+.breadcrumb sep {
+  opacity: 0.4;
+}
+
+/* ─── EYEBROW / HEADINGS ─────────────────────────────────────────────── */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--rose);
+  margin: 0 0 16px;
+}
+.eyebrow::before {
+  content: "";
+  display: block;
+  width: 28px;
+  height: 1px;
+  background: var(--rose);
 }
 
 .h1 {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(2rem, 4.5vw, 3.25rem);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(2.4rem, 4.5vw, 3.8rem);
+  font-weight: 300;
   line-height: 1.08;
-  color: var(--teal-deep);
-  margin: 0 0 1.25rem;
+  letter-spacing: -0.02em;
+  color: var(--charcoal);
+  margin: 0 0 18px;
+}
+.h1 em {
+  font-style: italic;
+  color: var(--rose);
 }
 
-.h2 {
-  font-family: var(--font-display);
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+.sectionNum {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--rose);
+  letter-spacing: 0.08em;
+  min-width: 20px;
+}
+.sectionLine {
+  width: 32px;
+  height: 1px;
+  background: var(--rose);
+  opacity: 0.4;
+}
+.sectionTag {
+  font-size: 0.65rem;
   font-weight: 600;
-  font-size: clamp(1.6rem, 3vw, 2.25rem);
-  color: var(--teal-deep);
-  margin: 0 0 1.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.sectionTitle {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.85rem;
+  font-weight: 400;
+  color: var(--charcoal);
+  margin: 0 0 28px;
+  line-height: 1.15;
+}
+.sectionTitle em {
+  font-style: italic;
+  color: var(--rose);
 }
 
 .h3 {
-  font-family: var(--font-display);
+  font-size: 0.88rem;
   font-weight: 600;
-  font-size: 1.15rem;
   color: var(--ink);
-  margin: 0 0 0.5rem;
+  letter-spacing: 0.02em;
+  margin: 0 0 5px;
 }
 
-/* ---------- HERO ---------- */
+/* ─── HERO ────────────────────────────────────────────────────────────── */
 .hero {
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: 3rem;
-  align-items: center;
-  max-width: 1180px;
+  max-width: 1450px;
   margin: 0 auto;
-  padding: 4rem 1.5rem 3rem;
+  padding: 80px 40px 60px;
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  align-items: center;
+  gap: 40px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  background: radial-gradient(
+    ellipse at 80% 40%,
+    rgba(224, 80, 112, 0.07) 0%,
+    transparent 65%
+  );
+  pointer-events: none;
 }
 
 .heroLead {
-  font-size: 1.1rem;
-  line-height: 1.6;
-  color: #3a4a4c;
-  max-width: 46ch;
-  margin: 0 0 2rem;
+  font-size: 0.9rem;
+  font-weight: 300;
+  color: var(--muted);
+  max-width: 480px;
+  line-height: 1.75;
+  letter-spacing: 0.01em;
+  margin: 0 0 32px;
 }
 
 .heroActions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.9rem;
+  gap: 12px;
 }
 
 .ctaPrimary,
 .ctaSecondary {
-  display: inline-block;
-  font-family: var(--font-body);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Jost", sans-serif;
+  font-size: 0.73rem;
   font-weight: 600;
-  font-size: 0.95rem;
-  padding: 0.85rem 1.6rem;
-  border-radius: 999px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 15px 28px;
   text-decoration: none;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
-
 .ctaPrimary {
-  background: var(--coral);
+  background: var(--rose);
   color: var(--white);
-  box-shadow: 0 6px 18px rgba(226, 102, 79, 0.35);
+  border: 1px solid var(--rose);
 }
 .ctaPrimary:hover {
-  transform: translateY(-1px);
+  background: var(--rose-hover);
+  border-color: var(--rose-hover);
 }
-
 .ctaSecondary {
   background: transparent;
-  color: var(--teal-deep);
-  border: 1.5px solid var(--teal-deep);
+  color: var(--ink);
+  border: 1px solid var(--border);
 }
 .ctaSecondary:hover {
-  background: var(--teal-deep);
-  color: var(--white);
+  border-color: var(--rose);
+  color: var(--rose);
 }
 
+/* Collage — position absolue en desktop uniquement ; empilé en mobile
+   (voir media queries) pour ne plus jamais chevaucher le texte. */
 .heroCollage {
   position: relative;
   min-height: 420px;
 }
-
 .collageItem1 {
   position: absolute;
   top: 0;
   left: 0;
   width: 72%;
   transform: rotate(-3deg);
-  box-shadow: 0 18px 40px rgba(18, 63, 60, 0.22);
-  border-radius: 14px;
-  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(30, 27, 24, 0.14);
   border: 6px solid var(--white);
+  overflow: hidden;
 }
-
 .collageItem2 {
   position: absolute;
   bottom: -1rem;
   right: 0;
   width: 46%;
   transform: rotate(4deg);
-  box-shadow: 0 14px 30px rgba(18, 63, 60, 0.22);
-  border-radius: 14px;
-  overflow: hidden;
+  box-shadow: 0 14px 30px rgba(30, 27, 24, 0.14);
   border: 6px solid var(--white);
+  overflow: hidden;
 }
-
 .collageImg {
   width: 100%;
   height: 100%;
@@ -148,47 +244,48 @@
   display: block;
 }
 
-/* ---------- SIGNATURE: chain-stitch divider ---------- */
-/* La toute première technique qu'on apprend en crochet -
-   ici en séparateur de section plutôt qu'un simple <hr>. */
+/* ─── DIVIDER (fil de chaînette — signature) ─────────────────────────── */
 .divider {
   max-width: 260px;
   margin: 0.5rem auto 2.5rem;
-  opacity: 0.55;
+  opacity: 0.6;
 }
 .dividerSvg {
   width: 100%;
   height: 16px;
 }
 .dividerSvg path {
-  stroke: var(--coral);
+  stroke: var(--rose);
 }
 
-/* ---------- GENERIC SECTION ---------- */
+/* ─── SECTION ─────────────────────────────────────────────────────────── */
 .section {
   max-width: 1080px;
   margin: 0 auto;
-  padding: 2.5rem 1.5rem;
+  padding: 2.5rem 40px;
 }
 
-/* ---------- REASONS ---------- */
+/* ─── REASONS ─────────────────────────────────────────────────────────── */
 .reasonsGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.75rem;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
 }
 .reasonCard {
-  background: var(--sand);
-  border-radius: 16px;
+  background: var(--white);
   padding: 1.75rem;
 }
 .reasonCard p {
-  color: #4a5b5d;
-  line-height: 1.55;
+  font-size: 0.85rem;
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1.65;
   margin: 0;
 }
 
-/* ---------- PROGRAMME ---------- */
+/* ─── PROGRAMME ───────────────────────────────────────────────────────── */
 .programmeList {
   list-style: none;
   margin: 0;
@@ -200,94 +297,115 @@
 .programmeItem {
   position: relative;
   padding-left: 1.75rem;
-  line-height: 1.55;
+  font-size: 0.9rem;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--ink);
 }
 .programmeItem::before {
   content: "";
   position: absolute;
   left: 0;
-  top: 0.5rem;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--mustard);
+  top: 0.55rem;
+  width: 6px;
+  height: 6px;
+  background: var(--rose);
 }
 
-/* ---------- STEPS ---------- */
+/* ─── STEPS ───────────────────────────────────────────────────────────── */
 .stepsList {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  gap: 2rem;
+  display: flex;
+  flex-direction: column;
 }
 .stepItem {
-  display: grid;
-  grid-template-columns: 52px 1fr;
-  gap: 1.25rem;
-  align-items: flex-start;
+  display: flex;
+  gap: 20px;
+  position: relative;
 }
 .stepNumber {
-  width: 52px;
-  height: 52px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: var(--teal-deep);
-  color: var(--white);
-  font-family: var(--font-display);
-  font-size: 1.25rem;
+  border: 1.5px solid var(--rose);
+  background: var(--white);
+  color: var(--rose);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+}
+.stepItem:last-child .stepNumber {
+  background: var(--rose);
+  color: var(--white);
 }
 .stepItem p {
-  color: #4a5b5d;
-  line-height: 1.55;
+  font-size: 0.82rem;
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1.65;
   margin: 0;
+  padding-bottom: 32px;
+}
+.stepItem:last-child p {
+  padding-bottom: 0;
 }
 
-/* ---------- FORMULES ---------- */
+/* ─── FORMULES ────────────────────────────────────────────────────────── */
 .formulesGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1.75rem;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
 }
 .formuleCard {
   position: relative;
   background: var(--white);
-  border: 1.5px solid var(--sand-line);
-  border-radius: 18px;
   padding: 2rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 .formuleCardAccent {
-  border-color: var(--coral);
-  box-shadow: 0 16px 34px rgba(226, 102, 79, 0.16);
+  background: var(--cream-mid);
 }
 .badge {
   position: absolute;
-  top: -0.75rem;
-  left: 2rem;
-  background: var(--coral);
+  top: 0;
+  right: 0;
+  background: var(--rose);
   color: var(--white);
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   font-weight: 600;
-  padding: 0.3rem 0.8rem;
-  border-radius: 999px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.8rem;
 }
 .prix {
-  font-family: var(--font-display);
+  font-family: "Cormorant Garamond", Georgia, serif;
   font-size: 2.25rem;
-  color: var(--teal-deep);
+  font-weight: 400;
+  color: var(--charcoal);
   margin: 0;
 }
 .prixUnite {
-  font-family: var(--font-body);
-  font-size: 1rem;
-  font-weight: 500;
-  color: #6b7a7c;
+  font-family: "Jost", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--muted);
   margin-left: 0.3rem;
+}
+.formuleCard > p {
+  font-size: 0.85rem;
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0;
 }
 .inclusList {
   list-style: none;
@@ -299,96 +417,125 @@
 .inclusList li {
   padding-left: 1.4rem;
   position: relative;
-  color: #4a5b5d;
-  font-size: 0.95rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 300;
 }
 .inclusList li::before {
-  content: "✓";
+  content: "";
   position: absolute;
   left: 0;
-  color: var(--teal);
-  font-weight: 700;
+  top: 0.5em;
+  width: 4px;
+  height: 4px;
+  background: var(--rose);
 }
 .formuleCard .ctaPrimary,
 .formuleCard .ctaSecondary {
-  text-align: center;
   margin-top: auto;
 }
 
-/* ---------- TEMOIGNAGES ---------- */
+/* ─── TEMOIGNAGES ─────────────────────────────────────────────────────── */
 .temoignagesGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
 }
 .temoignageCard {
   margin: 0;
-  background: var(--sand);
-  border-radius: 16px;
+  background: var(--white);
   padding: 1.75rem;
 }
 .temoignageCard blockquote {
   margin: 0 0 0.75rem;
-  font-family: var(--font-display);
-  font-size: 1.05rem;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  font-weight: 400;
   line-height: 1.5;
   color: var(--ink);
 }
 .temoignageCard figcaption {
-  font-size: 0.9rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  color: var(--teal);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rose);
 }
 
-/* ---------- FAQ ---------- */
+/* ─── FAQ (accordéon natif, style aligné sur .accItem) ───────────────── */
 .faqList {
-  display: grid;
-  gap: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   max-width: 760px;
 }
 .faqItem {
-  border: 1.5px solid var(--sand-line);
-  border-radius: 12px;
-  padding: 1rem 1.25rem;
+  background: var(--white);
+  border: 1px solid var(--border);
 }
 .faqQuestion {
   cursor: pointer;
-  font-weight: 600;
   list-style: none;
+  padding: 18px 22px;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  transition: background 0.15s;
+}
+.faqQuestion:hover {
+  background: var(--rose-dim);
+}
+.faqItem[open] .faqQuestion {
+  background: var(--rose-dim);
 }
 .faqQuestion::-webkit-details-marker {
   display: none;
 }
 .faqQuestion::after {
   content: "+";
-  float: right;
-  font-family: var(--font-display);
-  color: var(--coral);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.1rem;
+  color: var(--rose);
+  flex-shrink: 0;
 }
 .faqItem[open] .faqQuestion::after {
-  content: "–";
+  content: "\2212";
 }
 .faqAnswer {
-  margin: 0.75rem 0 0;
-  color: #4a5b5d;
-  line-height: 1.55;
+  margin: 0;
+  padding: 0 22px 18px;
+  font-size: 0.83rem;
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1.7;
 }
 
-/* ---------- FINAL CTA ---------- */
+/* ─── FINAL CTA ───────────────────────────────────────────────────────── */
 .finalCta {
   max-width: 780px;
   margin: 1rem auto 4rem;
-  padding: 3rem 1.5rem;
+  padding: 3rem 2rem;
   text-align: center;
-  background: var(--teal-deep);
-  border-radius: 24px;
+  background: var(--charcoal);
+}
+.finalCta .sectionTitle {
   color: var(--white);
 }
-.finalCta .h2 {
-  color: var(--white);
+.finalCta .sectionHeader {
+  justify-content: center;
 }
 .finalCta p {
-  color: #d8e6e4;
+  font-size: 0.85rem;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.55);
   margin: 0 0 1.75rem;
 }
 .finalCta .heroActions {
@@ -396,22 +543,26 @@
 }
 .finalCta .ctaSecondary {
   color: var(--white);
-  border-color: var(--white);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 .finalCta .ctaSecondary:hover {
-  background: var(--white);
-  color: var(--teal-deep);
+  border-color: var(--white);
 }
 
-/* ---------- RESPONSIVE ---------- */
-@media (max-width: 860px) {
+/* ─── RESPONSIVE ──────────────────────────────────────────────────────── */
+@media (max-width: 968px) {
   .hero {
     grid-template-columns: 1fr;
-    padding-top: 2.5rem;
+    padding: 60px 24px 40px;
   }
-  .heroCollage {
-    min-height: 320px;
-    order: -1;
+  .hero::after {
+    display: none;
+  }
+  .section {
+    padding: 2rem 24px;
+  }
+  .breadcrumb {
+    padding: 14px 24px;
   }
   .reasonsGrid,
   .formulesGrid,
@@ -420,17 +571,62 @@
   }
 }
 
-/* ---------- ACCESSIBILITY ---------- */
+/* En dessous de 700px, le collage passe d'un montage absolu/pivoté
+   à un empilement simple en flux normal : plus aucun chevauchement
+   possible avec le texte, quelle que soit la hauteur du contenu. */
+@media (max-width: 700px) {
+  .heroCollage {
+    position: static;
+    min-height: 0;
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .collageItem1,
+  .collageItem2 {
+    position: static;
+    width: 50%;
+    transform: none;
+    aspect-ratio: 4 / 5;
+  }
+  .heroActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ctaPrimary,
+  .ctaSecondary {
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    padding: 48px 18px 32px;
+  }
+  .section {
+    padding: 1.75rem 18px;
+  }
+  .heroCollage {
+    flex-direction: column;
+  }
+  .collageItem1,
+  .collageItem2 {
+    width: 100%;
+    aspect-ratio: 16 / 11;
+  }
+}
+
+/* ─── ACCESSIBILITY ───────────────────────────────────────────────────── */
 .ctaPrimary:focus-visible,
 .ctaSecondary:focus-visible,
 .faqQuestion:focus-visible {
-  outline: 3px solid var(--mustard);
+  outline: 2px solid var(--rose);
   outline-offset: 2px;
 }
-
 @media (prefers-reduced-motion: reduce) {
   .ctaPrimary,
-  .ctaSecondary {
+  .ctaSecondary,
+  .faqQuestion {
     transition: none;
   }
 }

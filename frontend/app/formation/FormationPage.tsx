@@ -105,13 +105,20 @@ const faq = [
 export default function FormationPage() {
   return (
     <main className={styles.page}>
+      {/* BREADCRUMB */}
+      <nav className={styles.breadcrumb} aria-label="Fil d'ariane">
+        <Link href="/">Accueil</Link>
+        <span aria-hidden="true">/</span>
+        <span>Formation</span>
+      </nav>
+
       {/* HERO */}
       <section className={styles.hero}>
-        <div className={styles.heroText}>
+        <div>
           <p className={styles.eyebrow}>Art Jatie — Nosy Be</p>
           <h1 className={styles.h1}>
-            Apprenez le crochet, point par point, jusqu&apos;à votre propre
-            création
+            Apprenez le crochet, point par point, jusqu&apos;à{" "}
+            <em>votre propre création</em>
           </h1>
           <p className={styles.heroLead}>
             Une formation en petit groupe à Nosy Be, pensée pour les
@@ -160,7 +167,8 @@ export default function FormationPage() {
 
       {/* POURQUOI */}
       <section className={styles.section}>
-        <h2 className={styles.h2}>Pourquoi apprendre avec Art Jatie</h2>
+        <SectionHeader num="01" tag="Pourquoi Art Jatie" />
+        <h2 className={styles.sectionTitle}>Pourquoi apprendre avec nous</h2>
         <div className={styles.reasonsGrid}>
           <div className={styles.reasonCard}>
             <h3 className={styles.h3}>Une méthode pas à pas</h3>
@@ -189,7 +197,8 @@ export default function FormationPage() {
 
       {/* PROGRAMME */}
       <section className={styles.section}>
-        <h2 className={styles.h2}>Ce que vous allez apprendre</h2>
+        <SectionHeader num="02" tag="Le programme" />
+        <h2 className={styles.sectionTitle}>Ce que vous allez apprendre</h2>
         <ul className={styles.programmeList}>
           {programme.map((item) => (
             <li key={item} className={styles.programmeItem}>
@@ -203,7 +212,10 @@ export default function FormationPage() {
 
       {/* DEROULEMENT */}
       <section className={styles.section}>
-        <h2 className={styles.h2}>Comment se déroule une formation</h2>
+        <SectionHeader num="03" tag="Déroulement" />
+        <h2 className={styles.sectionTitle}>
+          Comment se déroule une formation
+        </h2>
         <ol className={styles.stepsList}>
           {etapes.map((etape, i) => (
             <li key={etape.titre} className={styles.stepItem}>
@@ -219,7 +231,8 @@ export default function FormationPage() {
 
       {/* FORMULES */}
       <section id="formules" className={styles.section}>
-        <h2 className={styles.h2}>Formules &amp; tarifs</h2>
+        <SectionHeader num="04" tag="Formules & tarifs" />
+        <h2 className={styles.sectionTitle}>Choisissez votre formule</h2>
         <div className={styles.formulesGrid}>
           {formules.map((f) => (
             <div
@@ -259,12 +272,13 @@ export default function FormationPage() {
 
       {/* TEMOIGNAGES */}
       <section className={styles.section}>
-        <h2 className={styles.h2}>Ce qu&apos;en disent nos élèves</h2>
+        <SectionHeader num="05" tag="Témoignages" />
+        <h2 className={styles.sectionTitle}>Ce qu&apos;en disent nos élèves</h2>
         <div className={styles.temoignagesGrid}>
           {temoignages.map((t) => (
             <figure key={t.nom} className={styles.temoignageCard}>
               <blockquote>&laquo;&nbsp;{t.texte}&nbsp;&raquo;</blockquote>
-              <figcaption>— {t.nom}</figcaption>
+              <figcaption>{t.nom}</figcaption>
             </figure>
           ))}
         </div>
@@ -272,7 +286,8 @@ export default function FormationPage() {
 
       {/* FAQ */}
       <section className={styles.section}>
-        <h2 className={styles.h2}>Questions fréquentes</h2>
+        <SectionHeader num="06" tag="Questions fréquentes" />
+        <h2 className={styles.sectionTitle}>Vous vous demandez peut-être</h2>
         <div className={styles.faqList}>
           {faq.map((item) => (
             <details key={item.q} className={styles.faqItem}>
@@ -285,7 +300,14 @@ export default function FormationPage() {
 
       {/* CTA FINAL */}
       <section className={styles.finalCta}>
-        <h2 className={styles.h2}>Prête à créer votre première pièce ?</h2>
+        <div className={styles.sectionHeader}>
+          <span className={styles.sectionNum}>07</span>
+          <span className={styles.sectionLine}></span>
+          <span className={styles.sectionTag}>Réservation</span>
+        </div>
+        <h2 className={styles.sectionTitle}>
+          Prête à créer votre première pièce ?
+        </h2>
         <p>
           Les places sont limitées à 10 personnes par session, à Nosy Be.
           Réservez votre créneau dès maintenant.
@@ -305,6 +327,16 @@ export default function FormationPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+function SectionHeader({ num, tag }: { num: string; tag: string }) {
+  return (
+    <div className={styles.sectionHeader}>
+      <span className={styles.sectionNum}>{num}</span>
+      <span className={styles.sectionLine}></span>
+      <span className={styles.sectionTag}>{tag}</span>
+    </div>
   );
 }
 
