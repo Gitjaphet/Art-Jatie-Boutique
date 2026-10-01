@@ -14,8 +14,7 @@ const HERO_IMAGES = [
     src: "/images/hero/crochet-sac-madame.jpeg",
     label: "Sac Madame",
     price: "25 000 Ar",
-    pos: { top: "15%", left: "55%" },
-    size: { w: 200, h: 260 },
+    posClass: styles.card0,
     delay: 0,
     floatClass: styles.float0,
   },
@@ -23,8 +22,7 @@ const HERO_IMAGES = [
     src: "/images/hero/crochet-vetement-efant.jpeg",
     label: "Robe Enfant Fuchsia",
     price: "25 000 Ar",
-    pos: { top: "12%", right: "8%" },
-    size: { w: 160, h: 210 },
+    posClass: styles.card1,
     delay: 0.15,
     floatClass: styles.float1,
   },
@@ -32,8 +30,7 @@ const HERO_IMAGES = [
     src: "/images/hero/crochet-tenue-plage.jpeg",
     label: "Ensemble Tournesol",
     price: "40 000 Ar",
-    pos: { bottom: "18%", left: "53%" },
-    size: { w: 180, h: 235 },
+    posClass: styles.card2,
     delay: 0.3,
     floatClass: styles.float2,
   },
@@ -41,8 +38,7 @@ const HERO_IMAGES = [
     src: "/images/hero/crochet-vetement-plage.jpeg",
     label: "Top & Short Émeraude",
     price: "40 000 Ar",
-    pos: { bottom: "10%", right: "10%" },
-    size: { w: 150, h: 190 },
+    posClass: styles.card3,
     delay: 0.45,
     floatClass: styles.float3,
   },
@@ -127,12 +123,9 @@ export default function Hero() {
         {HERO_IMAGES.map((img, i) => (
           <div
             key={i}
-            className={`${styles.photoCard} ${img.floatClass} ${ready ? styles.photoCardReady : ""}`}
+            className={`${styles.photoCard} ${img.posClass} ${img.floatClass} ${ready ? styles.photoCardReady : ""}`}
             style={
               {
-                ...img.pos,
-                width: img.size.w,
-                height: img.size.h,
                 "--card-rot": `${[-2, 3, -1.5, 2.5][i]}deg`,
                 transitionDelay: `${img.delay + 0.4}s`,
                 zIndex: [8, 7, 8, 7][i],
@@ -143,7 +136,7 @@ export default function Hero() {
               src={img.src}
               alt={img.label}
               fill
-              sizes={`(max-width: 339px) 90px, (max-width: 389px) 100px, (max-width: 430px) 118px, (max-width: 1024px) 160px, ${img.size.w}px`}
+              sizes={`(max-width: 339px) 90px, (max-width: 389px) 100px, (max-width: 430px) 118px, (max-width: 1024px) 160px, 200px`}
               style={{ objectFit: "cover" }}
             />
             <div className={styles.photoCardLabel}>

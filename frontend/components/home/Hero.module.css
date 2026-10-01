@@ -531,6 +531,12 @@
    TABLETTE  (769px – 1024px)
    iPad mini, iPad Air, Samsung Tab A8, Surface Go…
    ========================================================================= */
+/* ── Positions desktop des cartes (sorties du TSX) ── */
+.card0 { top: 15%;    left: 55%;  width: 200px; height: 260px; }
+.card1 { top: 12%;    right: 8%;  width: 160px; height: 210px; }
+.card2 { bottom: 18%; left: 53%;  width: 180px; height: 235px; }
+.card3 { bottom: 10%; right: 10%; width: 150px; height: 190px; }
+
 @media (min-width: 769px) and (max-width: 1024px) {
   .heroRoot {
     height: 100svh;
