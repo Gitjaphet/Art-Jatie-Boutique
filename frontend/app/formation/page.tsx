@@ -1,49 +1,65 @@
 import type { Metadata } from "next";
 import FormationPage from "./FormationPage";
+import {
+  PRIX_FORMATION_COMPLETE,
+  PRIX_MODULE,
+  PRIX_SEANCE,
+  formatAr,
+  prixModule,
+  promoModuleActive,
+} from "./tarifs";
 
 const SITE_URL = "https://artjatie.com";
 
-export const metadata: Metadata = {
-  title: "Formation Crochet à Nosy Be | Hell-Ville, Senganinga – Art Jatie",
-  description:
-    "Cours de crochet à Hell-Ville (Senganinga), Nosy Be. Formation complète 2 mois à 80 000 Ar (shorts, robes, bikinis, sacs...) ou cours à la carte à 5 000 Ar/séance.",
-  alternates: {
-    canonical: `${SITE_URL}/formation`,
-  },
-  openGraph: {
-    title: "Formation Crochet à Nosy Be – Art Jatie",
-    description:
-      "Formation complète (2 mois, 80 000 Ar) ou cours à la carte (5 000 Ar/séance) à Hell-Ville, Nosy Be. Apprenez à confectionner shorts, robes, bikinis, sacs et plus.",
-    url: `${SITE_URL}/formation`,
-    siteName: "Art Jatie",
-    type: "website",
-    locale: "fr_FR",
-    images: [
-      {
-        url: `${SITE_URL}/images/formation/formation-crochet-nosybe-og.jpg`,
-        width: 1200,
-        height: 630,
-        alt: "Cours de crochet Art Jatie à Nosy Be",
-      },
+// Régénère la page au plus toutes les heures : la fin de promo (06/11) s'applique sans redéploiement
+export const revalidate = 3600;
+
+const OG_IMAGE = `${SITE_URL}/images/formation/formation-crochet-nosybe-og.jpg`;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const module = formatAr(prixModule());
+  const complete = formatAr(PRIX_FORMATION_COMPLETE);
+  const seance = formatAr(PRIX_SEANCE);
+
+  return {
+    title: "Formation Crochet à Nosy Be | Hell-Ville, Senganinga – Art Jatie",
+    description: `Cours de crochet à Hell-Ville (Senganinga), Nosy Be. Formation complète à ${complete} (2 mois ou 1 mois intensif), module au choix à ${module} ou paiement par séance à ${seance}.`,
+    alternates: {
+      canonical: `${SITE_URL}/formation`,
+    },
+    openGraph: {
+      title: "Formation Crochet à Nosy Be – Art Jatie",
+      description: `Formation complète (${complete}), module au choix (${module}) ou séance (${seance}) à Hell-Ville, Nosy Be. Apprenez à confectionner shorts, robes, bikinis, sacs et plus.`,
+      url: `${SITE_URL}/formation`,
+      siteName: "Art Jatie",
+      type: "website",
+      locale: "fr_FR",
+      images: [
+        {
+          url: OG_IMAGE,
+          width: 1200,
+          height: 630,
+          alt: "Cours de crochet Art Jatie à Nosy Be",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Formation Crochet à Nosy Be – Art Jatie",
+      description: `Formation complète (${complete}), module au choix (${module}) ou séance (${seance}) à Hell-Ville, Nosy Be.`,
+      images: [OG_IMAGE],
+    },
+    keywords: [
+      "formation crochet Nosy Be",
+      "cours crochet Hell-Ville",
+      "cours crochet Senganinga",
+      "apprendre le crochet Nosy Be",
+      "crochet débutant Nosy Be",
+      "atelier crochet Madagascar",
+      "Art Jatie formation",
     ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Formation Crochet à Nosy Be – Art Jatie",
-    description:
-      "Formation complète (2 mois, 80 000 Ar) ou cours à la carte (5 000 Ar/séance) à Hell-Ville, Nosy Be.",
-    images: [`${SITE_URL}/images/formation/formation-crochet-nosybe-og.jpg`],
-  },
-  keywords: [
-    "formation crochet Nosy Be",
-    "cours crochet Hell-Ville",
-    "cours crochet Senganinga",
-    "apprendre le crochet Nosy Be",
-    "crochet débutant Nosy Be",
-    "atelier crochet Madagascar",
-    "Art Jatie formation",
-  ],
-};
+  };
+}
 
 const businessAddress = {
   "@type": "PostalAddress",
@@ -53,64 +69,80 @@ const businessAddress = {
   addressCountry: "MG",
 };
 
+const lieu = {
+  "@type": "Place",
+  name: "Art Jatie",
+  address: businessAddress,
+};
+
 // JSON-LD : Course + Provider + Breadcrumb.
 // Pas d'AggregateRating ici volontairement : on n'a pas de notes vérifiables,
 // et Google sanctionne les faux avis structurés. Les témoignages restent en HTML visible.
-const courseJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Course",
-  name: "Formation Crochet – Art Jatie",
-  description:
-    "Formation crochet à Hell-Ville (Senganinga), Nosy Be : point de base, granny square, finitions, et réalisation de vos propres pièces (shorts, pantalons, robes, jupes, tops, bikinis, soutiens-gorge, sacs).",
-  provider: {
-    "@type": "Organization",
-    name: "Art Jatie",
-    sameAs: "https://www.facebook.com/artjatie",
-    url: SITE_URL,
-  },
-  hasCourseInstance: [
-    {
-      "@type": "CourseInstance",
-      name: "Formation complète",
-      courseMode: "Onsite",
-      courseSchedule: {
-        "@type": "Schedule",
-        repeatFrequency: "P2D",
-        repeatCount: 24,
-      },
-      location: {
-        "@type": "Place",
-        name: "Art Jatie",
-        address: businessAddress,
-      },
-      offers: {
-        "@type": "Offer",
-        price: "80000",
-        priceCurrency: "MGA",
-        availability: "https://schema.org/InStock",
-        description:
-          "Formation complète, 2 mois, 3 séances par semaine. Paiement en 2 fois possible : 40 000 Ar à l'inscription puis 40 000 Ar une semaine après le début des cours.",
-      },
+function getCourseJsonLd() {
+  const promo = promoModuleActive();
+  return {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    name: "Formation Crochet – Art Jatie",
+    description:
+      "Formation crochet à Hell-Ville (Senganinga), Nosy Be : point de base, granny square, finitions, et réalisation de vos propres pièces (shorts, pantalons, robes, jupes, tops, bikinis, soutiens-gorge, sacs).",
+    provider: {
+      "@type": "Organization",
+      name: "Art Jatie",
+      sameAs: "https://www.facebook.com/artjatie",
+      url: SITE_URL,
     },
-    {
-      "@type": "CourseInstance",
-      name: "Cours à la carte",
-      courseMode: "Onsite",
-      location: {
-        "@type": "Place",
-        name: "Art Jatie",
-        address: businessAddress,
+    hasCourseInstance: [
+      {
+        "@type": "CourseInstance",
+        name: "Formation complète",
+        courseMode: "Onsite",
+        courseSchedule: {
+          "@type": "Schedule",
+          repeatFrequency: "P2D",
+          repeatCount: 24,
+        },
+        location: lieu,
+        offers: {
+          "@type": "Offer",
+          price: String(PRIX_FORMATION_COMPLETE),
+          priceCurrency: "MGA",
+          availability: "https://schema.org/InStock",
+          description:
+            "Formation complète : 2 mois à 3 séances par semaine, ou 1 mois à 5 séances par semaine. Paiement en 2 fois possible : 40 000 Ar à l'inscription puis 40 000 Ar une semaine après le début des cours.",
+        },
       },
-      offers: {
-        "@type": "Offer",
-        price: "5000",
-        priceCurrency: "MGA",
-        availability: "https://schema.org/InStock",
-        description: "Tarif à la séance, par modèle réalisé.",
+      {
+        "@type": "CourseInstance",
+        name: "Module au choix",
+        courseMode: "Onsite",
+        location: lieu,
+        offers: {
+          "@type": "Offer",
+          price: String(prixModule()),
+          priceCurrency: "MGA",
+          availability: "https://schema.org/InStock",
+          description: promo
+            ? `Tarif promotionnel par module jusqu'au 6 novembre 2026, puis ${PRIX_MODULE} Ar.`
+            : "Tarif par module réalisé.",
+        },
       },
-    },
-  ],
-};
+      {
+        "@type": "CourseInstance",
+        name: "Paiement par séance",
+        courseMode: "Onsite",
+        location: lieu,
+        offers: {
+          "@type": "Offer",
+          price: String(PRIX_SEANCE),
+          priceCurrency: "MGA",
+          availability: "https://schema.org/InStock",
+          description: "Tarif à la séance, sans engagement.",
+        },
+      },
+    ],
+  };
+}
 
 const videoJsonLd = {
   "@context": "https://schema.org",
@@ -147,7 +179,7 @@ export default function Page() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(courseJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(getCourseJsonLd()) }}
       />
       <script
         type="application/ld+json"

@@ -1,7 +1,18 @@
+import { Fragment } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import styles from "./FormationPage.module.css";
 import ResultsCarousel from "./ResultsCarousel";
+import {
+  DEBUT_SESSION,
+  PRIX_FORMATION_COMPLETE,
+  PRIX_MODULE,
+  PRIX_MODULE_PROMO,
+  PRIX_SEANCE,
+  formatAr,
+  prixModule,
+  promoModuleActive,
+} from "./tarifs";
 
 const WHATSAPP_LINK =
   "https://wa.me/261000000000?text=Bonjour%20Art%20Jatie%2C%20je%20suis%20intéressé(e)%20par%20la%20formation%20crochet";
@@ -14,49 +25,126 @@ const programme = [
   "La confection de vos propres pièces : shorts, pantalons, robes, jupes, tops, bikinis, soutiens-gorge, jupes et robes de plage, sacs",
 ];
 
-const formules = [
-  {
-    nom: "Formation Complète",
-    tagline: "Le programme entier, du débutant à l'autonomie",
-    prix: "80 000 Ar",
-    unite: "au total",
-    meta: ["2 mois", "3 séances / semaine"],
-    paiement:
-      "Payable en 2 fois : 40 000 Ar à l'inscription, puis 40 000 Ar une semaine après le début des cours.",
-    piecesLabel: "Vous apprendrez à confectionner :",
-    pieces: [
-      "Shorts & pantalons",
-      "Robes & jupes",
-      "Tops, bikinis & soutiens-gorge",
-      "Jupes et robes de plage",
-      "Sacs",
-    ],
-    accent: true,
-  },
-  {
-    nom: "Cours à la carte",
-    tagline: "Un modèle à la fois, à votre rythme",
-    prix: "5 000 Ar",
-    unite: "/ séance et par modèle",
-    meta: ["Sans engagement", "Flexible"],
-    paiement: null,
-    piecesLabel: "Exemple :",
-    pieces: ["Un short = 5 000 Ar", "Un sac = 5 000 Ar"],
-    accent: false,
-  },
-];
+type Formule = {
+  nom: string;
+  tagline: string;
+  prix: string;
+  unite: string;
+  meta: string[];
+  paiement: string | null;
+  piecesLabel: string;
+  pieces: string[];
+  accent: boolean;
+  badge: string | null;
+};
 
-const accessoires = [
-  { nom: "Ciseaux", prix: "3 000 Ar" },
-  { nom: "Crochet en fer", detail: "/ pièce", prix: "5 000 Ar" },
-  { nom: "Mètre ruban", detail: "grand modèle", prix: "3 000 Ar" },
-  { nom: "Mètre ruban", detail: "petit modèle", prix: "2 000 Ar" },
-  { nom: "Marqueurs à laine", detail: "sachet de 6", prix: "3 000 Ar" },
-  { nom: "Aiguille", detail: "grande", prix: "1 500 Ar" },
-  { nom: "Aiguille", detail: "moyenne", prix: "1 000 Ar" },
-  { nom: "Aiguille", detail: "petite", prix: "500 Ar" },
-  { nom: "Pelote de fil à coton", prix: "4 000 Ar" },
-  { nom: "Pelote de fil à coton blanc", prix: "4 500 Ar" },
+function getFormules(now: Date): Formule[] {
+  const promo = promoModuleActive(now);
+  return [
+    {
+      nom: "Formation Complète",
+      tagline: "Le programme entier, du débutant à l'autonomie",
+      prix: formatAr(PRIX_FORMATION_COMPLETE),
+      unite: "au total",
+      meta: [
+        "2 mois · 3 séances / semaine",
+        "ou 1 mois · 5 séances / semaine",
+        ...(promo ? [`Session du ${DEBUT_SESSION}`] : []),
+      ],
+      paiement:
+        "Payable en 2 fois : 40 000 Ar à l'inscription, puis 40 000 Ar une semaine après le début des cours.",
+      piecesLabel: "Vous apprendrez à confectionner :",
+      pieces: [
+        "Shorts & pantalons",
+        "Robes & jupes",
+        "Tops, bikinis & soutiens-gorge",
+        "Jupes et robes de plage",
+        "Sacs",
+      ],
+      accent: true,
+      badge: "La plus complète",
+    },
+    {
+      nom: "Module au choix",
+      tagline: "Un modèle précis, appris de A à Z",
+      prix: formatAr(prixModule(now)),
+      unite: "/ module",
+      meta: ["Sans engagement", "Vous choisissez le modèle"],
+      paiement: promo
+        ? `Tarif promo pour toute inscription avant le ${DEBUT_SESSION}, puis ${formatAr(PRIX_MODULE)} le module.`
+        : null,
+      piecesLabel: "Exemples de modules :",
+      pieces: ["Un short", "Un sac", "Un top ou un bikini"],
+      accent: false,
+      badge: promo ? "Promo" : null,
+    },
+    {
+      nom: "Paiement par séance",
+      tagline: "Vous ne payez que les séances suivies",
+      prix: formatAr(PRIX_SEANCE),
+      unite: "/ séance",
+      meta: ["Sans engagement", "Flexible"],
+      paiement: null,
+      piecesLabel: "Idéal pour :",
+      pieces: ["Venir quand vous êtes disponible", "Avancer à votre rythme"],
+      accent: false,
+      badge: null,
+    },
+  ];
+}
+
+type Article = { nom: string; detail?: string; prix: string; enAvant?: boolean };
+
+const materiel: { titre: string; items: Article[] }[] = [
+  {
+    titre: "Fils",
+    items: [
+      { nom: "Pelote de fil à coton", detail: "coloré ou blanc", prix: "4 000 Ar" },
+      { nom: "Milk cotton 4 brins", detail: "50 g", prix: "5 000 Ar" },
+      { nom: "Milk cotton 5 brins", detail: "200 g", prix: "20 000 Ar" },
+      { nom: "Trapilho", detail: "100 g", prix: "5 000 Ar" },
+      { nom: "Trapilho", detail: "150 g", prix: "8 000 Ar" },
+      { nom: "Trapilho", detail: "200 g", prix: "10 000 Ar" },
+      { nom: "Trapilho", detail: "250 g", prix: "13 000 Ar" },
+      { nom: "Trapilho", detail: "300 g", prix: "15 000 Ar" },
+      { nom: "Trapilho", detail: "350 g", prix: "18 000 Ar" },
+      { nom: "Trapilho", detail: "400 g", prix: "20 000 Ar" },
+      { nom: "Trapilho", detail: "450 g", prix: "23 000 Ar" },
+      { nom: "Trapilho", detail: "500 g", prix: "25 000 Ar" },
+      { nom: "Trapilho", detail: "600 g", prix: "30 000 Ar" },
+    ],
+  },
+  {
+    titre: "Montage de sacs",
+    items: [
+      { nom: "Fermoir clic-clac", detail: "30 cm", prix: "19 000 Ar" },
+      { nom: "Fermoir clic-clac", detail: "16 cm", prix: "10 000 Ar" },
+      { nom: "Canevas", prix: "10 000 Ar" },
+      { nom: "Fond de sac", detail: "rond ovale", prix: "10 000 Ar" },
+      { nom: "Fond de sac", detail: "ovale", prix: "13 000 Ar" },
+    ],
+  },
+  {
+    titre: "Outils",
+    items: [
+      { nom: "Ciseaux", prix: "3 000 Ar" },
+      { nom: "Crochet en fer", detail: "/ pièce", prix: "5 000 Ar" },
+      { nom: "Mètre ruban", detail: "grand modèle", prix: "3 000 Ar" },
+      { nom: "Mètre ruban", detail: "petit modèle", prix: "2 000 Ar" },
+      { nom: "Marqueurs à laine", detail: "sachet de 6", prix: "3 000 Ar" },
+      { nom: "Aiguille", detail: "grande", prix: "1 500 Ar" },
+      { nom: "Aiguille", detail: "moyenne", prix: "1 000 Ar" },
+      { nom: "Aiguille", detail: "petite", prix: "500 Ar" },
+    ],
+  },
+  {
+    titre: "Kits & livre",
+    items: [
+      { nom: "Livre formation crochet", detail: "niveau 1", prix: "10 000 Ar" },
+      { nom: "Kit crochet débutant", prix: "17 000 Ar", enAvant: true },
+      { nom: "Kit crochet complet", prix: "55 000 Ar", enAvant: true },
+    ],
+  },
 ];
 
 const etapes = [
@@ -119,38 +207,53 @@ const resultats = [
   },
 ];
 
-const faq = [
-  {
-    q: "Faut-il déjà savoir crocheter pour s'inscrire ?",
-    r: "Non. La formation est ouverte aux débutantes complètes : nous commençons par le point de base et la tenue du fil avant d'aborder le granny square.",
-  },
-  {
-    q: "Combien de temps dure la formation complète ?",
-    r: "2 mois, à raison de 3 séances par semaine, pour aller du point de base jusqu'à la confection autonome de vos pièces.",
-  },
-  {
-    q: "Puis-je payer en plusieurs fois ?",
-    r: "Oui, pour la formation complète (80 000 Ar) : 40 000 Ar à l'inscription, puis 40 000 Ar une semaine après le début des cours.",
-  },
-  {
-    q: "Quelle est la différence avec les cours à la carte ?",
-    r: "Le cours à la carte (5 000 Ar) se prend séance par séance et modèle par modèle, sans engagement — idéal si vous voulez juste apprendre une pièce précise ou avancer à votre rythme.",
-  },
-  {
-    q: "Dois-je acheter mon propre matériel ?",
-    r: "Vous pouvez vous procurer votre matériel directement chez Art Jatie (voir les tarifs accessoires ci-dessus) — le kit complet revient à 21 000 Ar.",
-  },
-  {
-    q: "Où se déroule la formation ?",
-    r: "À Hell-Ville, quartier Senganinga, à Nosy Be. L'adresse précise est communiquée après réservation par WhatsApp ou Messenger.",
-  },
-  {
-    q: "Puis-je choisir le modèle que je veux réaliser ?",
-    r: "Oui. Au fil de la formation, vous choisissez parmi shorts, pantalons, robes, jupes, tops, bikinis, soutiens-gorge, jupes et robes de plage, ou sacs.",
-  },
-];
+function getFaq(now: Date) {
+  const promo = promoModuleActive(now);
+  return [
+    {
+      q: "Faut-il déjà savoir crocheter pour s'inscrire ?",
+      r: "Non. La formation est ouverte aux débutantes complètes : nous commençons par le point de base et la tenue du fil avant d'aborder le granny square.",
+    },
+    ...(promo
+      ? [
+          {
+            q: "Quand commence la prochaine session ?",
+            r: `La prochaine session démarre le ${DEBUT_SESSION}. Inscrivez-vous avant cette date pour profiter du module au choix à ${formatAr(PRIX_MODULE_PROMO)} au lieu de ${formatAr(PRIX_MODULE)}.`,
+          },
+        ]
+      : []),
+    {
+      q: "Combien de temps dure la formation complète ?",
+      r: "Deux rythmes au choix : 2 mois à raison de 3 séances par semaine, ou 1 mois en intensif à raison de 5 séances par semaine. Dans les deux cas, vous allez du point de base jusqu'à la confection autonome de vos pièces.",
+    },
+    {
+      q: "Puis-je payer en plusieurs fois ?",
+      r: `Oui, pour la formation complète (${formatAr(PRIX_FORMATION_COMPLETE)}) : 40 000 Ar à l'inscription, puis 40 000 Ar une semaine après le début des cours.`,
+    },
+    {
+      q: "Quelle est la différence entre le module au choix et le paiement par séance ?",
+      r: `Le module au choix (${formatAr(prixModule(now))}${promo ? `, puis ${formatAr(PRIX_MODULE)} après la promo` : ""}) vous fait apprendre un modèle précis de A à Z. Le paiement par séance (${formatAr(PRIX_SEANCE)}) vous permet de venir quand vous le souhaitez et de ne payer que les séances suivies. Les deux sont sans engagement.`,
+    },
+    {
+      q: "Dois-je acheter mon propre matériel ?",
+      r: "Vous pouvez vous procurer votre matériel directement chez Art Jatie (voir les tarifs du matériel ci-dessus) : le kit crochet débutant revient à 17 000 Ar et le kit crochet complet à 55 000 Ar.",
+    },
+    {
+      q: "Où se déroule la formation ?",
+      r: "À Hell-Ville, quartier Senganinga, à Nosy Be. L'adresse précise est communiquée après réservation par WhatsApp ou Messenger.",
+    },
+    {
+      q: "Puis-je choisir le modèle que je veux réaliser ?",
+      r: "Oui. Au fil de la formation, vous choisissez parmi shorts, pantalons, robes, jupes, tops, bikinis, soutiens-gorge, jupes et robes de plage, ou sacs.",
+    },
+  ];
+}
 
 export default function FormationPage() {
+  const now = new Date();
+  const formules = getFormules(now);
+  const faq = getFaq(now);
+
   return (
     <main className={styles.page}>
       {/* BREADCRUMB */}
@@ -289,9 +392,7 @@ export default function FormationPage() {
                 f.accent ? styles.formuleCardAccent : ""
               }`}
             >
-              {f.accent && (
-                <span className={styles.badge}>La plus complète</span>
-              )}
+              {f.badge && <span className={styles.badge}>{f.badge}</span>}
               <h3 className={styles.h3}>{f.nom}</h3>
               <p className={styles.formuleTagline}>{f.tagline}</p>
               <p className={styles.prix}>
@@ -333,46 +434,59 @@ export default function FormationPage() {
         </div>
       </section>
 
-      {/* ACCESSOIRES */}
+      {/* MATERIEL */}
       <section className={styles.section}>
         <SectionHeader num="05" tag="Matériel" />
-        <h2 className={styles.sectionTitle}>Tarifs des accessoires</h2>
+        <h2 className={styles.sectionTitle}>Tarifs du matériel</h2>
         <p className={styles.sectionLead}>
-          Pas encore équipée ? Procurez-vous votre matériel directement chez
-          Art Jatie.
+          Pas encore équipée ? Procurez-vous vos fils, accessoires et kits
+          directement chez Art Jatie.
         </p>
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead className={styles.tableThead}>
               <tr>
-                <th>Accessoire</th>
+                <th>Article</th>
                 <th>Prix</th>
               </tr>
             </thead>
             <tbody className={styles.tableTbody}>
-              {accessoires.map((a) => (
-                <tr key={`${a.nom}-${a.detail ?? ""}`}>
-                  <td className={styles.tableCell}>
-                    <span className={styles.itemName}>{a.nom}</span>
-                    {a.detail && (
-                      <span className={styles.itemDetail}>{a.detail}</span>
-                    )}
-                  </td>
-                  <td className={styles.tableCell}>
-                    <span className={styles.itemPrice}>{a.prix}</span>
-                  </td>
-                </tr>
+              {materiel.map((groupe) => (
+                <Fragment key={groupe.titre}>
+                  <tr>
+                    <th
+                      colSpan={2}
+                      scope="colgroup"
+                      className={styles.tableCell}
+                      style={{ textAlign: "left", paddingTop: "1.25rem" }}
+                    >
+                      <span className={styles.itemName}>{groupe.titre}</span>
+                    </th>
+                  </tr>
+                  {groupe.items.map((a) => (
+                    <tr
+                      key={`${groupe.titre}-${a.nom}-${a.detail ?? ""}`}
+                      className={a.enAvant ? styles.totalRow : undefined}
+                    >
+                      <td className={styles.tableCell}>
+                        <span className={styles.itemName}>{a.nom}</span>
+                        {a.detail && (
+                          <span className={styles.itemDetail}>{a.detail}</span>
+                        )}
+                      </td>
+                      <td className={styles.tableCell}>
+                        <span
+                          className={
+                            a.enAvant ? styles.itemPriceTotal : styles.itemPrice
+                          }
+                        >
+                          {a.prix}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </Fragment>
               ))}
-              <tr className={styles.totalRow}>
-                <td className={styles.tableCell}>
-                  <span className={styles.itemName}>
-                    Kit complet — tout le matériel
-                  </span>
-                </td>
-                <td className={styles.tableCell}>
-                  <span className={styles.itemPriceTotal}>21 000 Ar</span>
-                </td>
-              </tr>
             </tbody>
           </table>
         </div>
@@ -434,7 +548,6 @@ export default function FormationPage() {
           </div>
 
           <div className={styles.mediaCard}>
-            
             <ResultsCarousel images={resultats} />
           </div>
         </div>
