@@ -141,7 +141,7 @@ const materiel: { titre: string; items: Article[] }[] = [
     titre: "Kits & livre",
     items: [
       { nom: "Livre formation crochet", detail: "niveau 1", prix: "10 000 Ar" },
-      { nom: "Kit crochet débutant", prix: "17 000 Ar", enAvant: true },
+      { nom: "Kit crochet débutant", prix: "21 000 Ar", enAvant: true },
       { nom: "Kit crochet complet", prix: "55 000 Ar", enAvant: true },
     ],
   },
@@ -236,7 +236,7 @@ function getFaq(now: Date) {
     },
     {
       q: "Dois-je acheter mon propre matériel ?",
-      r: "Vous pouvez vous procurer votre matériel directement chez Art Jatie (voir les tarifs du matériel ci-dessus) : le kit crochet débutant revient à 17 000 Ar et le kit crochet complet à 55 000 Ar.",
+      r: "Vous pouvez vous procurer votre matériel directement chez Art Jatie (voir les tarifs du matériel ci-dessus) : le kit crochet débutant revient à 21 000 Ar et le kit crochet complet à 55 000 Ar.",
     },
     {
       q: "Où se déroule la formation ?",
