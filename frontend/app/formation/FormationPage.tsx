@@ -1,8 +1,7 @@
-import { Fragment } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import Reveal from "@/components/Reveal";
 import styles from "./FormationPage.module.css";
-import ResultsCarousel from "./ResultsCarousel";
 import {
   DEBUT_SESSION,
   PRIX_FORMATION_COMPLETE,
@@ -16,6 +15,38 @@ import {
 
 const WHATSAPP_LINK =
   "https://wa.me/261000000000?text=Bonjour%20Art%20Jatie%2C%20je%20suis%20intéressé(e)%20par%20la%20formation%20crochet";
+
+const PHOTO_ATELIER = "/images/formation/atelier-groupe-nosybe.jpg";
+const PHOTO_PIECE = "/images/formation/piece-finie-granny-square.jpg";
+
+/* ─── DONNÉES ─────────────────────────────────────────────────────────── */
+
+const chiffres = [
+  { valeur: "10", label: "élèves max par groupe" },
+  { valeur: "2 mois", label: "ou 1 mois intensif" },
+  { valeur: "1 pièce", label: "faite de vos mains" },
+];
+
+const raisons: { icon: IconName; titre: string; texte: string }[] = [
+  {
+    icon: "steps",
+    titre: "Une méthode pas à pas",
+    texte:
+      "Du point de base à la finition, chaque étape est expliquée et pratiquée en direct, même si vous n'avez jamais tenu un crochet.",
+  },
+  {
+    icon: "group",
+    titre: "Des groupes à taille humaine",
+    texte:
+      "10 personnes maximum par session, pour que chacune reçoive un accompagnement réellement individuel.",
+  },
+  {
+    icon: "heart",
+    titre: "Des résultats concrets",
+    texte:
+      "Nos élèves repartent avec une pièce portable, réalisée de leurs mains — pas seulement des exercices.",
+  },
+];
 
 const programme = [
   "Le point de base et la tenue du fil (pour les débutantes complètes)",
@@ -94,8 +125,32 @@ function getFormules(now: Date): Formule[] {
 }
 
 type Article = { nom: string; detail?: string; prix: string; enAvant?: boolean };
+type GroupeMateriel = { titre: string; vedette?: boolean; items: Article[] };
 
-const materiel: { titre: string; items: Article[] }[] = [
+// Les kits passent en premier : c'est l'achat le plus simple pour une débutante
+const materiel: GroupeMateriel[] = [
+  {
+    titre: "Kits & livre",
+    vedette: true,
+    items: [
+      { nom: "Kit crochet débutant", prix: "21 000 Ar", enAvant: true },
+      { nom: "Kit crochet complet", prix: "55 000 Ar", enAvant: true },
+      { nom: "Livre formation crochet", detail: "niveau 1", prix: "10 000 Ar" },
+    ],
+  },
+  {
+    titre: "Outils",
+    items: [
+      { nom: "Ciseaux", prix: "3 000 Ar" },
+      { nom: "Crochet en fer", detail: "la pièce", prix: "5 000 Ar" },
+      { nom: "Mètre ruban", detail: "grand modèle", prix: "3 000 Ar" },
+      { nom: "Mètre ruban", detail: "petit modèle", prix: "2 000 Ar" },
+      { nom: "Marqueurs à laine", detail: "sachet de 6", prix: "3 000 Ar" },
+      { nom: "Aiguille", detail: "grande", prix: "1 500 Ar" },
+      { nom: "Aiguille", detail: "moyenne", prix: "1 000 Ar" },
+      { nom: "Aiguille", detail: "petite", prix: "500 Ar" },
+    ],
+  },
   {
     titre: "Fils",
     items: [
@@ -122,27 +177,6 @@ const materiel: { titre: string; items: Article[] }[] = [
       { nom: "Canevas", prix: "10 000 Ar" },
       { nom: "Fond de sac", detail: "rond ovale", prix: "10 000 Ar" },
       { nom: "Fond de sac", detail: "ovale", prix: "13 000 Ar" },
-    ],
-  },
-  {
-    titre: "Outils",
-    items: [
-      { nom: "Ciseaux", prix: "3 000 Ar" },
-      { nom: "Crochet en fer", detail: "/ pièce", prix: "5 000 Ar" },
-      { nom: "Mètre ruban", detail: "grand modèle", prix: "3 000 Ar" },
-      { nom: "Mètre ruban", detail: "petit modèle", prix: "2 000 Ar" },
-      { nom: "Marqueurs à laine", detail: "sachet de 6", prix: "3 000 Ar" },
-      { nom: "Aiguille", detail: "grande", prix: "1 500 Ar" },
-      { nom: "Aiguille", detail: "moyenne", prix: "1 000 Ar" },
-      { nom: "Aiguille", detail: "petite", prix: "500 Ar" },
-    ],
-  },
-  {
-    titre: "Kits & livre",
-    items: [
-      { nom: "Livre formation crochet", detail: "niveau 1", prix: "10 000 Ar" },
-      { nom: "Kit crochet débutant", prix: "21 000 Ar", enAvant: true },
-      { nom: "Kit crochet complet", prix: "55 000 Ar", enAvant: true },
     ],
   },
 ];
@@ -249,34 +283,387 @@ function getFaq(now: Date) {
   ];
 }
 
+/* ─── PAGE ────────────────────────────────────────────────────────────── */
+
 export default function FormationPage() {
   const now = new Date();
   const formules = getFormules(now);
   const faq = getFaq(now);
 
   return (
-    <main className={styles.page}>
-      {/* BREADCRUMB */}
-      <nav className={styles.breadcrumb} aria-label="Fil d'ariane">
-        <Link href="/">Accueil</Link>
-        <span aria-hidden="true">/</span>
-        <span>Formation</span>
-      </nav>
-
-      {/* HERO */}
+    <div className={styles.page}>
+      {/* HERO — jamais dans un Reveal : il doit s'afficher tout de suite (LCP) */}
       <section className={styles.hero}>
-        <div>
-          <p className={styles.eyebrow}>Art Jatie — Hell-Ville, Nosy Be</p>
-          <h1 className={styles.h1}>
-            Apprenez le crochet, point par point, jusqu&apos;à{" "}
-            <em>votre propre création</em>
-          </h1>
-          <p className={styles.heroLead}>
-            Une formation à Hell-Ville, quartier Senganinga (Nosy Be),
-            pensée pour les débutantes : vous repartez avec une technique
-            solide et des pièces faites de vos mains.
+        <div className={styles.heroInner}>
+          <div className={styles.heroText}>
+            <nav className={styles.breadcrumb} aria-label="Fil d'ariane">
+              <Link href="/">Accueil</Link>
+              <span aria-hidden="true">/</span>
+              <span>Formation</span>
+            </nav>
+
+            <p className={styles.eyebrow}>Formation crochet · Hell-Ville, Nosy Be</p>
+            <h1 className={styles.h1}>
+              <span className={styles.h1Line}>Apprenez le crochet,</span>
+              <span className={styles.h1Accent}>point par point</span>
+            </h1>
+            <BrushUnderline className={styles.heroBrush} />
+            <p className={styles.heroSubtitle}>jusqu&apos;à votre propre création.</p>
+            <p className={styles.heroLead}>
+              Une formation à Hell-Ville, quartier Senganinga (Nosy Be), pensée
+              pour les débutantes : vous repartez avec une technique solide et
+              des pièces faites de vos mains.
+            </p>
+
+            <div className={styles.actions}>
+              <a
+                href={WHATSAPP_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.ctaPrimary}
+              >
+                Réserver sur WhatsApp
+              </a>
+              <a href="#formules" className={styles.ctaGhost}>
+                Voir les tarifs
+              </a>
+            </div>
+
+            <dl className={styles.chiffres}>
+              {chiffres.map((c) => (
+                <div key={c.label} className={styles.chiffre}>
+                  <dt className={styles.chiffreValeur}>{c.valeur}</dt>
+                  <dd className={styles.chiffreLabel}>{c.label}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+
+          <div className={styles.heroVisual}>
+            <span className={styles.heroFrame} aria-hidden="true" />
+            <div className={styles.heroPhoto}>
+              <Image
+                src={PHOTO_ATELIER}
+                alt="Groupe de participantes lors d'une session de formation crochet Art Jatie à Nosy Be"
+                fill
+                priority
+                sizes="(max-width: 968px) 90vw, 40vw"
+                className={styles.cover}
+              />
+            </div>
+            <div className={styles.heroMedallion}>
+              <Image
+                src={PHOTO_PIECE}
+                alt="Short en crochet motif granny square réalisé pendant une formation Art Jatie"
+                fill
+                sizes="200px"
+                className={styles.cover}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* INTRODUCTION */}
+      <section className={styles.intro}>
+        <Reveal>
+          <span className={styles.introRule} aria-hidden="true" />
+          <p className={styles.introText}>
+            Chez Art Jatie, le crochet s&apos;apprend comme il se pratique à
+            l&apos;atelier : en petit groupe, les mains dans le fil, avec un
+            accompagnement du tout premier point jusqu&apos;à la dernière
+            finition.
           </p>
-          <div className={styles.heroActions}>
+          <p className={styles.introQuote}>Un savoir-faire qui se transmet, de main en main.</p>
+        </Reveal>
+      </section>
+
+      {/* POURQUOI */}
+      <section className={styles.band}>
+        <div className={styles.container}>
+          <SectionHeading kicker="Pourquoi Art Jatie" title="Apprendre" accent="avec nous" />
+          <div className={styles.raisonsGrid}>
+            {raisons.map((r, i) => (
+              <Reveal key={r.titre} delay={i * 120}>
+                <article className={styles.raisonCard}>
+                  <span className={styles.raisonIcon}>
+                    <Icon name={r.icon} />
+                  </span>
+                  <h3 className={styles.cardTitle}>{r.titre}</h3>
+                  <p className={styles.cardText}>{r.texte}</p>
+                </article>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PROGRAMME — texte + photo côte à côte */}
+      <section className={styles.bandTinted}>
+        <div className={`${styles.container} ${styles.split}`}>
+          <div>
+            <SectionHeading
+              kicker="Le programme"
+              title="Ce que vous"
+              accent="allez apprendre"
+              align="left"
+            />
+            <ol className={styles.programmeList}>
+              {programme.map((item, i) => (
+                <li key={item}>
+                  <Reveal delay={i * 80} className={styles.programmeRow}>
+                    <span className={styles.programmeNum}>
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className={styles.programmeText}>{item}</span>
+                  </Reveal>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <Reveal delay={150} className={styles.splitVisual}>
+            <span className={styles.splitFrame} aria-hidden="true" />
+            <div className={styles.splitPhoto}>
+              <Image
+                src={resultats[0].src}
+                alt={resultats[0].alt}
+                fill
+                sizes="(max-width: 968px) 90vw, 40vw"
+                className={styles.cover}
+              />
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* DÉROULEMENT — frise en 3 étapes */}
+      <section className={styles.band}>
+        <div className={styles.container}>
+          <SectionHeading kicker="Déroulement" title="Comment" accent="ça se passe" />
+          <ol className={styles.steps}>
+            {etapes.map((e, i) => (
+              <li key={e.titre} className={styles.step}>
+                <Reveal delay={i * 150}>
+                  <span className={styles.stepNumber}>{i + 1}</span>
+                  <h3 className={styles.cardTitle}>{e.titre}</h3>
+                  <p className={styles.cardText}>{e.texte}</p>
+                </Reveal>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* FORMULES */}
+      <section id="formules" className={styles.bandTinted}>
+        <div className={styles.container}>
+          <SectionHeading kicker="Formules & tarifs" title="Choisissez" accent="votre formule" />
+          <div className={styles.formulesGrid}>
+            {formules.map((f, i) => (
+              <Reveal key={f.nom} delay={i * 120}>
+                <article
+                  className={`${styles.formuleCard} ${f.accent ? styles.formuleCardAccent : ""}`}
+                >
+                  {f.badge && <span className={styles.badge}>{f.badge}</span>}
+                  <h3 className={styles.formuleNom}>{f.nom}</h3>
+                  <p className={styles.formuleTagline}>{f.tagline}</p>
+                  <p className={styles.prix}>
+                    {f.prix}
+                    <span className={styles.prixUnite}>{f.unite}</span>
+                  </p>
+
+                  <div className={styles.formuleMeta}>
+                    {f.meta.map((m) => (
+                      <span key={m} className={styles.metaPill}>
+                        {m}
+                      </span>
+                    ))}
+                  </div>
+
+                  {f.paiement && <p className={styles.paymentNote}>{f.paiement}</p>}
+
+                  <div>
+                    <span className={styles.piecesLabel}>{f.piecesLabel}</span>
+                    <ul className={styles.inclusList}>
+                      {f.pieces.map((p) => (
+                        <li key={p}>{p}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <a
+                    href={WHATSAPP_LINK}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={f.accent ? styles.ctaPrimary : styles.ctaGhost}
+                  >
+                    Réserver cette formule
+                  </a>
+                </article>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* EN IMAGES — galerie décalée + vidéo */}
+      <section className={styles.band}>
+        <div className={styles.container}>
+          <SectionHeading kicker="Nos élèves" title="La formation" accent="en images" />
+          <div className={styles.gallery}>
+            {resultats.map((img, i) => (
+              <Reveal key={img.src} delay={i * 120} className={styles.galleryItem}>
+                <div className={styles.galleryFrame}>
+                  <Image
+                    src={img.src}
+                    alt={img.alt}
+                    fill
+                    sizes="(max-width: 700px) 75vw, (max-width: 968px) 45vw, 25vw"
+                    className={styles.galleryImg}
+                  />
+                </div>
+              </Reveal>
+            ))}
+          </div>
+
+          <div className={styles.immersion}>
+            <Reveal className={styles.immersionText}>
+              <p className={styles.kicker}>Immersion</p>
+              <h3 className={styles.immersionTitle}>
+                Une session, <em>comme si vous y étiez</em>
+              </h3>
+              <p className={styles.cardText}>
+                Une session filmée en atelier pour sentir l&apos;ambiance : le
+                rythme, l&apos;entraide, et les premières pièces qui prennent
+                forme.
+              </p>
+              <a
+                href={WHATSAPP_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.ctaGhost}
+              >
+                Réserver ma place
+              </a>
+            </Reveal>
+            <Reveal delay={150} className={styles.immersionMedia}>
+              <video
+                className={styles.video}
+                poster="/images/formation/video-poster.jpg"
+                controls
+                muted
+                loop
+                playsInline
+                preload="metadata"
+              >
+                <source src="/videos/formation/session-apercu.mp4" type="video/mp4" />
+              </video>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      <ChainDivider />
+
+      {/* TÉMOIGNAGES */}
+      <section className={styles.band}>
+        <div className={styles.container}>
+          <SectionHeading kicker="Témoignages" title="Elles en" accent="parlent" />
+          <div className={styles.temoignagesGrid}>
+            {temoignages.map((t, i) => (
+              <Reveal key={t.nom} delay={(i % 2) * 120}>
+                <figure className={styles.temoignageCard}>
+                  <span className={styles.quoteMark} aria-hidden="true">
+                    &ldquo;
+                  </span>
+                  <blockquote className={styles.quoteText}>{t.texte}</blockquote>
+                  <figcaption className={styles.quoteAuthor}>{t.nom}</figcaption>
+                </figure>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* MATÉRIEL — cartes façon menu, prix alignés par des pointillés */}
+      <section className={styles.bandTinted}>
+        <div className={styles.container}>
+          <SectionHeading kicker="Matériel" title="Votre" accent="matériel" />
+          <p className={styles.sectionLead}>
+            Pas encore équipée ? Procurez-vous vos fils, accessoires et kits
+            directement chez Art Jatie.
+          </p>
+          <div className={styles.materielGrid}>
+            {materiel.map((g, i) => (
+              <Reveal key={g.titre} delay={(i % 2) * 120}>
+                <div
+                  className={`${styles.materielCard} ${g.vedette ? styles.materielCardVedette : ""}`}
+                >
+                  <h3 className={styles.materielTitre}>{g.titre}</h3>
+                  <ul className={styles.materielList}>
+                    {g.items.map((a) => (
+                      <li
+                        key={`${g.titre}-${a.nom}-${a.detail ?? ""}`}
+                        className={`${styles.materielItem} ${a.enAvant ? styles.materielItemEnAvant : ""}`}
+                      >
+                        <span className={styles.itemName}>
+                          {a.nom}
+                          {a.detail && <span className={styles.itemDetail}>{a.detail}</span>}
+                        </span>
+                        <span className={styles.itemDots} aria-hidden="true" />
+                        <span className={styles.itemPrice}>{a.prix}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+          <div className={styles.actionsCenter}>
+            <a
+              href={WHATSAPP_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.ctaGhost}
+            >
+              Commander mon matériel
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className={styles.band}>
+        <div className={styles.containerNarrow}>
+          <SectionHeading kicker="Questions fréquentes" title="Vos" accent="questions" />
+          <Reveal>
+            <div className={styles.faqList}>
+              {faq.map((item) => (
+                <details key={item.q} className={styles.faqItem}>
+                  <summary className={styles.faqQuestion}>{item.q}</summary>
+                  <p className={styles.faqAnswer}>{item.r}</p>
+                </details>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* CTA FINAL — bandeau photo pleine largeur */}
+      <section className={styles.finalCta}>
+        <Image src={PHOTO_ATELIER} alt="" fill sizes="100vw" className={styles.finalCtaBg} />
+        <span className={styles.finalCtaOverlay} aria-hidden="true" />
+        <Reveal className={styles.finalCtaContent}>
+          <p className={styles.kickerLight}>Réservation</p>
+          <h2 className={styles.finalCtaTitle}>
+            Prête à créer <span>votre première pièce ?</span>
+          </h2>
+          <p className={styles.finalCtaText}>
+            Places limitées, à Hell-Ville (Senganinga), Nosy Be. Réservez votre
+            créneau dès maintenant.
+          </p>
+          <div className={styles.actionsCenter}>
             <a
               href={WHATSAPP_LINK}
               target="_blank"
@@ -285,338 +672,58 @@ export default function FormationPage() {
             >
               Réserver sur WhatsApp
             </a>
-            <a href="#formules" className={styles.ctaSecondary}>
-              Voir les tarifs
-            </a>
+            <Link href="/contact" className={styles.ctaLight}>
+              Nous contacter
+            </Link>
           </div>
-        </div>
-
-        <div className={styles.heroCollage} aria-hidden="true">
-          <div className={styles.collageItem1}>
-            <Image
-              src="/images/formation/atelier-groupe-nosybe.jpg"
-              alt="Groupe de participantes lors d'une session de formation crochet Art Jatie à Nosy Be"
-              width={420}
-              height={520}
-              className={styles.collageImg}
-              priority
-            />
-          </div>
-          <div className={styles.collageItem2}>
-            <Image
-              src="/images/formation/piece-finie-granny-square.jpg"
-              alt="Short en crochet motif granny square réalisé pendant une formation Art Jatie"
-              width={320}
-              height={320}
-              className={styles.collageImg}
-            />
-          </div>
-        </div>
+        </Reveal>
       </section>
-
-      <ChainDivider />
-
-      {/* POURQUOI */}
-      <section className={styles.section}>
-        <SectionHeader num="01" tag="Pourquoi Art Jatie" />
-        <h2 className={styles.sectionTitle}>Pourquoi apprendre avec nous</h2>
-        <div className={styles.reasonsGrid}>
-          <div className={styles.reasonCard}>
-            <h3 className={styles.h3}>Une méthode pas à pas</h3>
-            <p>
-              Du point de base à la finition, chaque étape est expliquée et
-              pratiquée en direct, même si vous n&apos;avez jamais tenu un
-              crochet.
-            </p>
-          </div>
-          <div className={styles.reasonCard}>
-            <h3 className={styles.h3}>Des groupes à taille humaine</h3>
-            <p>
-              10 personnes maximum par session, pour que chacune reçoive un
-              accompagnement réellement individuel.
-            </p>
-          </div>
-          <div className={styles.reasonCard}>
-            <h3 className={styles.h3}>Des résultats concrets</h3>
-            <p>
-              Nos élèves repartent avec une pièce portable, réalisée de
-              leurs mains — pas seulement des exercices.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* PROGRAMME */}
-      <section className={styles.section}>
-        <SectionHeader num="02" tag="Le programme" />
-        <h2 className={styles.sectionTitle}>Ce que vous allez apprendre</h2>
-        <ul className={styles.programmeList}>
-          {programme.map((item) => (
-            <li key={item} className={styles.programmeItem}>
-              {item}
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <ChainDivider />
-
-      {/* DEROULEMENT */}
-      <section className={styles.section}>
-        <SectionHeader num="03" tag="Déroulement" />
-        <h2 className={styles.sectionTitle}>
-          Comment se déroule une formation
-        </h2>
-        <ol className={styles.stepsList}>
-          {etapes.map((etape, i) => (
-            <li key={etape.titre} className={styles.stepItem}>
-              <span className={styles.stepNumber}>{i + 1}</span>
-              <div>
-                <h3 className={styles.h3}>{etape.titre}</h3>
-                <p>{etape.texte}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      {/* FORMULES */}
-      <section id="formules" className={styles.section}>
-        <SectionHeader num="04" tag="Formules & tarifs" />
-        <h2 className={styles.sectionTitle}>Choisissez votre formule</h2>
-        <div className={styles.formulesGrid}>
-          {formules.map((f) => (
-            <div
-              key={f.nom}
-              className={`${styles.formuleCard} ${
-                f.accent ? styles.formuleCardAccent : ""
-              }`}
-            >
-              {f.badge && <span className={styles.badge}>{f.badge}</span>}
-              <h3 className={styles.h3}>{f.nom}</h3>
-              <p className={styles.formuleTagline}>{f.tagline}</p>
-              <p className={styles.prix}>
-                {f.prix}
-                <span className={styles.prixUnite}>{f.unite}</span>
-              </p>
-
-              <div className={styles.formuleMeta}>
-                {f.meta.map((m) => (
-                  <span key={m} className={styles.metaPill}>
-                    {m}
-                  </span>
-                ))}
-              </div>
-
-              {f.paiement && (
-                <p className={styles.paymentNote}>{f.paiement}</p>
-              )}
-
-              <div className={styles.formulePieces}>
-                <span className={styles.piecesLabel}>{f.piecesLabel}</span>
-                <ul className={styles.inclusList}>
-                  {f.pieces.map((p) => (
-                    <li key={p}>{p}</li>
-                  ))}
-                </ul>
-              </div>
-
-              <a
-                href={WHATSAPP_LINK}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={f.accent ? styles.ctaPrimary : styles.ctaSecondary}
-              >
-                Réserver cette formule
-              </a>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* MATERIEL */}
-      <section className={styles.section}>
-        <SectionHeader num="05" tag="Matériel" />
-        <h2 className={styles.sectionTitle}>Tarifs du matériel</h2>
-        <p className={styles.sectionLead}>
-          Pas encore équipée ? Procurez-vous vos fils, accessoires et kits
-          directement chez Art Jatie.
-        </p>
-        <div className={styles.tableWrap}>
-          <table className={styles.table}>
-            <thead className={styles.tableThead}>
-              <tr>
-                <th>Article</th>
-                <th>Prix</th>
-              </tr>
-            </thead>
-            <tbody className={styles.tableTbody}>
-              {materiel.map((groupe) => (
-                <Fragment key={groupe.titre}>
-                  <tr>
-                    <th
-                      colSpan={2}
-                      scope="colgroup"
-                      className={styles.tableCell}
-                      style={{ textAlign: "left", paddingTop: "1.25rem" }}
-                    >
-                      <span className={styles.itemName}>{groupe.titre}</span>
-                    </th>
-                  </tr>
-                  {groupe.items.map((a) => (
-                    <tr
-                      key={`${groupe.titre}-${a.nom}-${a.detail ?? ""}`}
-                      className={a.enAvant ? styles.totalRow : undefined}
-                    >
-                      <td className={styles.tableCell}>
-                        <span className={styles.itemName}>{a.nom}</span>
-                        {a.detail && (
-                          <span className={styles.itemDetail}>{a.detail}</span>
-                        )}
-                      </td>
-                      <td className={styles.tableCell}>
-                        <span
-                          className={
-                            a.enAvant ? styles.itemPriceTotal : styles.itemPrice
-                          }
-                        >
-                          {a.prix}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </Fragment>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className={styles.heroActions} style={{ marginTop: "1.75rem" }}>
-          <a
-            href={WHATSAPP_LINK}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.ctaSecondary}
-          >
-            Commander mon matériel
-          </a>
-        </div>
-      </section>
-
-      <ChainDivider />
-
-      {/* TEMOIGNAGES */}
-      <section className={styles.section}>
-        <SectionHeader num="06" tag="Témoignages" />
-        <h2 className={styles.sectionTitle}>Ce qu&apos;en disent nos élèves</h2>
-        <div className={styles.temoignagesGrid}>
-          {temoignages.map((t) => (
-            <figure key={t.nom} className={styles.temoignageCard}>
-              <blockquote>&laquo;&nbsp;{t.texte}&nbsp;&raquo;</blockquote>
-              <figcaption>{t.nom}</figcaption>
-            </figure>
-          ))}
-        </div>
-      </section>
-
-      <ChainDivider />
-
-      {/* EN IMAGES : vidéo + défilement photos résultats */}
-      <section className={styles.section}>
-        <SectionHeader num="07" tag="En images" />
-        <h2 className={styles.sectionTitle}>Voyez la formation en action</h2>
-        <p className={styles.sectionLead}>
-          Une session filmée pour comprendre l&apos;ambiance, et un aperçu de
-          ce que nos élèves repartent avec.
-        </p>
-        <div className={styles.mediaGrid}>
-          <div className={styles.mediaCard}>
-            <span className={styles.mediaLabel}>Immersion</span>
-            <video
-              className={styles.mediaVideo}
-              poster="/images/formation/video-poster.jpg"
-              controls
-              muted
-              loop
-              playsInline
-              preload="metadata"
-            >
-              <source
-                src="/videos/formation/session-apercu.mp4"
-                type="video/mp4"
-              />
-            </video>
-          </div>
-
-          <div className={styles.mediaCard}>
-            <ResultsCarousel images={resultats} />
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className={styles.section}>
-        <SectionHeader num="08" tag="Questions fréquentes" />
-        <h2 className={styles.sectionTitle}>Vous vous demandez peut-être</h2>
-        <div className={styles.faqList}>
-          {faq.map((item) => (
-            <details key={item.q} className={styles.faqItem}>
-              <summary className={styles.faqQuestion}>{item.q}</summary>
-              <p className={styles.faqAnswer}>{item.r}</p>
-            </details>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA FINAL */}
-      <section className={styles.finalCta}>
-        <div className={styles.sectionHeader}>
-          <span className={styles.sectionNum}>09</span>
-          <span className={styles.sectionLine}></span>
-          <span className={styles.sectionTag}>Réservation</span>
-        </div>
-        <h2 className={styles.sectionTitle}>
-          Prête à créer votre première pièce ?
-        </h2>
-        <p>
-          Places limitées, à Hell-Ville (Senganinga), Nosy Be. Réservez
-          votre créneau dès maintenant.
-        </p>
-        <div className={styles.heroActions}>
-          <a
-            href={WHATSAPP_LINK}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.ctaPrimary}
-          >
-            Réserver sur WhatsApp
-          </a>
-          <Link href="/contact" className={styles.ctaSecondary}>
-            Nous contacter
-          </Link>
-        </div>
-      </section>
-    </main>
+    </div>
   );
 }
 
-function SectionHeader({ num, tag }: { num: string; tag: string }) {
+/* ─── COMPOSANTS ──────────────────────────────────────────────────────── */
+
+function SectionHeading({
+  kicker,
+  title,
+  accent,
+  align = "center",
+}: {
+  kicker: string;
+  title: string;
+  accent: string;
+  align?: "center" | "left";
+}) {
   return (
-    <div className={styles.sectionHeader}>
-      <span className={styles.sectionNum}>{num}</span>
-      <span className={styles.sectionLine}></span>
-      <span className={styles.sectionTag}>{tag}</span>
-    </div>
+    <Reveal className={`${styles.heading} ${align === "left" ? styles.headingLeft : ""}`}>
+      <p className={styles.kicker}>{kicker}</p>
+      <h2 className={styles.title}>
+        {title} <span className={styles.titleAccent}>{accent}</span>
+      </h2>
+      <BrushUnderline className={styles.headingBrush} />
+    </Reveal>
+  );
+}
+
+// Trait de pinceau effilé sous les titres (forme pleine, plus fine aux extrémités)
+function BrushUnderline({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 300 12"
+      preserveAspectRatio="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M2 8 C 70 3, 180 1, 298 4 C 190 5, 90 7, 2 11 Z" />
+    </svg>
   );
 }
 
 function ChainDivider() {
   return (
-    <div className={styles.divider} role="presentation" aria-hidden="true">
-      <svg
-        viewBox="0 0 200 20"
-        preserveAspectRatio="none"
-        className={styles.dividerSvg}
-      >
+    <div className={styles.divider} aria-hidden="true">
+      <svg viewBox="0 0 200 20" preserveAspectRatio="none" className={styles.dividerSvg}>
         <path
           d="M0 10 C 10 0, 20 20, 30 10 C 40 0, 50 20, 60 10 C 70 0, 80 20, 90 10 C 100 0, 110 20, 120 10 C 130 0, 140 20, 150 10 C 160 0, 170 20, 180 10 C 190 0, 200 20, 200 10"
           fill="none"
@@ -624,5 +731,44 @@ function ChainDivider() {
         />
       </svg>
     </div>
+  );
+}
+
+type IconName = "steps" | "group" | "heart";
+
+function Icon({ name }: { name: IconName }) {
+  const paths: Record<IconName, React.ReactNode> = {
+    steps: (
+      <>
+        <path d="m3 17 2 2 4-4" />
+        <path d="m3 7 2 2 4-4" />
+        <path d="M13 6h8M13 12h8M13 18h8" />
+      </>
+    ),
+    group: (
+      <>
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+      </>
+    ),
+    heart: (
+      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+    ),
+  };
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="22"
+      height="22"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {paths[name]}
+    </svg>
   );
 }
