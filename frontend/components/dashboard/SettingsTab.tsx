@@ -18,6 +18,7 @@ import {
   Layers,
 } from "lucide-react";
 import styles from "./SettingsTab.module.css";
+import { getAdminToken } from "@/lib/api";
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
@@ -348,7 +349,7 @@ export default function SettingsTab({ toast, initialSettings, refreshSettings }:
 
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"}/settings/?${params}`,
-        { method: "PATCH" }
+        { method: "PATCH", headers: { Authorization: `Bearer ${getAdminToken()}` } }
       );
       if (res.ok) {
         toast("Paramètres enregistrés !", "success");

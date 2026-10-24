@@ -192,7 +192,7 @@ export async function submitProductReview(
 
 
 // --- ADMIN — Modération des avis (token requis) ---
-function getAdminToken(): string {
+export function getAdminToken(): string {
   const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
   if (!token) throw new Error("Non authentifié");
   return token;
