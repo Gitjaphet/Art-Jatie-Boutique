@@ -3,12 +3,13 @@
 import { usePathname } from "next/navigation";
 import "@/css/globals.css";
 import dynamic from "next/dynamic";
-import Header from "@/components/layout/Header"; 
+import Header from "@/components/layout/Header";
+import SmoothScroll from "@/components/SmoothScroll";
+import { GoogleAuthProvider } from "@/lib/googleAuth";
 
 const Footer = dynamic(() => import("@/components/layout/Footer"));
 const FloatingWhatsApp = dynamic(() => import("@/components/FloatingWhatsApp"), { ssr: false });
 const FloatingAI = dynamic(() => import("@/components/FloatingAI"), { ssr: false });
-import { GoogleAuthProvider } from "@/lib/googleAuth";
 
 export default function RootLayout({
   children,
@@ -31,8 +32,8 @@ export default function RootLayout({
     pathname.startsWith("/checkout") ||
     pathname.startsWith("/histoire") ||
     pathname.startsWith("/formation") ||
-    pathname.startsWith("/guide") ||  
-    pathname === "/"                
+    pathname.startsWith("/guide") ||
+    pathname === "/";
 
   return (
     <html lang="fr">
@@ -46,11 +47,13 @@ export default function RootLayout({
         }}
       >
         <GoogleAuthProvider>
-          <Header darkIcons={isLightPage} />
+          <SmoothScroll>
+            <Header darkIcons={isLightPage} />
             <main style={{ paddingTop: isHome ? "0" : "100px" }}>
               {children}
             </main>
-          <Footer />
+            <Footer />
+          </SmoothScroll>
           <FloatingAI />
           <FloatingWhatsApp />
         </GoogleAuthProvider>
