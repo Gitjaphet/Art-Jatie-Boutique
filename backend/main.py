@@ -1,3 +1,4 @@
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from fastapi import FastAPI, Query
 from prometheus_fastapi_instrumentator import Instrumentator
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,6 +36,10 @@ app = FastAPI(
 )
 
 app.state.limiter = limiter
+
+# Vraie IP du visiteur derrière Traefik. Sans ça, tout le monde partage l'IP du proxy
+# et les limites de fréquence deviennent globales (une personne bloque tout le monde).
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=os.getenv("TRUSTED_PROXIES", "127.0.0.1"))
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 Instrumentator().instrument(app).expose(app)
