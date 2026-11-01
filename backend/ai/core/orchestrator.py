@@ -4,6 +4,7 @@ import logging
 import time
 
 from ai.core.token_logger import log_summary
+from ai.core.llm import masquer_donnees_perso
 from ai.agents.classifier import llm1_classifier
 from ai.agents.router import llm2_router
 from ai.agents.reformulator import llm3_reformulateur
@@ -73,11 +74,18 @@ def run_multi_agent(
     token_log = []
     t_total = time.time()
 
-    logging.info(f"[ORCHESTRATOR] ── Début : '{message}'")
+    # Données personnelles masquées avant tout envoi aux modèles gratuits, à Jina et aux logs
+    message_masque = masquer_donnees_perso(message)
+    history_masque = [
+        {**m, "content": masquer_donnees_perso(m.get("content") or "")}
+        for m in (history or [])
+    ]
+
+    logging.info(f"[ORCHESTRATOR] ── Début : '{message_masque}'")
 
     # LLM 1 — Classifier
-    classifier_result = llm1_classifier(token_log, message, history=history)
-    intent = classifier_result.get("intent", "salutation")
+    classifier_result = llm1_classifier(token_log, message_masque, history=history_masque)
+    intent = classifier_result.get("intent", "indisponible")
     logging.info(f"[ORCHESTRATOR] Intent : {intent}")
 
     reponse = ""
@@ -88,7 +96,7 @@ def run_multi_agent(
 
     # ── Recherche / Stats ─────────────────────────────────────────────
     elif intent in ["recherche", "stats"]:
-        router_result = llm2_router(token_log, message, history=history)
+        router_result = llm2_router(token_log, message_masque, history=history_masque)
 
         if router_result:
             tool_name = router_result["tool_name"]
@@ -98,7 +106,7 @@ def run_multi_agent(
             donnees = execute_tool(tool_name, tool_args)
             logging.info(f"[ORCHESTRATOR] Données : {str(donnees)[:200]}")
 
-            reponse = llm3_reformulateur(token_log, message, donnees)
+            reponse = llm3_reformulateur(token_log, message_masque, donnees, mode="stats" if tool_name == "statistiques" else "produits")
         else:
             reponse = "Je suis désolée, je rencontre un petit problème pour effectuer cette recherche. Réessayez dans un instant 💕"
 
@@ -122,7 +130,7 @@ def run_multi_agent(
             # Chercher dans les messages précédents uniquement
             if history and len(history) > 0:
                 historique_texte = " ".join([
-                    m.get("content", "") for m in history
+                    m.get("content", "") for m in history_masque
                     if m.get("role") == "user"  # uniquement les messages du client
                 ])
                 # Chercher seulement si l'historique mentionne un produit réel
@@ -162,11 +170,11 @@ def run_multi_agent(
 
     # ── FAQ ───────────────────────────────────────────────────────────
     elif intent == "faq":
-        reponse = llm5_faq(token_log, message)
+        reponse = llm5_faq(token_log, message_masque)
 
     # ── Fallback ──────────────────────────────────────────────────────
     else:
-        reponse = "Je suis Jatie, votre assistante Art-Jatie 💕 Comment puis-je vous aider ?"
+        reponse = "Je rencontre un petit souci technique 😔 Réessayez dans un instant, ou écrivez-nous sur WhatsApp : 034 30 513 60 💕"
 
     summary = log_summary(token_log)
     logging.info(f"[ORCHESTRATOR] ── Total : {time.time() - t_total:.2f}s | Tokens : {summary['total_tokens']}")

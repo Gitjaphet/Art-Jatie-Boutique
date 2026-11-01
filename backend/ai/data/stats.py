@@ -42,7 +42,7 @@ def get_stats(operation: str, filtre_categorie: str = "", filtre_genre: str = ""
             total_stock = sum(len(v["en_stock"]) for v in cats.values())
             total_commande = sum(len(v["sur_commande"]) for v in cats.values())
             return {
-                "resultat": cats,
+                "resultat": {c: {"en_stock": len(v["en_stock"]), "sur_commande": len(v["sur_commande"])} for c, v in cats.items()},
                 "total_en_stock": total_stock,
                 "total_sur_commande": total_commande,
                 "label": "Variétés par catégorie",
