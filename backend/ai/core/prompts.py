@@ -9,7 +9,6 @@ def _load(filename: str) -> str:
 
 CLASSIFIER  = _load("classifier.txt")
 ROUTER      = _load("router.txt")
-REFORMULATOR = _load("reformulator.txt")
 ORDER_COLLECT = _load("order_collect.txt")
 ORDER_CONFIRM = _load("order_confirm.txt")
 FAQ         = _load("faq.txt")

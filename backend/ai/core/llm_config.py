@@ -30,6 +30,5 @@ CHAINES = {
     "classifier":    [_GROQ_20B, _GEMINI, _OR_120B],
     "faq":           [_GROQ_20B, _GEMINI, _OR_120B],
     "router":        [_GROQ_120B, _OR_120B],
-    "reformulateur": [_GROQ_120B, _GEMINI, _OR_120B],
     "commande":      [_OR_120B],  # données personnelles : payant uniquement, jamais de palier gratuit
 }

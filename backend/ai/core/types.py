@@ -19,5 +19,5 @@ class AlternativesResult(TypedDict):
     alternatives_en_stock: list[ProductDict]
 
 
-# Ce que execute_tool retourne et llm3_reformulateur reçoit
+# Ce que execute_tool retourne
 ToolResult = Union[list[ProductDict], AlternativesResult, dict]

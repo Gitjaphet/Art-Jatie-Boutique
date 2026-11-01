@@ -1,16 +1,60 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
+import Link from "next/link";
 import styles from "./FloatingAI.module.css";
 import { chatWithJatie } from "@/lib/api";
+
+type Produit = {
+  id: number;
+  nom: string;
+  prix_ar: number;
+  prix_eur: number | null;
+  ancien_prix_ar?: number | null;
+  image: string;
+  url: string;
+  disponibilite: string;
+};
+
+type Message = { from: "bot" | "user"; text: string; produits?: Produit[] };
+
+const HISTORIQUE_MAX = 10;
+const formatAr = (n: number) => `${n.toLocaleString("fr-FR")} Ar`;
+
+function CarteProduit({ p, onOuvrir }: { p: Produit; onOuvrir: () => void }) {
+  const contenu = (
+    <>
+      {p.image ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={p.image} alt={p.nom} className={styles.produitImg} loading="lazy" />
+      ) : (
+        <div className={styles.produitImg} />
+      )}
+      <div className={styles.produitInfo}>
+        <span className={styles.produitNom}>{p.nom}</span>
+        <span className={styles.produitPrix}>
+          {formatAr(p.prix_ar)}
+          {p.prix_eur !== null && <span className={styles.produitEur}>≈ {p.prix_eur} €</span>}
+        </span>
+        <span className={styles.produitDispo}>{p.disponibilite}</span>
+      </div>
+    </>
+  );
+  return p.url ? (
+    <Link href={p.url} className={styles.produitCard} onClick={onOuvrir}>{contenu}</Link>
+  ) : (
+    <div className={styles.produitCard}>{contenu}</div>
+  );
+}
 
 export default function FloatingAI() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState([{ from: "bot", text: "Bonjour !" }]);
+  const [messages, setMessages] = useState<Message[]>([{ from: "bot", text: "Bonjour !" }]);
   const cardRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [historiqueCommande, setHistoriqueCommande] = useState<Record<string, any> | null>(null);
+  const [historiqueCommande, setHistoriqueCommande] = useState<Record<string, string | number | null> | null>(null);
   const [clientId] = useState(() => {
     if (typeof window === "undefined") return "anonymous";
     let id = localStorage.getItem("jatie_client_id");
@@ -58,6 +102,16 @@ export default function FloatingAI() {
     };
   }, [isOpen]);
 
+  // Toujours afficher le dernier message
+  useEffect(() => {
+    bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight });
+  }, [messages, isLoading, isOpen]);
+
+  // Sur mobile le widget couvre la page : on le ferme quand la cliente ouvre une fiche produit
+  const fermerSurMobile = () => {
+    if (window.innerWidth < 501) setIsOpen(false);
+  };
+
   const send = async () => {
     if (!input.trim() || isLoading) return;
     const userText = input.trim();
@@ -65,12 +119,14 @@ export default function FloatingAI() {
     setMessages(prev => [...prev, { from: "user", text: userText }]);
     setIsLoading(true);
     try {
-      const formattedHistory = messages.map(m => ({
+      const formattedHistory = messages.slice(-HISTORIQUE_MAX).map(m => ({
         role: m.from === "bot" ? "assistant" : "user",
-        content: m.text,
+        content: m.produits?.length
+          ? `${m.text}\n[Produits proposés : ${m.produits.map(p => p.nom).join(" ; ")}]`
+          : m.text,
       }));
       const result = await chatWithJatie(userText, clientId, "web", historiqueCommande, formattedHistory);
-      setMessages(prev => [...prev, { from: "bot", text: result.response }]);
+      setMessages(prev => [...prev, { from: "bot", text: result.response, produits: result.produits ?? [] }]);
       setHistoriqueCommande(result.historique_commande ?? null);
     } catch {
       setMessages(prev => [...prev, { from: "bot", text: "Désolée, problème technique 😅" }]);
@@ -104,22 +160,26 @@ export default function FloatingAI() {
         </div>
         <button onClick={() => setIsOpen(false)} aria-label="Fermer le chat">✕</button>
       </div>
-      <div className={styles.body}>
+      <div className={styles.body} ref={bodyRef}>
         {messages.map((m, i) => (
           <div key={i} className={m.from === "bot" ? styles.botRow : styles.userRow}>
             {m.from === "bot" && <div className={styles.avatarSmall}>J</div>}
-            <div className={m.from === "bot" ? styles.bot : styles.user}>
-              {m.from === "bot" ? (
-                <span dangerouslySetInnerHTML={{ __html: m.text.replace(
-                  / (https?:\/\/\S+)/g,
-                  '<img src="$1" alt="produit" style="width:100%;border-radius:8px;margin-top:6px;" />'
-                )}} />
-              ) : m.text}
-            </div>
+            {m.from === "bot" ? (
+              <div className={m.produits?.length ? `${styles.bot} ${styles.botLarge}` : styles.bot}>
+                <span className={styles.botText}>{m.text}</span>
+                {!!m.produits?.length && (
+                  <div className={styles.produits}>
+                    {m.produits.map(p => <CarteProduit key={p.id} p={p} onOuvrir={fermerSurMobile} />)}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className={styles.user}>{m.text}</div>
+            )}
             {m.from === "user" && <div className={styles.avatarSmallUser}>C</div>}
           </div>
         ))}
-        {isLoading && (   // ← ICI
+        {isLoading && (
           <div className={styles.botRow}>
             <div className={styles.avatarSmall}>J</div>
             <div className={styles.bot}>

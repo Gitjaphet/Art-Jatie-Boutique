@@ -7,7 +7,7 @@ from ai.core.token_logger import log_summary
 from ai.core.llm import masquer_donnees_perso
 from ai.agents.classifier import llm1_classifier
 from ai.agents.router import llm2_router
-from ai.agents.reformulator import llm3_reformulateur
+from ai.data.cartes import construire_cartes, texte_cartes
 from ai.agents.order_agent import llm4_commande
 from ai.agents.faq import llm5_faq
 from ai.data.products import get_products, recherche_semantique
@@ -40,7 +40,7 @@ def execute_tool(tool_name: str, tool_args: dict) -> list | dict:
 
         # Logique alternative si tout est en rupture
         if isinstance(result, list) and len(result) > 0:
-            tout_en_rupture = all(p.get("stock", 0) == 0 for p in result)
+            tout_en_rupture = all(p.get("stock", 0) == 0 and not p.get("sur_commande") for p in result)
             if tout_en_rupture:
                 terme = requete_libre or tool_args.get("produit") or tool_args.get("categorie") or "chic"
                 alternatives = recherche_semantique(f"Alternative similaire à {terme}", top_k=3)
@@ -90,6 +90,7 @@ def run_multi_agent(
     logging.info(f"[ORCHESTRATOR] Intent : {intent}")
 
     reponse = ""
+    produits = []
 
     # ── Salutation ────────────────────────────────────────────────────
     if intent == "salutation":
@@ -110,7 +111,10 @@ def run_multi_agent(
             if tool_name == "statistiques":
                 reponse = formater_stats(tool_args, donnees)
             else:
-                reponse = llm3_reformulateur(token_log, message_masque, donnees)
+                alternatives = isinstance(donnees, dict) and "alternatives_en_stock" in donnees
+                liste = donnees["alternatives_en_stock"] if alternatives else (donnees if isinstance(donnees, list) else [])
+                produits = construire_cartes(liste)
+                reponse = texte_cartes(produits, alternatives)
         else:
             reponse = "Je suis désolée, je rencontre un petit problème pour effectuer cette recherche. Réessayez dans un instant 💕"
 
@@ -188,4 +192,5 @@ def run_multi_agent(
         "intent": intent,
         "token_summary": summary,
         "historique_commande": historique_commande,
+        "produits": produits,
     }

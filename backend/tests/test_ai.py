@@ -250,15 +250,18 @@ def test_orchestrateur_faq():
 
 
 def test_orchestrateur_recherche(ai_engine):
-    produits_mock = [{"id": 1, "nom": "Sac Raphia", "prix_ar": 45000, "stock": 3}]
+    produits_mock = [{"id": 1, "nom": "Sac Raphia", "slug": "sac-raphia", "prix_ar": 45000,
+                      "stock": 3, "sur_commande": False, "image": "https://test.com/sac.jpg"}]
     with patch("ai.core.orchestrator.llm1_classifier", return_value={"intent": "recherche"}):
         with patch("ai.core.orchestrator.llm2_router", return_value={"tool_name": "rechercher_produit", "tool_args": {"requete_libre": "sac"}}):
             with patch("ai.core.orchestrator.recherche_semantique", return_value=produits_mock):
-                with patch("ai.core.orchestrator.llm3_reformulateur", return_value="Voici un beau sac raphia à 45 000 Ar."):
-                    from ai.core.orchestrator import run_multi_agent
-                    result = run_multi_agent("je cherche un sac")
+                from ai.core.orchestrator import run_multi_agent
+                result = run_multi_agent("je cherche un sac")
     assert result["intent"] == "recherche"
-    assert "sac" in result["response"].lower()
+    carte = result["produits"][0]
+    assert carte["url"] == "/produit/sac-raphia"
+    assert carte["prix_eur"] == 10  # 45000 / 4500
+    assert carte["disponibilite"] == "En stock (3 pièces)"
 
 # ── Tests formater_stats (réponses chiffrées écrites par le code) ──────────
 
@@ -301,3 +304,19 @@ def test_score_lexical_nom_vaut_plus_que_description():
 def test_score_lexical_aucun_mot_commun():
     from ai.data.products import score_lexical
     assert score_lexical({"voiture"}, "Robe Crochet Fuchsia", "TENUES robe plage") == 0.0
+
+
+# ── Tests cartes produit ───────────────────────────────────────────────────
+
+def test_cartes_sur_commande_et_limite():
+    from ai.data.cartes import construire_cartes, MAX_CARTES
+    produits = [{"id": i, "nom": f"P{i}", "slug": f"p{i}", "prix_ar": 9000, "stock": 0, "sur_commande": True}
+                for i in range(8)]
+    cartes = construire_cartes(produits)
+    assert len(cartes) == MAX_CARTES
+    assert cartes[0]["disponibilite"] == "Sur commande · 7 jours"
+
+
+def test_texte_cartes_aucun_resultat_propose_sur_mesure():
+    from ai.data.cartes import texte_cartes
+    assert "sur mesure" in texte_cartes([])

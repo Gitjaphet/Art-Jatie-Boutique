@@ -33,7 +33,7 @@ async def chat(body: ChatRequest):
             "response":             resultat.get("response", "Erreur de génération."),
             "intent":               resultat.get("intent"),
             "historique_commande":  resultat.get("historique_commande"),
-            "token_summary":        resultat.get("token_summary"),
+            "produits":             resultat.get("produits", []),
         }
     except Exception as e:
         logging.error(f"[ROUTER] Erreur critique : {str(e)}", exc_info=True)
