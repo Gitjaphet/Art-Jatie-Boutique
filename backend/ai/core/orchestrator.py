@@ -12,6 +12,7 @@ from ai.agents.order_agent import llm4_commande
 from ai.agents.faq import llm5_faq
 from ai.data.products import get_products, recherche_semantique
 from ai.data.stats import get_stats
+from ai.data.stats_texte import formater_stats
 from ai.data.orders import passer_commande
 
 
@@ -106,7 +107,10 @@ def run_multi_agent(
             donnees = execute_tool(tool_name, tool_args)
             logging.info(f"[ORCHESTRATOR] Données : {str(donnees)[:200]}")
 
-            reponse = llm3_reformulateur(token_log, message_masque, donnees, mode="stats" if tool_name == "statistiques" else "produits")
+            if tool_name == "statistiques":
+                reponse = formater_stats(tool_args, donnees)
+            else:
+                reponse = llm3_reformulateur(token_log, message_masque, donnees)
         else:
             reponse = "Je suis désolée, je rencontre un petit problème pour effectuer cette recherche. Réessayez dans un instant 💕"
 

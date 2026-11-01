@@ -259,3 +259,27 @@ def test_orchestrateur_recherche(ai_engine):
                     result = run_multi_agent("je cherche un sac")
     assert result["intent"] == "recherche"
     assert "sac" in result["response"].lower()
+
+# ── Tests formater_stats (réponses chiffrées écrites par le code) ──────────
+
+def test_formater_stats_count_categorie():
+    from ai.data.stats_texte import formater_stats
+    t = formater_stats({"operation": "count", "filtre_categorie": "ACCESSOIRES"}, {"resultat": 3})
+    assert "3 articles" in t and "accessoires" in t
+
+
+def test_formater_stats_zero_propose_sur_mesure():
+    from ai.data.stats_texte import formater_stats
+    t = formater_stats({"operation": "count"}, {"resultat": 0, "detail": "Aucun produit trouvé"})
+    assert "sur mesure" in t
+
+
+def test_formater_stats_moins_cher():
+    from ai.data.stats_texte import formater_stats
+    t = formater_stats({"operation": "min_price"}, {"resultat": {"ar": 15000, "eur": 3}, "nom": "Bas String"})
+    assert "15 000 Ar (soit ~3 €)" in t and "Bas String" in t
+
+
+def test_formater_stats_erreur_renvoie_whatsapp():
+    from ai.data.stats_texte import formater_stats
+    assert "WhatsApp" in formater_stats({"operation": "x"}, {"erreur": "Opération inconnue"})

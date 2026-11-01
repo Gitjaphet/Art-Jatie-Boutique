@@ -38,7 +38,7 @@ _TOOLS = [
                 "properties": {
                     "operation": {
                         "type": "string",
-                        "enum": ["count", "count_by_category", "stock_total", "valeur_stock", "prix_moyen", "min_price", "max_price", "stock_faible", "rupture", "par_categorie", "par_genre"],
+                        "enum": ["count", "count_by_category", "stock_total", "prix_moyen", "min_price", "max_price", "par_categorie", "par_genre"],
                     },
                     "filtre_categorie": {"type": "string"},
                     "filtre_genre":     {"type": "string"},

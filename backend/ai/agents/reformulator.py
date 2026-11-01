@@ -4,14 +4,13 @@ import json
 
 from ai.core.llm import appeler_llm, ModeleIndisponible
 from ai.core.types import ToolResult
-from ai.core.prompts import REFORMULATOR, REFORMULATOR_STATS
+from ai.core.prompts import REFORMULATOR
 
-_FALLBACK = "J'ai trouvé des informations, mais j'ai un petit souci de connexion pour vous les présenter."
+_FALLBACK = "J'ai trouvé des articles, mais j'ai un petit souci de connexion pour vous les présenter."
 
 
-def llm3_reformulateur(token_log: list, message: str, donnees: ToolResult, mode: str = "produits") -> str:
-    modele_prompt = REFORMULATOR_STATS if mode == "stats" else REFORMULATOR
-    prompt = modele_prompt.format(
+def llm3_reformulateur(token_log: list, message: str, donnees: ToolResult) -> str:
+    prompt = REFORMULATOR.format(
         message=message,
         donnees=json.dumps(donnees, ensure_ascii=False, default=str)[:800],
     )
