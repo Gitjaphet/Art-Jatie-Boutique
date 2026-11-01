@@ -259,7 +259,45 @@
 }
 /* ── Texte du bot et cartes produit (mobile d'abord) ───────────────────── */
 .botText {
-  white-space: pre-line;
+  line-height: 1.45;
+}
+
+.botPara {
+  margin: 0 0 6px;
+}
+.botPara:last-child {
+  margin-bottom: 0;
+}
+
+.botText strong {
+  color: #1a1a1a;
+  font-weight: 700;
+}
+
+.botListe {
+  list-style: none;
+  margin: 4px 0 8px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.botListe:last-child {
+  margin-bottom: 0;
+}
+.botListe li {
+  position: relative;
+  padding-left: 14px;
+}
+.botListe li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 0.6em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ff69b4;
 }
 
 .botLarge {
@@ -276,6 +314,7 @@
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+  overscroll-behavior-x: contain;
 }
 .produits::-webkit-scrollbar {
   display: none;

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import styles from "./FloatingAI.module.css";
@@ -20,6 +20,52 @@ type Message = { from: "bot" | "user"; text: string; produits?: Produit[] };
 
 const HISTORIQUE_MAX = 10;
 const formatAr = (n: number) => `${n.toLocaleString("fr-FR")} Ar`;
+
+// **gras** → <strong>. Tout le reste reste du texte : aucun HTML n'est injecté (pas de faille XSS).
+function enLigne(texte: string): ReactNode[] {
+  return texte.split(/(\*\*[^*]+\*\*)/g).map((morceau, i) =>
+    morceau.length > 4 && morceau.startsWith("**") && morceau.endsWith("**")
+      ? <strong key={i}>{morceau.slice(2, -2)}</strong>
+      : morceau
+  );
+}
+
+// Mise en forme légère des réponses : paragraphes, listes à puces (-, •, *) et gras.
+function TexteBot({ texte }: { texte: string }) {
+  const blocs: ReactNode[] = [];
+  let liste: string[] = [];
+
+  const fermerListe = () => {
+    if (!liste.length) return;
+    const items = liste;
+    blocs.push(
+      <ul key={`l${blocs.length}`} className={styles.botListe}>
+        {items.map((item, i) => <li key={i}>{enLigne(item)}</li>)}
+      </ul>
+    );
+    liste = [];
+  };
+
+  for (const brut of texte.split("\n")) {
+    const ligne = brut.trim();
+    const puce = ligne.match(/^[-•*]\s+(.*)$/);
+    if (puce) {
+      liste.push(puce[1]);
+      continue;
+    }
+    fermerListe();
+    if (ligne) {
+      blocs.push(
+        <p key={`p${blocs.length}`} className={styles.botPara}>
+          {enLigne(ligne.replace(/^#+\s*/, ""))}
+        </p>
+      );
+    }
+  }
+  fermerListe();
+
+  return <div className={styles.botText}>{blocs}</div>;
+}
 
 function CarteProduit({ p, onOuvrir }: { p: Produit; onOuvrir: () => void }) {
   const contenu = (
@@ -102,6 +148,20 @@ export default function FloatingAI() {
     };
   }, [isOpen]);
 
+  // Desktop : la molette au-dessus du widget fait défiler la conversation, jamais la page.
+  // Un défilement horizontal (Maj + molette, pavé tactile) reste pour le carrousel de cartes.
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!isOpen || !card) return;
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+      e.preventDefault();
+      bodyRef.current?.scrollBy({ top: e.deltaY, behavior: "instant" });
+    };
+    card.addEventListener("wheel", onWheel, { passive: false });
+    return () => card.removeEventListener("wheel", onWheel);
+  }, [isOpen]);
+
   // Toujours afficher le dernier message
   useEffect(() => {
     bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight });
@@ -166,7 +226,7 @@ export default function FloatingAI() {
             {m.from === "bot" && <div className={styles.avatarSmall}>J</div>}
             {m.from === "bot" ? (
               <div className={m.produits?.length ? `${styles.bot} ${styles.botLarge}` : styles.bot}>
-                <span className={styles.botText}>{m.text}</span>
+                <TexteBot texte={m.text} />
                 {!!m.produits?.length && (
                   <div className={styles.produits}>
                     {m.produits.map(p => <CarteProduit key={p.id} p={p} onOuvrir={fermerSurMobile} />)}
