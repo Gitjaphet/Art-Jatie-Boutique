@@ -283,3 +283,21 @@ def test_formater_stats_moins_cher():
 def test_formater_stats_erreur_renvoie_whatsapp():
     from ai.data.stats_texte import formater_stats
     assert "WhatsApp" in formater_stats({"operation": "x"}, {"erreur": "Opération inconnue"})
+
+
+# ── Tests recherche hybride (partie mots) ──────────────────────────────────
+
+def test_mots_sans_accents_ni_pluriel():
+    from ai.data.products import _mots
+    assert _mots("Vous avez des SACS ? Et une pièce élégante") == {"sac", "piece", "elegante"}
+
+
+def test_score_lexical_nom_vaut_plus_que_description():
+    from ai.data.products import score_lexical, BONUS_MOT_NOM, BONUS_MOT_AUTRE
+    assert score_lexical({"short"}, "Short Crochet Rayé", "TENUES") == BONUS_MOT_NOM
+    assert score_lexical({"short"}, "Ensemble Corail", "TENUES short assorti") == BONUS_MOT_AUTRE
+
+
+def test_score_lexical_aucun_mot_commun():
+    from ai.data.products import score_lexical
+    assert score_lexical({"voiture"}, "Robe Crochet Fuchsia", "TENUES robe plage") == 0.0
