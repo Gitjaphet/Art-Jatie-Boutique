@@ -85,10 +85,13 @@ def extraire_texte(page_html: str) -> tuple[str, str]:
 
 
 def decouper(titre: str, texte: str, taille: int = TAILLE_PASSAGE) -> list[str]:
-    """Regroupe les lignes en passages d'environ `taille` caractères, sans couper une ligne."""
+    """Regroupe les lignes en passages d'environ `taille` caractères, sans couper une ligne.
+    Une question (ligne courte finissant par « ? ») ouvre toujours un nouveau passage :
+    chaque question-réponse reste un passage centré sur un seul sujet."""
     passages, courant = [], ""
     for ligne in texte.split("\n"):
-        if courant and len(courant) + len(ligne) + 1 > taille:
+        est_question = ligne.endswith("?") and len(ligne) <= 160
+        if courant and (est_question or len(courant) + len(ligne) + 1 > taille):
             passages.append(courant)
             courant = ""
         courant = f"{courant}\n{ligne}" if courant else ligne

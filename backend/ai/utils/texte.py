@@ -12,6 +12,17 @@ _MOTS_VIDES = {
     "quelque", "chose", "auriez", "avoir", "montrer", "montrez", "bonjour", "merci",
 }
 
+# Familles de mots : une forme commune, pour que « payer » trouve « paiement », « mail » trouve « email »…
+# (appliqué de la même façon aux questions et aux textes indexés ; à compléter avec les logs)
+_FAMILLES = {
+    "payer": "paiement", "paye": "paiement", "payement": "paiement", "regler": "paiement", "reglement": "paiement",
+    "mail": "email", "courriel": "email",
+    "livrer": "livraison", "livrez": "livraison", "livrer": "livraison",
+    "fabriquer": "fabrication", "fabrique": "fabrication",
+    "rembourser": "remboursement", "rembourse": "remboursement",
+    "numero": "telephone", "tel": "telephone", "appeler": "telephone",
+}
+
 
 def normaliser(texte: str) -> str:
     t = unicodedata.normalize("NFD", (texte or "").lower())
@@ -22,11 +33,11 @@ def normaliser(texte: str) -> str:
 def mots(texte: str) -> set[str]:
     resultat = set()
     for m in normaliser(texte).split():
-        if len(m) < 3 or m in _MOTS_VIDES:
+        if (len(m) < 3 and m != "tel") or m in _MOTS_VIDES:
             continue
         if len(m) > 3 and m.endswith("s"):
             m = m[:-1]  # pluriel simple : sacs -> sac, robes -> robe
-        resultat.add(m)
+        resultat.add(_FAMILLES.get(m, m))
     return resultat
 
 

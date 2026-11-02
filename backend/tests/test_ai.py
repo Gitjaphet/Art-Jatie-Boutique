@@ -364,3 +364,18 @@ def test_tableau_converti_en_phrases():
             "<tbody><tr><td>M</td><td>38-40</td><td>88-92</td></tr></tbody></table></main>")
     _, texte = extraire_texte(page)
     assert texte == "Taille M : Standard (FR) 38-40 · Poitrine (cm) 88-92"
+
+
+def test_familles_de_mots():
+    from ai.utils.texte import mots
+    assert "paiement" in mots("Comment je peux payer ?")
+    assert "email" in mots("c'est quoi votre e-mail")
+    assert "livraison" in mots("vous livrez à Mahajanga ?")
+
+
+def test_decouper_ouvre_un_passage_par_question():
+    from ai.knowledge.indexeur import decouper
+    texte = "Quel est le délai de remboursement ?\nSous 3 à 5 jours.\nQuels moyens de paiement acceptez-vous ?\nMVola et Orange Money."
+    passages = decouper("Livraison", texte, taille=600)
+    assert len(passages) == 2
+    assert passages[1].startswith("Livraison\nQuels moyens de paiement")
