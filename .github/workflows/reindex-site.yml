@@ -1,0 +1,25 @@
+name: Réindexation du chatbot (contenu du site)
+
+on:
+  deployment_status:          # après un déploiement Vercel
+  schedule:
+    - cron: "0 0 * * *"       # chaque nuit à 00:00 UTC = 3 h à Madagascar
+  workflow_dispatch:          # à la main : gh workflow run reindex-site.yml
+
+jobs:
+  reindex:
+    if: >
+      github.event_name != 'deployment_status' ||
+      (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Production')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Attendre la mise en ligne du site
+        if: github.event_name == 'deployment_status'
+        run: sleep 30
+
+      - name: Réindexer
+        run: |
+          reponse=$(curl -fsS --max-time 300 -X POST https://api.artjatie.com/api/agent/reindex \
+            -H "X-Reindex-Token: ${{ secrets.REINDEX_TOKEN }}")
+          echo "Bilan : $reponse"
+          echo "$reponse" | jq -e '.erreurs == 0' > /dev/null

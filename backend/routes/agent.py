@@ -1,10 +1,14 @@
 import asyncio
+import hmac
+import os
 import time
 import logging
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Header, HTTPException, Request
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 from ai.agent import run_multi_agent
+from ai.knowledge.indexeur import indexer_site
+from core.limiter import limiter
 
 router = APIRouter()
 
@@ -39,3 +43,15 @@ async def chat(body: ChatRequest):
     except Exception as e:
         logging.error(f"[ROUTER] Erreur critique : {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Erreur interne de l'agent")
+
+
+@router.post("/reindex")
+@limiter.limit("5/minute")
+async def reindex(request: Request, x_reindex_token: str = Header(default="")):
+    """Réindexe le contenu du site pour la FAQ. Appelé par GitHub Actions après chaque déploiement Vercel et chaque nuit."""
+    attendu = os.getenv("REINDEX_TOKEN", "")
+    if not attendu or not hmac.compare_digest(x_reindex_token, attendu):
+        raise HTTPException(status_code=401, detail="Non autorisé")
+    stats = await asyncio.to_thread(indexer_site)
+    logging.info(f"[REINDEX] {stats}")
+    return stats

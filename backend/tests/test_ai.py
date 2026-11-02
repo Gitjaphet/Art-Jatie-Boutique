@@ -386,3 +386,22 @@ def test_theme_contact():
     question = mots("c'est quoi votre email ?")
     assert {"email", "contact"} <= question
     assert score_lexical(question, "Contactez-nous", "Email jatieart@gmail.com") >= 0.3
+
+
+def test_mots_localisation():
+    from ai.utils.texte import mots
+    assert {"adresse", "contact"} <= mots("où êtes-vous situés ?")
+
+
+def test_reindex_refuse_un_mauvais_jeton(monkeypatch):
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+    from routes.agent import router
+    from core.limiter import limiter
+    app = FastAPI()
+    app.state.limiter = limiter
+    app.include_router(router, prefix="/agent")
+    monkeypatch.setenv("REINDEX_TOKEN", "le-bon-jeton")
+    client = TestClient(app)
+    assert client.post("/agent/reindex", headers={"X-Reindex-Token": "mauvais"}).status_code == 401
+    assert client.post("/agent/reindex").status_code == 401

@@ -22,6 +22,7 @@ _FAMILLES = {
     "rembourser": "remboursement", "rembourse": "remboursement",
     "numero": "telephone", "tel": "telephone", "appeler": "telephone",
     "contactez": "contact", "contacter": "contact", "joindre": "contact",
+    "situe": "adresse", "situee": "adresse", "localisation": "adresse", "emplacement": "adresse",
 }
 
 # Thèmes : certains mots ajoutent aussi un mot-thème, pour relier une question précise à la bonne page.
