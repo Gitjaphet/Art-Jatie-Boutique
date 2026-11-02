@@ -379,3 +379,10 @@ def test_decouper_ouvre_un_passage_par_question():
     passages = decouper("Livraison", texte, taille=600)
     assert len(passages) == 2
     assert passages[1].startswith("Livraison\nQuels moyens de paiement")
+
+
+def test_theme_contact():
+    from ai.utils.texte import mots, score_lexical
+    question = mots("c'est quoi votre email ?")
+    assert {"email", "contact"} <= question
+    assert score_lexical(question, "Contactez-nous", "Email jatieart@gmail.com") >= 0.3

@@ -17,10 +17,17 @@ _MOTS_VIDES = {
 _FAMILLES = {
     "payer": "paiement", "paye": "paiement", "payement": "paiement", "regler": "paiement", "reglement": "paiement",
     "mail": "email", "courriel": "email",
-    "livrer": "livraison", "livrez": "livraison", "livrer": "livraison",
+    "livrer": "livraison", "livrez": "livraison",
     "fabriquer": "fabrication", "fabrique": "fabrication",
     "rembourser": "remboursement", "rembourse": "remboursement",
     "numero": "telephone", "tel": "telephone", "appeler": "telephone",
+    "contactez": "contact", "contacter": "contact", "joindre": "contact",
+}
+
+# Thèmes : certains mots ajoutent aussi un mot-thème, pour relier une question précise à la bonne page.
+# Ex. « votre email ? » -> {"email", "contact"} -> rejoint le titre « Contactez-nous ».
+_THEMES = {
+    "email": "contact", "telephone": "contact", "whatsapp": "contact", "adresse": "contact",
 }
 
 
@@ -37,7 +44,10 @@ def mots(texte: str) -> set[str]:
             continue
         if len(m) > 3 and m.endswith("s"):
             m = m[:-1]  # pluriel simple : sacs -> sac, robes -> robe
-        resultat.add(_FAMILLES.get(m, m))
+        m = _FAMILLES.get(m, m)
+        resultat.add(m)
+        if m in _THEMES:
+            resultat.add(_THEMES[m])
     return resultat
 
 
