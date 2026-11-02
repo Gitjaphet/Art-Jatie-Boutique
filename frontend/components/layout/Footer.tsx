@@ -1,5 +1,6 @@
 "use client";
 
+import { CONTACT } from "@/lib/contact";
 import Link from "next/link";
 import styles from "./Footer.module.css";
 
@@ -45,7 +46,7 @@ export default function Footer() {
                 <a href="https://www.instagram.com/art.jatie?igsh=OGxhZDJueTRwaThw" target="_blank" rel="noopener noreferrer" aria-label="Instagram">IG</a>
                 <a href="https://www.facebook.com/profile.php?id=61588409926655" target="_blank" rel="noopener noreferrer" aria-label="Facebook">FB</a>
                 <a href="https://www.tiktok.com/@jatieart" target="_blank" rel="noopener noreferrer" aria-label="TikTok">TK</a>
-                <a href="https://wa.me/261343051360" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">WA</a>
+                <a href={CONTACT.whatsappLien} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">WA</a>
               </div>
             </div>
 
@@ -100,7 +101,7 @@ export default function Footer() {
                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
                     <polyline points="22,6 12,13 2,6" />
                   </svg>
-                  <a href="mailto:contact@artjatie.mg">contact@artjatie.com</a>
+                  <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
                 </div>
 
                 <div className={styles.contactItem}>
@@ -113,7 +114,7 @@ export default function Footer() {
                   >
                     <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
                   </svg>
-                  <a href="tel:+261340000000">+261 32 02 251 70</a>
+                  <a href={CONTACT.telephoneLien}>{CONTACT.telephone}</a>
                 </div>
 
                 <div className={styles.contactItem}>
@@ -127,7 +128,7 @@ export default function Footer() {
                     <path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.121 1.535 5.856L.057 23.882a.5.5 0 00.606.61l6.208-1.625A11.934 11.934 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.808 9.808 0 01-5.003-1.368l-.36-.214-3.706.972.988-3.613-.235-.372A9.789 9.789 0 012.182 12C2.182 6.575 6.575 2.182 12 2.182c5.424 0 9.818 4.393 9.818 9.818 0 5.424-4.394 9.818-9.818 9.818z" />
                   </svg>
                   
-                  <a href="https://wa.me/261343051360"
+                  <a href={CONTACT.whatsappLien}
                     target="_blank"
                     rel="noopener noreferrer"
                   >

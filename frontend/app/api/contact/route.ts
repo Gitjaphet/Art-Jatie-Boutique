@@ -1,3 +1,4 @@
+import { CONTACT } from "@/lib/contact";
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
 
     await transporter.sendMail({
       from: `"Site Art Jatie" <${process.env.SMTP_USER}>`,
-      to: "contact@artjatie.com",
+      to: CONTACT.email,
       replyTo: email,
       subject: `[${sujetLabels[sujet] ?? sujet}] Message de ${prenom} ${nom}`,
       html: `

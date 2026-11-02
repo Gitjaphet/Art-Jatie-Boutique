@@ -1,3 +1,4 @@
+import { CONTACT } from "@/lib/contact";
 import Image from "next/image";
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
@@ -14,7 +15,7 @@ import {
 } from "./tarifs";
 
 const WHATSAPP_LINK =
-  "https://wa.me/261000000000?text=Bonjour%20Art%20Jatie%2C%20je%20suis%20intéressé(e)%20par%20la%20formation%20crochet";
+  `${CONTACT.whatsappLien}?text=Bonjour%20Art%20Jatie%2C%20je%20suis%20intéressé(e)%20par%20la%20formation%20crochet`;
 
 const PHOTO_ATELIER = "/images/formation/atelier-groupe-nosybe.jpg";
 const PHOTO_PIECE = "/images/formation/piece-finie-granny-square.jpg";

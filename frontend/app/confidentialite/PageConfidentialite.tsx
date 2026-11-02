@@ -1,5 +1,6 @@
 "use client";
 
+import { CONTACT } from "@/lib/contact";
 import Link from "next/link";
 import s from "./PageConfidentialite.module.css";
 
@@ -191,7 +192,7 @@ export default function PageConfidentialite() {
           </h1>
           <p className={s.heroSub}>
             Votre vie privée nous importe. Cette politique explique comment Art Jatie collecte,
-            utilise et protège vos données personnelles lors de vos visites et achats sur artjatie.mg.
+            utilise et protège vos données personnelles lors de vos visites et achats sur {CONTACT.site}.
           </p>
         </div>
 
@@ -396,7 +397,7 @@ export default function PageConfidentialite() {
             </div>
             <p className={s.sectionLead} style={{ marginTop: "16px" }}>
               Pour exercer l&rsquo;un de ces droits, contactez-nous à{" "}
-              <a href="mailto:contact@artjatie.mg" className={s.textLink}>contact@artjatie.mg</a>.
+              <a href={`mailto:${CONTACT.email}`} className={s.textLink}>{CONTACT.email}</a>.
               Nous répondons sous <strong>30 jours</strong>.
             </p>
           </section>
@@ -416,8 +417,8 @@ export default function PageConfidentialite() {
               exercer vos droits :
             </p>
             <ul className={s.bulletList}>
-              <li>Email : <a href="mailto:contact@artjatie.mg" className={s.textLink}>contact@artjatie.mg</a></li>
-              <li>WhatsApp : <a href="https://wa.me/261320225170" target="_blank" rel="noopener noreferrer" className={s.textLink}>034 30 513 60</a></li>
+              <li>Email : <a href={`mailto:${CONTACT.email}`} className={s.textLink}>{CONTACT.email}</a></li>
+              <li>WhatsApp : <a href={CONTACT.whatsappLien} target="_blank" rel="noopener noreferrer" className={s.textLink}>{CONTACT.whatsapp}</a></li>
               <li>Adresse : Seganinga, Nosy Be, Madagascar</li>
             </ul>
           </section>
@@ -475,17 +476,17 @@ export default function PageConfidentialite() {
               Notre équipe répond à toutes vos questions, du lundi au samedi.
             </p>
             <a
-              href="https://wa.me/261320225170"
+              href={CONTACT.whatsappLien}
               target="_blank"
               rel="noopener noreferrer"
               className={s.contactBtnPrimary}
             >
               <IconWhatsapp size={15} />
-              WhatsApp — 032 022 5170
+              WhatsApp — {CONTACT.whatsapp}
             </a>
-            <a href="mailto:contact@artjatie.mg" className={s.contactBtnSecondary}>
+            <a href={`mailto:${CONTACT.email}`} className={s.contactBtnSecondary}>
               <IconMail size={14} />
-              contact@artjatie.mg
+              {CONTACT.email}
             </a>
             <div className={s.contactMeta}>
               <div className={s.contactMetaRow}>

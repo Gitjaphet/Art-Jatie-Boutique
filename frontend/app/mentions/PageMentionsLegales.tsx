@@ -1,5 +1,6 @@
 "use client";
 
+import { CONTACT } from "@/lib/contact";
 import Link from "next/link";
 import s from "./PageMentionsLegales.module.css";
 
@@ -116,8 +117,8 @@ const editorInfo: InfoRow[] = [
   { label: "Responsable", value: "Noeline (Art Jatie)" },
   { label: "Adresse", value: "Seganinga, Nosy Be, Madagascar" },
   { label: "Téléphone", value: "+261 34 30 513 60" },
-  { label: "WhatsApp", value: "032 022 5170" },
-  { label: "Email", value: <a href="mailto:contact@artjatie.mg" className={s.infoLink}>contact@artjatie.mg</a> },
+  { label: "WhatsApp", value: CONTACT.whatsapp },
+  { label: "Email", value: <a href={`mailto:${CONTACT.email}`} className={s.infoLink}>{CONTACT.email}</a> },
 ];
 
 const hostingInfo: InfoRow[] = [
@@ -164,7 +165,7 @@ export default function PageMentionsLegales() {
           <p className={s.heroSub}>
             Conformément aux dispositions légales en vigueur à Madagascar, vous trouverez
             ci-dessous toutes les informations relatives à l&rsquo;éditeur et à
-            l&rsquo;exploitation du site artjatie.mg.
+            l&rsquo;exploitation du site {CONTACT.site}.
           </p>
         </div>
 
@@ -216,7 +217,7 @@ export default function PageMentionsLegales() {
               Éditeur <em>&amp;</em> responsable de publication
             </h2>
             <p className={s.sectionLead}>
-              Le site <strong>artjatie.mg</strong> est édité et exploité par :
+              Le site <strong>{CONTACT.site}</strong> est édité et exploité par :
             </p>
             <div className={s.infoCard}>
               {editorInfo.map((row, i) => (
@@ -238,7 +239,7 @@ export default function PageMentionsLegales() {
             <h2 className={s.sectionTitle}>
               Hébergement <em>du site</em>
             </h2>
-            <p className={s.sectionLead}>Le site artjatie.mg est hébergé par :</p>
+            <p className={s.sectionLead}>Le site {CONTACT.site} est hébergé par :</p>
             <div className={s.infoCard}>
               {hostingInfo.map((row, i) => (
                 <div key={i} className={s.infoRow}>
@@ -260,7 +261,7 @@ export default function PageMentionsLegales() {
               Propriété <em>intellectuelle</em>
             </h2>
             <p className={s.sectionLead}>
-              L&rsquo;ensemble des contenus présents sur le site artjatie.mg — textes,
+              L&rsquo;ensemble des contenus présents sur le site {CONTACT.site} — textes,
               photographies, visuels, illustrations, logo, nom commercial — est la propriété
               exclusive d&rsquo;<strong>Art Jatie</strong> et est protégé par les lois applicables
               relatives à la propriété intellectuelle et aux droits d&rsquo;auteur.
@@ -314,12 +315,12 @@ export default function PageMentionsLegales() {
               Liens <em>hypertextes</em>
             </h2>
             <p className={s.sectionLead}>
-              Le site artjatie.mg peut contenir des liens hypertextes vers d&rsquo;autres sites
+              Le site {CONTACT.site} peut contenir des liens hypertextes vers d&rsquo;autres sites
               internet. Art Jatie n&rsquo;exerce aucun contrôle sur ces sites et décline toute
               responsabilité quant à leur contenu ou pratiques.
             </p>
             <p className={s.sectionLead}>
-              La création de liens hypertextes pointant vers le site artjatie.mg est autorisée
+              La création de liens hypertextes pointant vers le site {CONTACT.site} est autorisée
               sous réserve qu&rsquo;elle ne porte pas atteinte à l&rsquo;image de la marque et
               que le lien s&rsquo;ouvre dans une nouvelle fenêtre.
             </p>
@@ -342,7 +343,7 @@ export default function PageMentionsLegales() {
             </p>
             <p className={s.sectionLead}>
               Pour toute question, contactez-nous à{" "}
-              <a href="mailto:contact@artjatie.mg" className={s.textLink}>contact@artjatie.mg</a>.
+              <a href={`mailto:${CONTACT.email}`} className={s.textLink}>{CONTACT.email}</a>.
             </p>
           </section>
 
@@ -377,17 +378,17 @@ export default function PageMentionsLegales() {
               Notre équipe répond à toutes vos questions, du lundi au samedi.
             </p>
             <a
-              href="https://wa.me/261320225170"
+              href={CONTACT.whatsappLien}
               target="_blank"
               rel="noopener noreferrer"
               className={s.contactBtnPrimary}
             >
               <IconWhatsapp size={15} />
-              WhatsApp — 032 022 5170
+              WhatsApp — {CONTACT.whatsapp}
             </a>
-            <a href="mailto:contact@artjatie.mg" className={s.contactBtnSecondary}>
+            <a href={`mailto:${CONTACT.email}`} className={s.contactBtnSecondary}>
               <IconMail size={14} />
-              contact@artjatie.mg
+              {CONTACT.email}
             </a>
             <div className={s.contactMeta}>
               <div className={s.contactMetaRow}>

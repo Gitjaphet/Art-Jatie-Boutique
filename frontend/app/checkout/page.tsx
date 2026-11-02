@@ -1,5 +1,6 @@
 "use client";
 
+import { CONTACT } from "@/lib/contact";
 import { useCartStore } from "@/lib/cart";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, Suspense } from "react";
@@ -30,8 +31,8 @@ type CheckoutStep = "form" | "mvola_pending" | "success";
 // ─────────────────────────────────────────────────────────────────────────────
 // ⚙️  À personnaliser : numéros de la boutique
 // ─────────────────────────────────────────────────────────────────────────────
-const BOUTIQUE_MVOLA = "034 30 513 60"; // ← ton vrai numéro MVola
-const BOUTIQUE_OM = "032 02 251 70"; // ← ton vrai numéro Orange Money
+const BOUTIQUE_MVOLA = CONTACT.mvola;
+const BOUTIQUE_OM = CONTACT.orangeMoney;
 const BOUTIQUE_NAME = "Noeline";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -202,7 +203,7 @@ function CheckoutContent() {
         `Merci de confirmer ma commande ! 🙏`,
     );
 
-    window.open(`https://wa.me/261320225170?text=${msg}`, "_blank");
+    window.open(`${CONTACT.whatsappLien}?text=${msg}`, "_blank");
     clearCart();
     setStep("success");
   };
@@ -814,7 +815,7 @@ function CheckoutContent() {
           <p className={styles.nbContact}>
             Une question ?{" "}
             <a
-              href="https://wa.me/261320225170"
+              href={CONTACT.whatsappLien}
               target="_blank"
               rel="noopener noreferrer"
               className={styles.nbLink}

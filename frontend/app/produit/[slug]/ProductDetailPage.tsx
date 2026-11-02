@@ -1,5 +1,6 @@
 "use client";
 
+import { DELAI_FABRICATION } from "@/lib/contact";
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
@@ -263,7 +264,7 @@ function AddToCartSection({
               <line x1="12" y1="8" x2="12" y2="12"/>
               <line x1="12" y1="16" x2="12.01" y2="16"/>
             </svg>
-            Fabriqué sur commande — délai 7 à 14 jours
+            Fabriqué sur commande — délai {DELAI_FABRICATION}
           </div>
           <button
             className={`${styles.btnCart} ${styles.btnCommande} ${added ? styles.btnCartAdded : ""}`}

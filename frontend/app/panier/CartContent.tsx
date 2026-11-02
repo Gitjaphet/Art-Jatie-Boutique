@@ -1,4 +1,5 @@
 "use client";
+import { CONTACT } from "@/lib/contact";
 import { useCartStore } from "@/lib/cart";
 import { useMemo, useState } from "react";
 import Image from "next/image";
@@ -113,7 +114,7 @@ export default function CartContent() {
   const handleCheckout = () => {
     if (zone === "nosybe_autre") {
       alert(
-        "Pour cette zone, veuillez nous contacter directement au 032 022 5170.",
+        `Pour cette zone, veuillez nous contacter directement au ${CONTACT.telephone}.`,
       );
       return;
     }
@@ -339,8 +340,8 @@ export default function CartContent() {
                 <span className={styles.deliveryName}>Autre zone Nosy Be</span>
                 <span className={styles.deliveryDesc}>
                   Contactez-nous pour le tarif :{" "}
-                  <a href="tel:0320225170" className={styles.phoneLink}>
-                    032 022 5170
+                  <a href={CONTACT.telephoneLien} className={styles.phoneLink}>
+                    {CONTACT.telephone}
                   </a>
                 </span>
               </div>

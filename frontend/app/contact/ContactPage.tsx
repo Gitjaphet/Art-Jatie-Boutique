@@ -1,5 +1,6 @@
 "use client";
 
+import { CONTACT } from "@/lib/contact";
 import { useState } from "react";
 import Link from "next/link";
 import styles from "./ContactPage.module.css";
@@ -162,18 +163,18 @@ export default function ContactPage() {
           </p>
 
           <div className={styles.contactBlocks}>
-            <a href="mailto:contact@artjatie.com" className={styles.contactBlock}>
+            <a href={`mailto:${CONTACT.email}`} className={styles.contactBlock}>
               <div className={styles.contactBlockBg} aria-hidden="true" />
               <div className={styles.contactIcon}>
                 <IconMail className={styles.contactIconSvg} />
               </div>
               <div className={styles.contactInfo}>
                 <span className={styles.contactLabel}>Email</span>
-                <span className={styles.contactValue}>contact@artjatie.com</span>
+                <span className={styles.contactValue}>{CONTACT.email}</span>
               </div>
             </a>
 
-            <a href="tel:+261320251270" className={styles.contactBlock}>
+            <a href={CONTACT.telephoneLien} className={styles.contactBlock}>
               <div className={styles.contactBlockBg} aria-hidden="true" />
               <div className={styles.contactIcon}>
                 <IconPhone className={styles.contactIconSvg} />
@@ -185,7 +186,7 @@ export default function ContactPage() {
             </a>
 
             <a
-              href="https://wa.me/261343051360"
+              href={CONTACT.whatsappLien}
               target="_blank"
               rel="noopener noreferrer"
               className={styles.contactBlock}
@@ -258,7 +259,7 @@ export default function ContactPage() {
             </a>
 
             <a
-              href="https://wa.me/261343051360"
+              href={CONTACT.whatsappLien}
               target="_blank"
               rel="noopener noreferrer"
               className={styles.socialBtn}
@@ -497,7 +498,7 @@ export default function ContactPage() {
             Madagascar
             <br />
             <br />
-            contact@artjatie.com
+            {CONTACT.email}
             <br />
             +261 34 30 513 60
           </p>

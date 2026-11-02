@@ -1,5 +1,6 @@
 "use client";
 
+import { CONTACT, DELAI_FABRICATION } from "@/lib/contact";
 import Link from "next/link";
 import { useState } from "react";
 import s from "./PageLivraison.module.css";
@@ -154,7 +155,7 @@ const zones: Zone[] = [
   {
     icon: <IconMapPin size={14} />,
     name: "Autre zone Nosy Be",
-    sub: "Tarif sur devis — 032 022 5170",
+    sub: `Tarif sur devis — ${CONTACT.whatsapp}`,
     price: "devis",
     delay: "À confirmer",
   },
@@ -200,8 +201,8 @@ const faqItems: AccItem[] = [
     question: "Comment initier un retour ?",
     answer: (
       <p className={s.accText}>
-        Contactez-nous via WhatsApp au <strong>032 022 5170</strong> ou par
-        email à <strong>contact@artjatie.mg</strong> avec votre numéro de
+        Contactez-nous via WhatsApp au <strong>{CONTACT.whatsapp}</strong> ou par
+        email à <strong>{CONTACT.email}</strong> avec votre numéro de
         commande et la raison du retour. Nous vous confirmons la procédure sous
         24 h.
       </p>
@@ -222,6 +223,31 @@ const faqItems: AccItem[] = [
         Après vérification de l&rsquo;article retourné, le remboursement ou
         l&rsquo;échange est traité sous <strong>3 à 5 jours ouvrés</strong> via
         le moyen de paiement utilisé à l&rsquo;achat (MVola, Orange Money).
+      </p>
+    ),
+  },
+  {
+    question: "Quels moyens de paiement acceptez-vous ?",
+    answer: (
+      <>
+        <p className={s.accText}>Nous acceptons le paiement par mobile money :</p>
+        <ul className={s.accList}>
+          <li><strong>MVola</strong> : {CONTACT.mvola}</li>
+          <li><strong>Orange Money</strong> : {CONTACT.orangeMoney}</li>
+        </ul>
+        <p className={s.accText}>
+          Avec le <strong>paiement à l&rsquo;avance</strong>, votre commande est confirmée et votre article
+          réservé immédiatement.
+        </p>
+      </>
+    ),
+  },
+  {
+    question: "Quel est le délai de fabrication d'une pièce sur commande ?",
+    answer: (
+      <p className={s.accText}>
+        Les pièces sur commande et sur mesure sont fabriquées à la main en <strong>{DELAI_FABRICATION}</strong>,
+        puis le délai de livraison de votre zone s&rsquo;ajoute. Une avance est demandée pour lancer la fabrication.
       </p>
     ),
   },
@@ -471,17 +497,17 @@ export default function PageLivraison() {
               ou les retours, du lundi au samedi.
             </p>
             <a
-              href="https://wa.me/261320225170"
+              href={CONTACT.whatsappLien}
               target="_blank"
               rel="noopener noreferrer"
               className={s.contactBtnPrimary}
             >
               <IconWhatsapp size={15} />
-              WhatsApp — 032 022 5170
+              WhatsApp — {CONTACT.whatsapp}
             </a>
-            <a href="mailto:contact@artjatie.mg" className={s.contactBtnSecondary}>
+            <a href={`mailto:${CONTACT.email}`} className={s.contactBtnSecondary}>
               <IconMail size={14} />
-              contact@artjatie.mg
+              {CONTACT.email}
             </a>
             <div className={s.contactMeta}>
               <div className={s.contactMetaRow}>

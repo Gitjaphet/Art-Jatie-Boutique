@@ -1,3 +1,4 @@
+import { CONTACT } from "@/lib/contact";
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import Hero from "@/components/home/Hero";
@@ -28,7 +29,7 @@ const jsonLd = {
   url: "https://www.artjatie.com",
   image: "https://www.artjatie.com/images/logo/art_jatie.png",
   telephone: "+261320225170",
-  email: "contact@artjatie.com",
+  email: CONTACT.email,
   priceRange: "Ar 15 000 – Ar 150 000",
   address: {
     "@type": "PostalAddress",

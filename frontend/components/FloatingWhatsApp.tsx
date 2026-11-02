@@ -1,17 +1,17 @@
 "use client";
 
+import { CONTACT } from "@/lib/contact";
 import styles from "./FloatingWhatsApp.module.css";
 
 export default function FloatingWhatsApp() {
   // Ton numéro au format international (261 pour Madagascar, sans le 0)
-  const phoneNumber = "261343051360";
 
   // Le message par défaut que le client t'enverra
   const message =
     "Bonjour Art Jatie ! ✨ Je suis sur votre site et j'aimerais avoir plus de renseignements sur vos créations en crochet.";
 
   // L'URL de l'API WhatsApp
-  const waLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+  const waLink = `${CONTACT.whatsappLien}?text=${encodeURIComponent(message)}`;
 
   return (
     <div className={styles.whatsappContainer}>

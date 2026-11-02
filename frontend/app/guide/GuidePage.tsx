@@ -1,3 +1,4 @@
+import { CONTACT } from "@/lib/contact";
 import Link from "next/link";
 import Image from "next/image";
 import styles from "./GuidePage.module.css";
@@ -174,7 +175,7 @@ export default function GuideDesTailles() {
             </p>
           </div>
           <a 
-            href="https://wa.me/261343051380" 
+            href={CONTACT.whatsappLien} 
             target="_blank" 
             rel="noopener noreferrer" 
             className={styles.btnWa}
