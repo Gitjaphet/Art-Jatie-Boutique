@@ -320,3 +320,28 @@ def test_cartes_sur_commande_et_limite():
 def test_texte_cartes_aucun_resultat_propose_sur_mesure():
     from ai.data.cartes import texte_cartes
     assert "sur mesure" in texte_cartes([])
+
+
+# ── Tests indexeur du site (RAG FAQ) ───────────────────────────────────────
+
+def test_extraire_texte_garde_le_contenu_principal():
+    from ai.knowledge.indexeur import extraire_texte
+    page = (
+        "<html><head><title>Formation | Art Jatie</title></head><body>"
+        "<nav>Boutique Galerie</nav>"
+        "<main><h1>Formation crochet</h1><p>Prix&nbsp;: 50 000 Ar, c&#x27;est l&#x27;offre</p>"
+        "<script>var x = 1;</script></main>"
+        "<footer>Mentions</footer></body></html>"
+    )
+    titre, texte = extraire_texte(page)
+    assert titre == "Formation"
+    assert texte == "Formation crochet\nPrix : 50 000 Ar, c'est l'offre"
+
+
+def test_decouper_ne_coupe_pas_les_lignes():
+    from ai.knowledge.indexeur import decouper
+    texte = "\n".join(f"ligne numéro {i} " + "x" * 40 for i in range(30))
+    passages = decouper("Titre", texte, taille=200)
+    assert len(passages) > 1
+    assert all(p.startswith("Titre\n") for p in passages)
+    assert all(len(p) <= 200 + len("Titre\n") + 60 for p in passages)
