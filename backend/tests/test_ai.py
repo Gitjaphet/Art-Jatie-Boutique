@@ -317,7 +317,7 @@ def test_cartes_sur_commande_et_limite():
                 for i in range(8)]
     cartes = construire_cartes(produits)
     assert len(cartes) == MAX_CARTES
-    assert cartes[0]["disponibilite"] == "Sur commande · 7 jours"
+    assert cartes[0]["disponibilite"] == "Sur commande"
 
 
 def test_texte_cartes_aucun_resultat_propose_sur_mesure():
@@ -355,3 +355,12 @@ def test_faq_sans_passage_repond_sans_appel_ia():
     log = []
     assert llm5_faq(log, "prix d'un iphone ?", passages=[]) == FALLBACK_SANS_INFO
     assert log == []  # aucun appel au modèle
+
+
+def test_tableau_converti_en_phrases():
+    from ai.knowledge.indexeur import extraire_texte
+    page = ("<title>Guide | Art Jatie</title><main><table>"
+            "<thead><tr><th>Taille</th><th>Standard (FR)</th><th>Poitrine (cm)</th></tr></thead>"
+            "<tbody><tr><td>M</td><td>38-40</td><td>88-92</td></tr></tbody></table></main>")
+    _, texte = extraire_texte(page)
+    assert texte == "Taille M : Standard (FR) 38-40 · Poitrine (cm) 88-92"

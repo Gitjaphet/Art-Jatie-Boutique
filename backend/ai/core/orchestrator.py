@@ -187,7 +187,7 @@ def run_multi_agent(
         reponse = llm5_faq(token_log, message_masque, passages, history_masque)
         for p in passages:
             lien = {"titre": p["titre"], "url": p["url"]}
-            if lien not in liens:
+            if lien not in liens and len(liens) < 2:  # 2 pages maximum, les plus pertinentes
                 liens.append(lien)
 
     # ── Fallback ──────────────────────────────────────────────────────

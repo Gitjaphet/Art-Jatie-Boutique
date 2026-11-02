@@ -8,7 +8,7 @@ from ai.core.db import db_config
 from ai.utils.embedding import get_text_embedding
 from ai.utils.texte import mots, score_lexical
 
-SEUIL_PASSAGE = 0.30  # score minimum (vecteur + mots) ; à calibrer avec les logs [FAQ-RAG]
+SEUIL_PASSAGE = 0.40  # calibré le 02/11/2026 : pertinents >= 0.41, hors sujet 0.34-0.38
 NB_PASSAGES = 4
 
 

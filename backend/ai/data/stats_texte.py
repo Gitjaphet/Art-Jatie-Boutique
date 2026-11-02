@@ -41,7 +41,7 @@ def formater_stats(args: dict, donnees: dict) -> str:
         return f"Notre article {quel}{portee} est « {donnees.get('nom', '')} » à {_prix(r)}. {_INVITATION}"
     if operation == "count_by_category":
         lignes = [
-            f"• {cat.capitalize()} : {v['en_stock']} en stock, {v['sur_commande']} sur commande (livraison 7 jours)"
+            f"• {cat.capitalize()} : {v['en_stock']} en stock, {v['sur_commande']} sur commande"
             for cat, v in r.items()
         ]
         return "Voici notre catalogue :\n" + "\n".join(lignes) + f"\n{_INVITATION}"

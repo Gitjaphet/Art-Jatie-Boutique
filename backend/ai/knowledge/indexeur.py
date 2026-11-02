@@ -42,6 +42,31 @@ _BALISES_BLOC = r"</?(p|div|section|article|li|ul|ol|h[1-6]|br|tr|table|blockquo
 _BALISES_IGNOREES = r"(?is)<(script|style|noscript|svg|header|nav|footer)\b[^>]*>.*?</\1>"
 
 
+def _texte_cellule(cellule: str) -> str:
+    return re.sub(r"\s+", " ", html_lib.unescape(re.sub(r"(?s)<[^>]+>", " ", cellule))).strip()
+
+
+def _tableaux_en_phrases(corps: str) -> str:
+    """Chaque ligne de tableau devient une phrase avec ses en-têtes : « Taille M : Poitrine (cm) 88-92 · ... »."""
+    def convertir(m: re.Match) -> str:
+        rangees = re.findall(r"(?is)<tr\b[^>]*>(.*?)</tr>", m.group(0))
+        cellules = [[_texte_cellule(c) for c in re.findall(r"(?is)<t[hd]\b[^>]*>(.*?)</t[hd]>", r)] for r in rangees]
+        cellules = [c for c in cellules if c]
+        if len(cellules) < 2:
+            return m.group(0)
+        entetes, *lignes = cellules
+        phrases = []
+        for ligne in lignes:
+            if len(ligne) == len(entetes):
+                details = " · ".join(f"{h} {v}" for h, v in zip(entetes[1:], ligne[1:]))
+                phrases.append(f"{entetes[0]} {ligne[0]} : {details}")
+            else:
+                phrases.append(" ".join(ligne))
+        return "".join(f"<p>{html_lib.escape(p)}</p>" for p in phrases)
+
+    return re.sub(r"(?is)<table\b.*?</table>", convertir, corps)
+
+
 def extraire_texte(page_html: str) -> tuple[str, str]:
     """Retourne (titre, texte) : contenu principal de la page, une idée par ligne."""
     m = re.search(r"(?is)<title[^>]*>(.*?)</title>", page_html)
@@ -50,6 +75,7 @@ def extraire_texte(page_html: str) -> tuple[str, str]:
     m = re.search(r"(?is)<main\b[^>]*>(.*)</main>", page_html)
     corps = m.group(1) if m else page_html
     corps = re.sub(_BALISES_IGNOREES, " ", corps)
+    corps = _tableaux_en_phrases(corps)
     corps = re.sub(r"(?i)" + _BALISES_BLOC, "\n", corps)
     corps = re.sub(r"(?s)<[^>]+>", " ", corps)
     corps = html_lib.unescape(corps)

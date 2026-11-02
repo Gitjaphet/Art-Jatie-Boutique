@@ -15,7 +15,7 @@ def construire_cartes(produits: list[dict]) -> list[dict]:
         if stock > 0:
             dispo = f"En stock ({stock} pièce{'s' if stock > 1 else ''})"
         elif p.get("sur_commande"):
-            dispo = "Sur commande · 7 jours"
+            dispo = "Sur commande"  # délai exact sur la fiche produit
         else:
             dispo = "Épuisé"
         cartes.append({
@@ -34,8 +34,9 @@ def construire_cartes(produits: list[dict]) -> list[dict]:
 def texte_cartes(cartes: list[dict], alternatives: bool = False) -> str:
     n = len(cartes)
     if n == 0:
-        return ("Nous n'avons pas ce modèle pour le moment, mais nous pouvons le créer sur mesure rien que pour vous ! "
-                "Dites-moi la taille et la couleur souhaitées, ou envoyez-moi une photo du modèle 💕")
+        return ("Je n'ai pas trouvé de modèle correspondant dans notre boutique pour le moment. "
+                "Nos créations au crochet (tenues, maillots, sacs, accessoires) peuvent aussi être réalisées sur mesure : "
+                "dites-moi ce qui vous ferait plaisir, ou envoyez-moi une photo 💕")
     if alternatives:
         return "Ce modèle n'est plus disponible 😔 Voici des pièces proches qui pourraient vous plaire :"
     return "Voici le modèle qui pourrait vous plaire 😊" if n == 1 else f"Voici {n} modèles qui pourraient vous plaire 😊"
