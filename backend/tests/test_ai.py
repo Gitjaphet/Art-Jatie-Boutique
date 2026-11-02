@@ -241,12 +241,15 @@ def test_orchestrateur_salutation():
 
 
 def test_orchestrateur_faq():
+    passages = [{"url": "/livraison", "titre": "Livraison & Retours", "contenu": "Jabala : gratuite", "score": 0.8}]
     with patch("ai.core.orchestrator.llm1_classifier", return_value={"intent": "faq"}):
-        with patch("ai.core.orchestrator.llm5_faq", return_value="Livraison gratuite à Jabala."):
-            from ai.core.orchestrator import run_multi_agent
-            result = run_multi_agent("Quels sont vos délais de livraison ?")
+        with patch("ai.core.orchestrator.chercher_passages", return_value=passages):
+            with patch("ai.core.orchestrator.llm5_faq", return_value="Livraison gratuite à Jabala."):
+                from ai.core.orchestrator import run_multi_agent
+                result = run_multi_agent("Quels sont vos délais de livraison ?")
     assert result["intent"] == "faq"
     assert result["response"] == "Livraison gratuite à Jabala."
+    assert result["liens"] == [{"titre": "Livraison & Retours", "url": "/livraison"}]
 
 
 def test_orchestrateur_recherche(ai_engine):
@@ -345,3 +348,10 @@ def test_decouper_ne_coupe_pas_les_lignes():
     assert len(passages) > 1
     assert all(p.startswith("Titre\n") for p in passages)
     assert all(len(p) <= 200 + len("Titre\n") + 60 for p in passages)
+
+
+def test_faq_sans_passage_repond_sans_appel_ia():
+    from ai.agents.faq import llm5_faq, FALLBACK_SANS_INFO
+    log = []
+    assert llm5_faq(log, "prix d'un iphone ?", passages=[]) == FALLBACK_SANS_INFO
+    assert log == []  # aucun appel au modèle

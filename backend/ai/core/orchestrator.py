@@ -10,6 +10,7 @@ from ai.agents.router import llm2_router
 from ai.data.cartes import construire_cartes, texte_cartes
 from ai.agents.order_agent import llm4_commande
 from ai.agents.faq import llm5_faq
+from ai.knowledge.recherche import chercher_passages
 from ai.data.products import get_products, recherche_semantique
 from ai.data.stats import get_stats
 from ai.data.stats_texte import formater_stats
@@ -91,6 +92,7 @@ def run_multi_agent(
 
     reponse = ""
     produits = []
+    liens = []
 
     # ── Salutation ────────────────────────────────────────────────────
     if intent == "salutation":
@@ -178,7 +180,15 @@ def run_multi_agent(
 
     # ── FAQ ───────────────────────────────────────────────────────────
     elif intent == "faq":
-        reponse = llm5_faq(token_log, message_masque)
+        # Question courte ("et le prix ?") : on y joint la question précédente pour trouver les bons passages
+        precedent = next((m["content"] for m in reversed(history_masque) if m.get("role") == "user"), "")
+        requete = f"{precedent} {message_masque}" if len(message_masque.split()) < 4 else message_masque
+        passages = chercher_passages(requete)
+        reponse = llm5_faq(token_log, message_masque, passages, history_masque)
+        for p in passages:
+            lien = {"titre": p["titre"], "url": p["url"]}
+            if lien not in liens:
+                liens.append(lien)
 
     # ── Fallback ──────────────────────────────────────────────────────
     else:
@@ -193,4 +203,5 @@ def run_multi_agent(
         "token_summary": summary,
         "historique_commande": historique_commande,
         "produits": produits,
+        "liens": liens,
     }

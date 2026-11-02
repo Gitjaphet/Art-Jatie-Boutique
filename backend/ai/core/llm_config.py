@@ -28,7 +28,7 @@ _OR_120B   = ("openrouter", "openai/gpt-oss-120b", {"reasoning": {"effort": "low
 # Pour chaque rôle : modèles essayés dans l'ordre, le dernier est le payant garanti.
 CHAINES = {
     "classifier":    [_GROQ_20B, _GEMINI, _OR_120B],
-    "faq":           [_GROQ_20B, _GEMINI, _OR_120B],
+    "faq":           [_GROQ_120B, _GEMINI, _OR_120B],
     "router":        [_GROQ_120B, _OR_120B],
     "commande":      [_OR_120B],  # données personnelles : payant uniquement, jamais de palier gratuit
 }
