@@ -1,3 +1,4 @@
+import { adminFetch } from "@/lib/api";
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -38,7 +39,7 @@ export default function PosHistoryTab({ toast }: { toast: (msg: string, type?: s
 
   const fetchOrders = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/orders/`);
+      const res = await adminFetch(`${API}/orders/`);
       if (!res.ok) throw new Error();
       const all: PosOrder[] = await res.json();
       // On ne garde QUE les ventes de la caisse (POS)

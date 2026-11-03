@@ -1,3 +1,4 @@
+import { adminFetch } from "@/lib/api";
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -1364,7 +1365,7 @@ export default function PlanningTab({ products }: PlanningTabProps) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API}/orders/planning`);
+      const res = await adminFetch(`${API}/orders/planning`);
       if (!res.ok) throw new Error();
       setOrders((await res.json()).map(mapApiOrder));
     } catch (e) {
@@ -1389,7 +1390,7 @@ export default function PlanningTab({ products }: PlanningTabProps) {
       prev.map((x) => (x.id === id ? { ...x, status: next } : x)),
     );
     try {
-      await fetch(`${API}/orders/${id}/planning-status`, {
+      await adminFetch(`${API}/orders/${id}/planning-status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ planning_status: next }),
@@ -1405,7 +1406,7 @@ export default function PlanningTab({ products }: PlanningTabProps) {
     if (!confirm("Marquer cette commande comme livrée ?")) return;
     setOrders((prev) => prev.filter((x) => x.id !== id));
     try {
-      await fetch(`${API}/orders/${id}/planning-status`, {
+      await adminFetch(`${API}/orders/${id}/planning-status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ planning_status: "livree" }),
@@ -1426,7 +1427,7 @@ export default function PlanningTab({ products }: PlanningTabProps) {
       ),
     );
     try {
-      await fetch(`${API}/orders/${id}/planning-status`, {
+      await adminFetch(`${API}/orders/${id}/planning-status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1451,7 +1452,7 @@ export default function PlanningTab({ products }: PlanningTabProps) {
       prev.map((x) => (x.id === id ? { ...x, progress: newProgress } : x)),
     );
     try {
-      await fetch(`${API}/orders/${id}/planning-status`, {
+      await adminFetch(`${API}/orders/${id}/planning-status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1492,14 +1493,14 @@ export default function PlanningTab({ products }: PlanningTabProps) {
       acompte: form.acompte,
     };
     try {
-      const res = await fetch(`${API}/orders/`, {
+      const res = await adminFetch(`${API}/orders/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error();
       const created = await res.json();
-      await fetch(`${API}/orders/${created.id}/planning-status`, {
+      await adminFetch(`${API}/orders/${created.id}/planning-status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

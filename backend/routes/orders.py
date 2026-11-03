@@ -15,11 +15,15 @@ import boto3
 from botocore.config import Config
 
 from models.models import Order, Product, Client
+from core.auth import get_current_admin
 from database import get_session
 
 
 
 router = APIRouter()
+
+# Routes réservées au tableau de bord (jeton admin obligatoire)
+ADMIN = [Depends(get_current_admin)]
 
 
 # ── Schémas ────────────────────────────────────────────────────────────────
@@ -108,13 +112,13 @@ STATUS_TO_PLANNING: dict[str, Optional[str]] = {
 
 # ── Routes ─────────────────────────────────────────────────────────────────
 
-@router.get("/")
+@router.get("/", dependencies=ADMIN)
 def get_orders(session: Session = Depends(get_session)):
     orders = session.exec(select(Order).order_by(Order.created_at.desc())).all()
     return orders
 
 
-@router.get("/planning")
+@router.get("/planning", dependencies=ADMIN)
 def get_planning_orders(session: Session = Depends(get_session)):
     """
     Retourne toutes les commandes qui sont dans le planning
@@ -179,7 +183,7 @@ def create_order(body: CreateOrderRequest, session: Session = Depends(get_sessio
     return order
 
 
-@router.get("/{order_id}")
+@router.get("/{order_id}", dependencies=ADMIN)
 def get_order(order_id: int, session: Session = Depends(get_session)):
     order = session.get(Order, order_id)
     if not order:
@@ -187,7 +191,7 @@ def get_order(order_id: int, session: Session = Depends(get_session)):
     return order
 
 
-@router.patch("/{order_id}/status")
+@router.patch("/{order_id}/status", dependencies=ADMIN)
 def update_status(order_id: int, status: str, session: Session = Depends(get_session)):
     """
     Met à jour le status général de la commande.
@@ -251,7 +255,7 @@ def update_status(order_id: int, status: str, session: Session = Depends(get_ses
     return order
 
 
-@router.patch("/{order_id}/planning-status")
+@router.patch("/{order_id}/planning-status", dependencies=ADMIN)
 def update_planning_status(
     order_id: int,
     body: PlanningStatusUpdate,
@@ -289,7 +293,7 @@ def update_planning_status(
     return order
 
 
-@router.delete("/{order_id}")
+@router.delete("/{order_id}", dependencies=ADMIN)
 def delete_order(order_id: int, session: Session = Depends(get_session)):
     order = session.get(Order, order_id)
     if not order:
@@ -325,7 +329,7 @@ async def upload_proof(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Upload échoué: {str(e)}")
 
 
-@router.post("/migrate-clients")
+@router.post("/migrate-clients", dependencies=ADMIN)
 def migrate_existing_clients(session: Session = Depends(get_session)):
     """
     Route temporaire pour transformer les anciennes commandes en fiches Clients CRM.
@@ -378,7 +382,7 @@ def migrate_existing_clients(session: Session = Depends(get_session)):
 
 
 
-@router.post("/pos")
+@router.post("/pos", dependencies=ADMIN)
 def create_pos_order(body: PosOrderRequest, session: Session = Depends(get_session)):
     """
     Route dédiée au Point de Vente (POS).

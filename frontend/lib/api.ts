@@ -223,3 +223,12 @@ export async function deleteReview(reviewId: number) {
   if (!res.ok) throw new Error("Échec de la suppression");
   return res.json();
 }
+
+
+// Appel d'une route réservée aux administrateurs : ajoute le jeton admin à la requête.
+export function adminFetch(input: string, init: RequestInit = {}): Promise<Response> {
+  const headers = new Headers(init.headers);
+  const token = getAdminToken();
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+  return fetch(input, { ...init, headers });
+}

@@ -410,3 +410,14 @@ def test_reindex_refuse_un_mauvais_jeton(monkeypatch):
 def test_mots_coordonnees():
     from ai.utils.texte import mots
     assert "contact" in mots("Pouvez-vous me donner vos coordonnées ?")
+
+
+def test_commandes_illisibles_sans_jeton_admin():
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+    from routes.orders import router
+    app = FastAPI()
+    app.include_router(router, prefix="/orders")
+    client = TestClient(app)
+    assert client.get("/orders/").status_code in (401, 403)
+    assert client.delete("/orders/1").status_code in (401, 403)

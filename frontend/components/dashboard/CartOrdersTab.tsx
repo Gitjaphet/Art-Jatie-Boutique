@@ -1,3 +1,4 @@
+import { adminFetch } from "@/lib/api";
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -133,7 +134,7 @@ export default function CartOrdersTab({ toast }: Props) {
 
   const fetchOrders = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/orders/`);
+      const res = await adminFetch(`${API}/orders/`);
       if (!res.ok) throw new Error();
       const all: CartOrder[] = await res.json();
       // On garde seulement les commandes avec panier (cart_items_json non null)
@@ -177,7 +178,7 @@ export default function CartOrdersTab({ toast }: Props) {
   const deleteOrder = async (id: number) => {
     setDeleting(id);
     try {
-      const res = await fetch(`${API}/orders/${id}`, { method: "DELETE" });
+      const res = await adminFetch(`${API}/orders/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
       setOrders((prev) => prev.filter((o) => o.id !== id));
       toast("Commande supprimée.");

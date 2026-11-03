@@ -1,3 +1,4 @@
+import { adminFetch } from "@/lib/api";
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -106,7 +107,7 @@ export default function OrdersTab({ toast }: Props) {
 
   const fetchOrders = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/orders/`);
+      const res = await adminFetch(`${API}/orders/`);
       if (!res.ok) throw new Error();
       const all = await res.json();
       setOrders(all.filter((o: Order) => !o.is_pos && !o.cart_items_json));
@@ -150,7 +151,7 @@ export default function OrdersTab({ toast }: Props) {
   const deleteOrder = async (id: number) => {
     setDeleting(id);
     try {
-      const res = await fetch(`${API}/orders/${id}`, { method: "DELETE" });
+      const res = await adminFetch(`${API}/orders/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
       setOrders((prev) => prev.filter((o) => o.id !== id));
       toast("Commande supprimée.");

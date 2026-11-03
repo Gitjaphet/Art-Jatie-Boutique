@@ -1,3 +1,4 @@
+import { adminFetch } from "@/lib/api";
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -350,7 +351,7 @@ export default function PosTab({ products, settings, toast }: PosTabProps) {
     };
 
     try {
-      const res = await fetch(`${API}/orders/pos`, {
+      const res = await adminFetch(`${API}/orders/pos`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
