@@ -30,5 +30,7 @@ CHAINES = {
     "classifier":    [_GROQ_20B, _GEMINI, _OR_120B],
     "faq":           [_GROQ_120B, _GEMINI, _OR_120B],
     "router":        [_GROQ_120B, _OR_120B],
-    "commande":      [_OR_120B],  # données personnelles : payant uniquement, jamais de palier gratuit
+    # Données personnelles : Groq (n'entraîne pas ses modèles sur les données, même en gratuit), puis OpenRouter.
+    # Jamais Gemini gratuit, qui utilise les données pour améliorer ses produits.
+    "commande":      [_GROQ_120B, _OR_120B],
 }
