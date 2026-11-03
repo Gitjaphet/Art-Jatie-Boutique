@@ -1,4 +1,5 @@
 "use client";
+import { adminFetch } from "@/lib/api";
 
 import { useState, useEffect, useMemo } from "react";
 import { Search, ExternalLink, Edit2, Trash2, X, Save, User } from "lucide-react";
@@ -45,7 +46,7 @@ export default function ClientsTab({ toast }: Props) {
   // ── Fetch ──
   const fetchClients = async () => {
     try {
-      const res = await fetch(`${API}/clients/`);
+      const res = await adminFetch(`${API}/clients/`);
       if (!res.ok) throw new Error();
       setClients(await res.json());
     } catch {
@@ -80,7 +81,7 @@ export default function ClientsTab({ toast }: Props) {
     if (!editingClient) return;
     setIsSaving(true);
     try {
-      const res = await fetch(`${API}/clients/${editingClient.id}`, {
+      const res = await adminFetch(`${API}/clients/${editingClient.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -107,7 +108,7 @@ export default function ClientsTab({ toast }: Props) {
     if (!deleteTarget) return;
     setIsDeleting(true);
     try {
-      const res = await fetch(`${API}/clients/${deleteTarget.id}`, { method: "DELETE" });
+      const res = await adminFetch(`${API}/clients/${deleteTarget.id}`, { method: "DELETE" });
       if (res.ok) {
         toast("Client supprimé avec succès.", "success");
         fetchClients();

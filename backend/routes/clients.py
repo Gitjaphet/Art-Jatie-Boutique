@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from core.auth import get_current_admin
 from sqlmodel import Session, select
 from pydantic import BaseModel
 from typing import Optional
@@ -7,6 +8,9 @@ from database import get_session
 
 router = APIRouter()
 
+# Routes réservées au tableau de bord (jeton admin obligatoire)
+ADMIN = [Depends(get_current_admin)]
+
 class ClientUpdate(BaseModel):
     name: Optional[str] = None
     email: Optional[str] = None
@@ -14,12 +18,12 @@ class ClientUpdate(BaseModel):
     favorite_categories: Optional[str] = None
     favorite_colors: Optional[str] = None
 
-@router.get("/")
+@router.get("/", dependencies=ADMIN)
 def get_clients(session: Session = Depends(get_session)):
     clients = session.exec(select(Client).order_by(Client.total_spent.desc())).all()
     return clients
 
-@router.patch("/{client_id}")
+@router.patch("/{client_id}", dependencies=ADMIN)
 def update_client(client_id: int, body: ClientUpdate, session: Session = Depends(get_session)):
     client = session.get(Client, client_id)
     if not client:
@@ -36,7 +40,7 @@ def update_client(client_id: int, body: ClientUpdate, session: Session = Depends
     session.refresh(client)
     return client
 
-@router.delete("/{client_id}")
+@router.delete("/{client_id}", dependencies=ADMIN)
 def delete_client(client_id: int, session: Session = Depends(get_session)):
     client = session.get(Client, client_id)
     if not client:

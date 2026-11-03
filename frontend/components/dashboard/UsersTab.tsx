@@ -1,4 +1,5 @@
 "use client";
+import { adminFetch } from "@/lib/api";
 import React, { useState, useEffect, useCallback } from "react";
 import modalStyles from "./AddProductModal.module.css";
 import dash from "../../app/admin/dashboard/AdminDashboard.module.css";
@@ -125,7 +126,7 @@ export default function UsersTab({ toast }: Props) {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/users/`);
+      const res = await adminFetch(`${API}/users/`);
       if (res.ok) setUsers(await res.json());
     } catch {
       toast("Impossible de charger les utilisateurs.", "error");
@@ -143,7 +144,7 @@ export default function UsersTab({ toast }: Props) {
     if (!email || !password) return;
     setSub(true);
     try {
-      const res = await fetch(`${API}/users/`, {
+      const res = await adminFetch(`${API}/users/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, is_admin: isAdmin }),
@@ -169,7 +170,7 @@ export default function UsersTab({ toast }: Props) {
     if (!userToDelete) return;
     setDeletingSub(true);
     try {
-      const res = await fetch(`${API}/users/${userToDelete.id}`, {
+      const res = await adminFetch(`${API}/users/${userToDelete.id}`, {
         method: "DELETE",
       });
       if (res.ok) {
@@ -189,7 +190,7 @@ export default function UsersTab({ toast }: Props) {
     if (!changingPasswordFor || !newPassword) return;
     setChangingSub(true);
     try {
-      const res = await fetch(
+      const res = await adminFetch(
         `${API}/users/${changingPasswordFor.id}/password`,
         {
           method: "PATCH",

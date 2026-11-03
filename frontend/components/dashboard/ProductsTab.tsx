@@ -1,3 +1,4 @@
+import { adminFetch } from "@/lib/api";
 import { useState } from "react";
 import Image from "next/image";
 import dashboardStyles from "../../app/admin/dashboard/AdminDashboard.module.css";
@@ -227,7 +228,7 @@ function StockCell({
     }
     setSaving(true);
     try {
-      const res = await fetch(`${API}/products/${product.id}`, {
+      const res = await adminFetch(`${API}/products/${product.id}`, {
         method: "PUT",
         body: buildProductFormData(product, value),
       });
@@ -417,7 +418,7 @@ function StockCellMobile({
     }
     setSaving(true);
     try {
-      const res = await fetch(`${API}/products/${product.id}`, {
+      const res = await adminFetch(`${API}/products/${product.id}`, {
         method: "PUT",
         body: buildProductFormData(product, value), // FormData complet
       });
@@ -577,7 +578,7 @@ export default function ProductsTab({
     if (!productToDelete) return;
     setIsDeleting(true);
     try {
-      const res = await fetch(`${API}/products/${productToDelete.id}`, {
+      const res = await adminFetch(`${API}/products/${productToDelete.id}`, {
         method: "DELETE",
       });
       if (res.ok) {

@@ -1,4 +1,5 @@
 "use client";
+import { adminFetch } from "@/lib/api";
 
 import { useEffect, useState } from "react";
 import dashboardStyles from "../../app/admin/dashboard/AdminDashboard.module.css";
@@ -67,7 +68,7 @@ export default function ReviewsTab({ toast, products }: ReviewsTabProps) {
   const fetchPending = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API}/products/admin/reviews/pending`, {
+      const res = await adminFetch(`${API}/products/admin/reviews/pending`, {
         headers: authHeaders(),
       });
       if (!res.ok) throw new Error();
@@ -96,7 +97,7 @@ export default function ReviewsTab({ toast, products }: ReviewsTabProps) {
   const handleApprove = async (review: Review) => {
     setProcessingId(review.id);
     try {
-      const res = await fetch(`${API}/products/admin/reviews/${review.id}/approve`, {
+      const res = await adminFetch(`${API}/products/admin/reviews/${review.id}/approve`, {
         method: "PATCH",
         headers: authHeaders(),
       });
@@ -114,7 +115,7 @@ export default function ReviewsTab({ toast, products }: ReviewsTabProps) {
     if (!reviewToReject) return;
     setProcessingId(reviewToReject.id);
     try {
-      const res = await fetch(`${API}/products/admin/reviews/${reviewToReject.id}`, {
+      const res = await adminFetch(`${API}/products/admin/reviews/${reviewToReject.id}`, {
         method: "DELETE",
         headers: authHeaders(),
       });

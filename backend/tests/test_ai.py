@@ -421,3 +421,18 @@ def test_commandes_illisibles_sans_jeton_admin():
     client = TestClient(app)
     assert client.get("/orders/").status_code in (401, 403)
     assert client.delete("/orders/1").status_code in (401, 403)
+
+
+def test_produits_et_clients_proteges_sans_jeton():
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+    from routes import products, clients, colors
+    app = FastAPI()
+    app.include_router(products.router, prefix="/products")
+    app.include_router(clients.router, prefix="/clients")
+    app.include_router(colors.router, prefix="/colors")
+    c = TestClient(app)
+    assert c.delete("/products/1").status_code in (401, 403)
+    assert c.post("/products/seed").status_code in (401, 403)
+    assert c.get("/clients/").status_code in (401, 403)
+    assert c.delete("/colors/1").status_code in (401, 403)

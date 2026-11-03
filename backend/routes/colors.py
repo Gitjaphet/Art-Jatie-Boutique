@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from core.auth import get_current_admin
 from sqlmodel import Session, select
 from typing import List, Optional
 from pydantic import BaseModel  # <-- NOUVEAU: Import de BaseModel
@@ -12,6 +13,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+# Routes réservées au tableau de bord (jeton admin obligatoire)
+ADMIN = [Depends(get_current_admin)]
 
 COLOR_DEFAULTS = {
     "rouge": "#E53935",
@@ -41,7 +45,7 @@ def get_all_colors(session: Session = Depends(get_session)):
     return session.exec(select(Color)).all()
 
 
-@router.post("/", response_model=Color)
+@router.post("/", response_model=Color, dependencies=ADMIN)
 def create_or_get_color(color_data: ColorCreate, session: Session = Depends(get_session)):
     # <-- MODIFIÉ: On utilise color_data.name au lieu de name tout court
     name_clean = color_data.name.strip()
@@ -75,7 +79,7 @@ def create_or_get_color(color_data: ColorCreate, session: Session = Depends(get_
         raise HTTPException(status_code=500, detail="Erreur interne lors de la création de la couleur")
 
 
-@router.delete("/{color_id}")
+@router.delete("/{color_id}", dependencies=ADMIN)
 def delete_color(color_id: int, session: Session = Depends(get_session)):
     """Supprime une couleur de la base (Recherche avancée / Nettoyage)"""
     color = session.get(Color, color_id)

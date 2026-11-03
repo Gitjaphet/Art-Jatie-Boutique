@@ -14,6 +14,9 @@ from ai.utils.vectorisation import vectoriser_produit
 
 router = APIRouter()
 
+# Routes réservées au tableau de bord (jeton admin obligatoire)
+ADMIN = [Depends(get_current_admin)]
+
 
 # ─── HELPER : Génération automatique de slug ──────────────────────────────────
 def generate_slug(name: str) -> str:
@@ -100,7 +103,7 @@ def get_product_by_slug(slug: str, session: Session = Depends(get_session)):
 # ROUTES UTILITAIRES
 # ─────────────────────────────────────────────────────────────────────────────
 
-@router.post("/generate-slugs")
+@router.post("/generate-slugs", dependencies=ADMIN)
 def generate_all_slugs(session: Session = Depends(get_session)):
     """Génère les slugs manquants pour tous les produits existants en base."""
     products = session.exec(select(Product)).all()
@@ -114,7 +117,7 @@ def generate_all_slugs(session: Session = Depends(get_session)):
     return {"message": f"{count} slugs générés avec succès"}
 
 
-@router.post("/generate-embeddings")
+@router.post("/generate-embeddings", dependencies=ADMIN)
 def generate_all_embeddings(
     background_tasks: BackgroundTasks,
     session: Session = Depends(get_session)
@@ -137,7 +140,7 @@ def generate_all_embeddings(
     return {"message": f"Vectorisation de {len(products)} produits lancée en arrière-plan."}
 
 
-@router.post("/seed")
+@router.post("/seed", dependencies=ADMIN)
 def seed_initial_data(session: Session = Depends(get_session)):
     existing = session.exec(select(Product)).first()
     if existing:
@@ -169,7 +172,7 @@ def seed_initial_data(session: Session = Depends(get_session)):
     return {"message": f"{len(test_products)} produits ajoutés avec succès !"}
 
 
-@router.post("/fix-zero-stock")
+@router.post("/fix-zero-stock", dependencies=ADMIN)
 def fix_zero_stock(session: Session = Depends(get_session)):
     products = session.exec(select(Product)).all()
     count = 0
@@ -187,7 +190,7 @@ def fix_zero_stock(session: Session = Depends(get_session)):
 # CREATE
 # ─────────────────────────────────────────────────────────────────────────────
 
-@router.post("/")
+@router.post("/", dependencies=ADMIN)
 async def create_product(
     background_tasks: BackgroundTasks,       # ← NOUVEAU : vectorisation async
     name: str = Form(...),
@@ -268,7 +271,7 @@ async def create_product(
 # UPDATE
 # ─────────────────────────────────────────────────────────────────────────────
 
-@router.put("/{product_id}")
+@router.put("/{product_id}", dependencies=ADMIN)
 async def update_product(
     product_id: int,
     background_tasks: BackgroundTasks,       # ← NOUVEAU
@@ -344,7 +347,7 @@ async def update_product(
 # ─────────────────────────────────────────────────────────────────────────────
 
 # DELETE — version finale propre
-@router.delete("/{product_id}")
+@router.delete("/{product_id}", dependencies=ADMIN)
 def delete_product(
     product_id: int,
     session: Session = Depends(get_session)   # ← BackgroundTasks retiré

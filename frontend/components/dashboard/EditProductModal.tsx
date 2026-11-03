@@ -1,3 +1,4 @@
+import { adminFetch } from "@/lib/api";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import styles from "./EditProductModal.module.css";
 import Image from "next/image";
@@ -234,7 +235,7 @@ export default function EditProductModal({
     if (!newName) return;
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/colors/`, {
+      const res = await adminFetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/colors/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newName, hex_code: "#CCCCCC" }) 
@@ -328,7 +329,7 @@ export default function EditProductModal({
     formData.append("color_ids", JSON.stringify(selectedColors.map(c => c.id)));
 
     try {
-      const res = await fetch(
+      const res = await adminFetch(
         `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/products/${productToEdit.id}`,
         { method: "PUT", body: formData }
       );
