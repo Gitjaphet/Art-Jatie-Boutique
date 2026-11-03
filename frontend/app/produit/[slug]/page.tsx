@@ -77,6 +77,14 @@ export default async function ProductPage({
     getProductReviewAggregate(product.id),
   ]);
 
+  // Délai de fabrication (sur commande) ou de préparation (en stock)
+  const handlingTime = {
+    "@type": "QuantitativeValue",
+    minValue: product.on_order ? 7 : 1,
+    maxValue: product.on_order ? 14 : 2,
+    unitCode: "DAY",
+  };
+
   // Schema.org Product
   const jsonLd = {
   "@context": "https://schema.org",
@@ -104,34 +112,42 @@ export default async function ProductPage({
       "@type": "Organization",
       name: "Art Jatie",
     },
-    shippingDetails: {
-      "@type": "OfferShippingDetails",
-      shippingRate: {
-        "@type": "MonetaryAmount",
-        value: "0",       // Gratuit à Nosy Be en ville
-        currency: "MGA",
-      },
-      shippingDestination: {
-        "@type": "DefinedRegion",
-        addressCountry: "MG",
-      },
-      deliveryTime: {
-        "@type": "ShippingDeliveryTime",
-        handlingTime: {
-          "@type": "QuantitativeValue",
-          // Sur commande : délai de fabrication (à ajuster à la réalité)
-          minValue: product.on_order ? 7 : 1,
-          maxValue: product.on_order ? 14 : 2,
-          unitCode: "DAY",
+    // Les tarifs sont sur devis (cf. /livraison) : aucun shippingRate déclaré
+    shippingDetails: [
+      {
+        "@type": "OfferShippingDetails",
+        shippingDestination: {
+          "@type": "DefinedRegion",
+          addressCountry: "MG",
         },
-        transitTime: {
-          "@type": "QuantitativeValue",
-          minValue: 0,   // Demi-journée à Nosy Be
-          maxValue: 7,   // Jusqu'à 7 jours pour Madagascar
-          unitCode: "DAY",
+        deliveryTime: {
+          "@type": "ShippingDeliveryTime",
+          handlingTime,
+          transitTime: {
+            "@type": "QuantitativeValue",
+            minValue: 0,   // Demi-journée à Nosy Be
+            maxValue: 7,   // Jusqu'à 7 jours pour le reste de Madagascar
+            unitCode: "DAY",
+          },
         },
       },
-    },
+      {
+        "@type": "OfferShippingDetails",
+        shippingDestination: ["FR", "RE", "YT", "MU", "BE", "DE", "IT"].map(
+          (c) => ({ "@type": "DefinedRegion", addressCountry: c })
+        ),
+        deliveryTime: {
+          "@type": "ShippingDeliveryTime",
+          handlingTime,
+          transitTime: {
+            "@type": "QuantitativeValue",
+            minValue: 7,   // 7 jours (avion) à 3 mois (bateau)
+            maxValue: 90,
+            unitCode: "DAY",
+          },
+        },
+      },
+    ],
     hasMerchantReturnPolicy: {
       "@type": "MerchantReturnPolicy",
       applicableCountry: "MG",
