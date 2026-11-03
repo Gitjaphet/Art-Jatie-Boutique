@@ -41,7 +41,7 @@ def test_get_product_slug_inexistant(client):
     response = client.get("/products/slug-inexistant")
     assert response.status_code == 404
 
-def test_generate_slugs(client, session):
+def test_generate_slugs(client, session, admin):
     p = Product(
         name="Sac Raphia", slug=None, tag="T", genre="Femme",
         category="ACCESSOIRES", price_ar=45000, image="x",
@@ -55,7 +55,7 @@ def test_generate_slugs(client, session):
     session.refresh(p)
     assert p.slug == "sac-raphia"
 
-def test_slug_accent(client, session):
+def test_slug_accent(client, session, admin):
     p = Product(
         name="Robe Élégante", slug=None, tag="T", genre="Femme",
         category="TENUES", price_ar=200000, image="x",
@@ -68,7 +68,7 @@ def test_slug_accent(client, session):
     assert p.slug is not None
     assert "é" not in p.slug
 
-def test_slug_unique(client, session):
+def test_slug_unique(client, session, admin):
     p1 = Product(
         name="Robe Rose", slug="robe-rose", tag="T", genre="Femme",
         category="TENUES", price_ar=100000, image="x",

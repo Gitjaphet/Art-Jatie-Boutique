@@ -63,3 +63,12 @@ def settings_fixture(session: Session):
     session.commit()
     session.refresh(s)
     return s
+
+
+@pytest.fixture(name="admin")
+def admin_fixture(client):
+    """Simule un admin connecté pendant le test (même méthode que test_settings.py)."""
+    from core.auth import get_current_admin
+    client.app.dependency_overrides[get_current_admin] = lambda: {"is_admin": True}
+    yield
+    client.app.dependency_overrides.pop(get_current_admin, None)
