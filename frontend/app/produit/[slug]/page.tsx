@@ -37,11 +37,15 @@ export async function generateMetadata({
     product.description?.replace(/<[^>]+>/g, "").slice(0, 155) ||
     "Création artisanale en crochet fait main par nos artisanes malgaches.";
 
+  const pageTitle = product.name.toLowerCase().includes("crochet")
+    ? `${product.name} | Art Jatie`
+    : `${product.name} – crochet fait main | Art Jatie`;
+
   return {
-    title: `${product.name} — Art Jatie`,
+    title: pageTitle,
     description,
     openGraph: {
-      title: `${product.name} — Art Jatie`,
+      title: pageTitle,
       description,
       images: product.image ? [{ url: product.image }] : [],
       type: "website",
@@ -91,8 +95,9 @@ export default async function ProductPage({
     "@type": "Offer",
     priceCurrency: "MGA",
     price: product.rawPrice,
+    // Produit sur commande = fabriqué à la demande, donc disponible
     availability:
-      product.stock_quantity && product.stock_quantity > 0
+      product.on_order || (product.stock_quantity && product.stock_quantity > 0)
         ? "https://schema.org/InStock"
         : "https://schema.org/OutOfStock",
     seller: {
@@ -114,8 +119,9 @@ export default async function ProductPage({
         "@type": "ShippingDeliveryTime",
         handlingTime: {
           "@type": "QuantitativeValue",
-          minValue: 1,
-          maxValue: 2,   // 1–2 jours ouvrés de préparation atelier
+          // Sur commande : délai de fabrication (à ajuster à la réalité)
+          minValue: product.on_order ? 3 : 1,
+          maxValue: product.on_order ? 10 : 2,
           unitCode: "DAY",
         },
         transitTime: {
@@ -135,7 +141,7 @@ export default async function ProductPage({
       returnMethod: "https://schema.org/ReturnByMail",
       merchantReturnLink: "https://www.artjatie.com/livraison",
       refundType: "https://schema.org/FullRefund",
-      returnFees: "https://schema.org/ReturnFeesCustomerResponsibility", // ← AJOUTER
+      returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
     },
   },
 };
