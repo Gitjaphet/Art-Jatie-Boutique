@@ -51,6 +51,7 @@ function CheckoutContent() {
   const subtotal = parseInt(params.get("subtotal") || "0");
   const discount = parseInt(params.get("discount") || "0");
   const total = parseInt(params.get("total") || "0");
+  const promoCode = params.get("promo") || "";
 
   const EXCHANGE_RATE = 4800;
   const formatAr = (p: number) =>
@@ -150,6 +151,7 @@ function CheckoutContent() {
           subtotal_ar: subtotal,
           discount_ar: discount,
           total_ar: total,
+          promo_code: promoCode || null,
           payment_method: payment,
           mvola_phone: payment === "mvola" ? mvolaPhone : null,
           mvola_account_name: payment === "mvola" ? mvolaAccountName : null,
@@ -167,7 +169,7 @@ function CheckoutContent() {
 
       // MVola → initier la transaction automatique
       // Tous les modes → confirmation manuelle via WhatsApp
-      handleWhatsAppCheckout(order.id);
+      handleWhatsAppCheckout(order);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Une erreur est survenue.");
     } finally {
@@ -176,8 +178,16 @@ function CheckoutContent() {
   };
 
   // ── WhatsApp ─────────────────────────────────────────────────────────────
-  const handleWhatsAppCheckout = (oid: number) => {
-    const itemsText = items
+  // Le message reprend les montants ENREGISTRÉS par le serveur (et non ceux de l'URL)
+  const handleWhatsAppCheckout = (order: {
+    id: number;
+    total_ar: number;
+    delivery_cost: number;
+    cart_items_json: string | null;
+  }) => {
+    const oid = order.id;
+    const lignes: { name: string; price: number; quantity: number }[] = JSON.parse(order.cart_items_json || "[]");
+    const itemsText = lignes
       .map(
         (i) =>
           `• ${i.name} ×${i.quantity} = ${new Intl.NumberFormat("fr-FR").format(i.price * i.quantity)} Ar`,
@@ -196,8 +206,8 @@ function CheckoutContent() {
         `👤 *Client :* ${name}\n` +
         `📱 *WhatsApp :* ${whatsapp}\n\n` +
         `📦 *Articles :*\n${itemsText}\n\n` +
-        `🚚 *Livraison :* ${deliveryLabel} — ${deliveryCost > 0 ? formatAr(deliveryCost) : "Gratuite"}\n` +
-        `💰 *Total :* ${formatAr(total)} (${formatEur(total)})\n\n` +
+        `🚚 *Livraison :* ${deliveryLabel} — ${order.delivery_cost > 0 ? formatAr(order.delivery_cost) : "Gratuite"}\n` +
+        `💰 *Total :* ${formatAr(order.total_ar)} (${formatEur(order.total_ar)})\n\n` +
         `${payInfo}\n\n` +
         `${message ? `💬 *Message :* ${message}\n\n` : ""}` +
         `Merci de confirmer ma commande ! 🙏`,

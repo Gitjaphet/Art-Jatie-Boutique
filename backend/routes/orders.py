@@ -15,7 +15,8 @@ import boto3
 from botocore.config import Config
 
 from models.models import Order, Product, Client
-from core.auth import get_current_admin
+from core.auth import get_current_admin, get_admin_facultatif
+from services.commandes import Ligne, creer_commande, liste
 from database import get_session
 
 
@@ -44,15 +45,16 @@ class CreateOrderRequest(BaseModel):
     client_whatsapp: str
     client_message: Optional[str] = None
 
-    cart_items: List[CartItemSchema]
+    cart_items: Optional[List[CartItemSchema]] = None
 
-    delivery_zone: str
-    delivery_cost: int
-    delivery_label: str
+    delivery_zone: Optional[str] = None
+    delivery_cost: Optional[int] = None    # ignoré pour une commande publique (recalculé)
+    delivery_label: Optional[str] = None
 
-    subtotal_ar: int
-    discount_ar: int = 0
-    total_ar: int
+    subtotal_ar: Optional[int] = None      # ignoré pour une commande publique (recalculé)
+    discount_ar: Optional[int] = 0         # idem
+    total_ar: Optional[int] = None         # idem
+    promo_code: Optional[str] = None
 
     payment_method: str = "whatsapp"
 
@@ -132,35 +134,20 @@ def get_planning_orders(session: Session = Depends(get_session)):
     return orders
 
 
-@router.post("/")
-def create_order(body: CreateOrderRequest, session: Session = Depends(get_session)):
-    if body.payment_method == "mvola":
-        if not body.mvola_phone:
-            raise HTTPException(status_code=422, detail="Le numéro MVola est requis.")
-        if not body.mvola_account_name:
-            raise HTTPException(status_code=422, detail="Le nom du compte MVola est requis.")
-
-    if body.payment_method == "orange_money":
-        if not body.om_phone:
-            raise HTTPException(status_code=422, detail="Le numéro Orange Money est requis.")
-        if not body.om_account_name:
-            raise HTTPException(status_code=422, detail="Le nom du compte Orange Money est requis.")
-
-
-    
-
+def _creer_commande_manuelle(body: CreateOrderRequest, session: Session) -> Order:
+    """Commande saisie par l'équipe (Planning, retrait sur place) : montants saisis conservés."""
     order = Order(
         client_id=None,
         client_name=body.client_name,
         client_email=body.client_email,
         client_whatsapp=body.client_whatsapp,
         client_message=body.client_message,
-        cart_items_json=json.dumps([item.model_dump() for item in body.cart_items]),
+        cart_items_json=json.dumps([item.model_dump() for item in body.cart_items or []]),
         delivery_zone=body.delivery_zone,
-        delivery_cost=body.delivery_cost,
+        delivery_cost=body.delivery_cost or 0,
         delivery_label=body.delivery_label,
         subtotal_ar=body.subtotal_ar,
-        discount_ar=body.discount_ar,
+        discount_ar=body.discount_ar or 0,
         total_ar=body.total_ar,
         payment_method=body.payment_method,
         mvola_account_name=body.mvola_account_name,
@@ -176,11 +163,41 @@ def create_order(body: CreateOrderRequest, session: Session = Depends(get_sessio
         selected_size=body.selected_size,
         selected_color=body.selected_color,
     )
-
     session.add(order)
     session.commit()
     session.refresh(order)
     return order
+
+
+@router.post("/")
+def create_order(
+    body: CreateOrderRequest,
+    session: Session = Depends(get_session),
+    admin: Optional[dict] = Depends(get_admin_facultatif),
+):
+    """Commande publique : montants recalculés par le serveur (services/commandes.py).
+    Commande saisie par un admin connecté (Planning) : montants saisis par l'équipe conservés."""
+    if admin:
+        return _creer_commande_manuelle(body, session)
+
+    if body.cart_items:
+        lignes = [Ligne(product_id=i.id, quantite=i.quantity) for i in body.cart_items]
+    elif body.product_id:
+        lignes = [Ligne(product_id=body.product_id,
+                        tailles=liste(body.selected_size), couleurs=liste(body.selected_color))]
+    else:
+        raise HTTPException(status_code=422, detail="La commande ne contient aucun article.")
+
+    return creer_commande(
+        session,
+        client={"name": body.client_name, "email": body.client_email,
+                "whatsapp": body.client_whatsapp, "message": body.client_message},
+        lignes=lignes,
+        zone=body.delivery_zone or "a_confirmer",
+        delivery_label=body.delivery_label,
+        code_promo=body.promo_code,
+        paiement=body.model_dump(),
+    )
 
 
 @router.get("/{order_id}", dependencies=ADMIN)

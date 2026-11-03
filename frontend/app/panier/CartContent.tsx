@@ -127,6 +127,7 @@ export default function CartContent() {
       subtotal: String(subtotal),
       discount: String(discount),
       total: String(total),
+      promo: promoApplied ? promoCode.trim().toUpperCase() : "",
     });
 
     router.push(`/checkout?${params.toString()}`);

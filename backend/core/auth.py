@@ -50,3 +50,19 @@ def get_current_admin(credentials: HTTPAuthorizationCredentials = Depends(securi
             detail="Accès réservé aux administrateurs",
         )
     return payload
+
+# ── Admin facultatif ──────────────────────────────────────────────────────
+from typing import Optional as _Optional
+from fastapi import Depends as _Depends
+from fastapi.security import HTTPBearer as _HTTPBearer, HTTPAuthorizationCredentials as _Creds
+
+_bearer_facultatif = _HTTPBearer(auto_error=False)
+
+
+def get_admin_facultatif(credentials: _Optional[_Creds] = _Depends(_bearer_facultatif)) -> _Optional[dict]:
+    """Comme get_current_admin, mais ne refuse jamais : renvoie le profil admin, ou None.
+    Pour une route publique qui accepte des options en plus quand un admin connecté l'appelle."""
+    if not credentials:
+        return None
+    payload = decode_access_token(credentials.credentials)
+    return payload if payload and payload.get("is_admin") else None
