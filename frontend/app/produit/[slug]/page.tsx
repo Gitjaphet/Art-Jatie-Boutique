@@ -85,6 +85,9 @@ export default async function ProductPage({
     unitCode: "DAY",
   };
 
+  // Pays desservis (livraison et retours)
+  const returnCountries = ["MG", "FR", "RE", "YT", "MU", "BE", "DE", "IT"];
+
   // Schema.org Product
   const jsonLd = {
   "@context": "https://schema.org",
@@ -150,14 +153,24 @@ export default async function ProductPage({
     ],
     hasMerchantReturnPolicy: {
       "@type": "MerchantReturnPolicy",
-      applicableCountry: "MG",
-      returnPolicyCategory:
-        "https://schema.org/MerchantReturnFiniteReturnWindow",
-      merchantReturnDays: 2,
-      returnMethod: "https://schema.org/ReturnByMail",
+      applicableCountry: returnCountries,
+      ...(product.on_order
+        ? {
+            // Sur mesure : non remboursable sauf défaut (cf. /livraison)
+            returnPolicyCategory:
+              "https://schema.org/MerchantReturnNotPermitted",
+          }
+        : {
+            // En stock : retour sous 2 jours, uniquement pour défaut d'origine
+            returnPolicyCategory:
+              "https://schema.org/MerchantReturnFiniteReturnWindow",
+            merchantReturnDays: 2,
+            itemCondition: "https://schema.org/DamagedCondition",
+            returnMethod: "https://schema.org/ReturnByMail",
+            returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
+            refundType: "https://schema.org/FullRefund",
+          }),
       merchantReturnLink: "https://www.artjatie.com/livraison",
-      refundType: "https://schema.org/FullRefund",
-      returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
     },
   },
 };
