@@ -7,13 +7,15 @@ import type { SizeItem } from "../../components/Boutique/SidebarFilters";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Sur Commande | Art Jatie Boutique",
+  title: "Crochet sur mesure : bikinis, sacs, tenues de plage | Art Jatie",
   description:
-    "Découvrez nos créations crochet artisanales malagasy disponibles sur commande. Tenues, maillots et accessoires faits main.",
+    "Bikinis, tenues de plage, sacs et déco au crochet, faits main à Nosy Be sur commande. Choisissez vos tailles et couleurs. Livraison internationale.",
+  alternates: { canonical: "https://www.artjatie.com/commande" },
   openGraph: {
-    title: "Sur Commande | Art Jatie Boutique",
-    description: "Créations crochet artisanales malagasy sur commande.",
-    url: "https://artjatie.com/sur-commande",
+    title: "Crochet sur mesure : bikinis, sacs, tenues de plage | Art Jatie",
+    description:
+      "Créations au crochet faites main à Nosy Be, sur commande, selon vos tailles et couleurs.",
+    url: "https://www.artjatie.com/commande",
     siteName: "Art Jatie Boutique",
     type: "website",
   },
