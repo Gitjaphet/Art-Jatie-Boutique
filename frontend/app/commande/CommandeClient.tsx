@@ -216,6 +216,26 @@ export default function CommandeClient({
                 </button>
               </div>
             )}
+
+            <div className={styles.seoText}>
+              <h2>Crochet fait main sur commande, à Nosy Be</h2>
+              <p>
+                Chez Art Jatie, chaque pièce est crochetée à la main dans notre
+                atelier de Seganinga, à Nosy Be. Bikinis et maillots, tenues de
+                plage, sacs au crochet, nappes de table et déco pour la maison :
+                choisissez un modèle, votre taille et vos couleurs, et nous le
+                fabriquons pour vous.
+              </p>
+              <h3>Comment ça marche</h3>
+              <p>
+                Une avance est demandée pour lancer la fabrication. Comptez 7 à
+                14 jours de fabrication, puis le délai de livraison de votre
+                zone. Nous livrons à Nosy Be, dans toute Madagascar et à
+                l&rsquo;international, avec un tarif sur devis. Tous les détails
+                sont sur la page{" "}
+                <Link href="/livraison">Livraison et retours</Link>.
+              </p>
+            </div>
           </section>
         </div>
       </div>
