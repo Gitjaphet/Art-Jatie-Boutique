@@ -223,6 +223,27 @@ export default function BoutiqueClient({
                 </button>
               </div>
             )}
+
+            <div className={styles.seoText}>
+              <h2>Pièces au crochet en stock, prêtes à expédier</h2>
+              <p>
+                Les créations affichées ici sont disponibles immédiatement, en
+                quantité limitée : robes de plage, ensembles et pochettes au
+                crochet, tous faits main dans notre atelier de Seganinga, à
+                Nosy Be. Vous ne trouvez pas votre modèle, votre taille ou votre
+                couleur ? Découvrez nos créations{" "}
+                <Link href="/commande">sur commande</Link>.
+              </p>
+              <h3>Livraison et retours</h3>
+              <p>
+                Les pièces en stock sont préparées en 1 à 2 jours ouvrés. La
+                livraison est gratuite à Nosy Be en ville ; pour le reste de
+                Madagascar et l&rsquo;international, le tarif est sur devis.
+                Retour possible sous 2 jours en cas de défaut d&rsquo;origine.
+                Tous les détails sont sur la page{" "}
+                <Link href="/livraison">Livraison et retours</Link>.
+              </p>
+            </div>
           </section>
         </div>
       </div>

@@ -198,3 +198,39 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ─── Texte descriptif (SEO) ───────────────────────────────────────────────── */
+.seoText {
+  max-width: 760px;
+  margin-top: 64px;
+  padding-top: 32px;
+  border-top: 1px solid #efefef;
+  color: #555;
+}
+
+.seoText h2 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 14px;
+}
+
+.seoText h3 {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #1a1a1a;
+  margin: 24px 0 10px;
+}
+
+.seoText p {
+  font-size: 14px;
+  line-height: 1.75;
+  margin: 0 0 12px;
+}
+
+.seoText a {
+  color: #1a1a1a;
+  text-decoration: underline;
+}

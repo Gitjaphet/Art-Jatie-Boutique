@@ -7,7 +7,16 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Boutique — Crochet Artisanal Fait Main | Art Jatie Madagascar",
   description:
-    "Découvrez nos sacs, robes, tenues de plage et maillots en crochet fait main par nos artisanes malgaches. Commandes sur mesure disponibles.",
+    "Pièces au crochet fait main en stock, prêtes à expédier : robes de plage, ensembles et pochettes. Atelier à Nosy Be. Créations sur mesure sur la page Sur commande.",
+  alternates: { canonical: "https://www.artjatie.com/boutique" },
+  openGraph: {
+    title: "Boutique — Crochet Artisanal Fait Main | Art Jatie Madagascar",
+    description:
+      "Créations au crochet fait main en stock, prêtes à expédier, depuis notre atelier de Nosy Be.",
+    url: "https://www.artjatie.com/boutique",
+    siteName: "Art Jatie Boutique",
+    type: "website",
+  },
 };
 
 // SSR avec cache 5 minutes côté Next.js
