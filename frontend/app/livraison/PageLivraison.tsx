@@ -187,11 +187,11 @@ const faqItems: AccItem[] = [
       <>
         <p className={s.accText}>
           Nous acceptons les retours sous <strong> 2 jours </strong> après
-          réception, à condition que l&rsquo;article soit en état d'origine:
+          réception, uniquement si l&rsquo;article présente un <strong>défaut d&rsquo;origine</strong> (défaut de fabrication) :
         </p>
         <ul className={s.accList}>
-          <li>Non porté et non lavé</li>
-          <li>Dans son emballage d&rsquo;origine ou similaire</li>
+          <li>Défaut constaté à la réception (signalé avec photos)</li>
+          <li>Article non porté et non lavé depuis la réception</li>
           <li>Sans dommage lié à une mauvaise utilisation</li>
         </ul>
       </>
@@ -212,7 +212,7 @@ const faqItems: AccItem[] = [
     question: "Les créations sur mesure sont-elles remboursables ?",
     answer: (
       <p className={s.accText}>
-        Pour les pièces <strong>sur mesure</strong> ou sur commande, une avance est requise pour lancer la fabrication. En cas d'annulation ou de changement d'avis de votre part, <strong>seulement 50% de votre acompte</strong> vous sera remboursé (les 50% restants couvrant les frais de fabrication engagés). Bien entendu, en cas de défaut de fabrication avéré, nous faisons systématiquement le nécessaire pour trouver une solution satisfaisante.
+        Pour les pièces <strong>sur mesure</strong> ou sur commande, une avance est requise pour lancer la fabrication. Ces pièces étant fabriquées spécialement pour vous, <strong>l'acompte n'est pas remboursable</strong> en cas d'annulation ou de changement d'avis de votre part. Bien entendu, en cas de défaut de fabrication avéré, nous faisons systématiquement le nécessaire pour trouver une solution satisfaisante.
       </p>
     ),
   },
@@ -556,13 +556,6 @@ export default function PageLivraison() {
                 <div className={s.helpLinkLeft}>
                   <IconRuler size={14} />
                   Guide des Tailles
-                </div>
-                <div className={s.helpLinkArrow}><IconArrowRight size={13} /></div>
-              </Link>
-              <Link href="/faq" className={s.helpLink}>
-                <div className={s.helpLinkLeft}>
-                  <IconHelpCircle size={14} />
-                  Questions Fréquentes
                 </div>
                 <div className={s.helpLinkArrow}><IconArrowRight size={13} /></div>
               </Link>
