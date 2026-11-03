@@ -120,8 +120,8 @@ export default async function ProductPage({
         handlingTime: {
           "@type": "QuantitativeValue",
           // Sur commande : délai de fabrication (à ajuster à la réalité)
-          minValue: product.on_order ? 3 : 1,
-          maxValue: product.on_order ? 10 : 2,
+          minValue: product.on_order ? 7 : 1,
+          maxValue: product.on_order ? 14 : 2,
           unitCode: "DAY",
         },
         transitTime: {
