@@ -21,7 +21,7 @@ _FAMILLES = {
     "fabriquer": "fabrication", "fabrique": "fabrication",
     "rembourser": "remboursement", "rembourse": "remboursement",
     "numero": "telephone", "tel": "telephone", "appeler": "telephone",
-    "contactez": "contact", "contacter": "contact", "joindre": "contact",
+    "contactez": "contact", "contacter": "contact", "joindre": "contact", "coordonnee": "contact",
     "situe": "adresse", "situee": "adresse", "localisation": "adresse", "emplacement": "adresse",
 }
 

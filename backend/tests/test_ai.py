@@ -405,3 +405,8 @@ def test_reindex_refuse_un_mauvais_jeton(monkeypatch):
     client = TestClient(app)
     assert client.post("/agent/reindex", headers={"X-Reindex-Token": "mauvais"}).status_code == 401
     assert client.post("/agent/reindex").status_code == 401
+
+
+def test_mots_coordonnees():
+    from ai.utils.texte import mots
+    assert "contact" in mots("Pouvez-vous me donner vos coordonnées ?")
