@@ -1,5 +1,5 @@
-import { adminFetch } from "@/lib/api";
 "use client";
+import { adminFetch } from "@/lib/api";
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
