@@ -45,7 +45,7 @@ export default function BoutiqueHeader({
 
   return (
     <div className={styles.boutiqueHeader}>
-      <div className={styles.titleSquare}>{titre}</div>
+      <h1 className={styles.titleSquare}>{titre}</h1>
       <div className={styles.categoryCircles}>
         
         {/* 4. On boucle sur nos catégories dynamiques */}
