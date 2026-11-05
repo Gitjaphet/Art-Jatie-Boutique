@@ -18,3 +18,8 @@ export const CONTACT = {
 } as const;
 
 export const DELAI_FABRICATION = "7 à 14 jours";
+
+// Lien WhatsApp AVEC message prérempli (texte normal, encodé ici — jamais à la main).
+// api.whatsapp.com/send directement : wa.me y redirige et casse les emojis (�) pendant la redirection.
+export const lienWhatsApp = (message: string) =>
+  `https://api.whatsapp.com/send?phone=${international(WHATSAPP)}&text=${encodeURIComponent(message)}`;

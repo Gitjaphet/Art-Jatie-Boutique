@@ -1,6 +1,6 @@
 "use client";
 
-import { CONTACT } from "@/lib/contact";
+import { CONTACT, lienWhatsApp } from "@/lib/contact";
 import { useCartStore } from "@/lib/cart";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, Suspense } from "react";
@@ -201,7 +201,7 @@ function CheckoutContent() {
           ? `🟠 Orange Money : ${omPhone} (${omAccountName || "—"})\nRéf : ${proofText || "en attente"}`
           : "💬 Paiement à confirmer via WhatsApp";
 
-    const msg = encodeURIComponent(
+    const msg =
       `🛍️ *Nouvelle commande Art Jatie #${oid}*\n\n` +
         `👤 *Client :* ${name}\n` +
         `📱 *WhatsApp :* ${whatsapp}\n\n` +
@@ -210,10 +210,9 @@ function CheckoutContent() {
         `💰 *Total :* ${formatAr(order.total_ar)} (${formatEur(order.total_ar)})\n\n` +
         `${payInfo}\n\n` +
         `${message ? `💬 *Message :* ${message}\n\n` : ""}` +
-        `Merci de confirmer ma commande ! 🙏`,
-    );
+        `Merci de confirmer ma commande ! 🙏`;
 
-    window.open(`${CONTACT.whatsappLien}?text=${msg}`, "_blank");
+    window.open(lienWhatsApp(msg), "_blank");
     clearCart();
     setStep("success");
   };
