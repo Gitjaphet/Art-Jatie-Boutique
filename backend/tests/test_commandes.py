@@ -70,3 +70,35 @@ def test_commande_saisie_par_admin_garde_son_prix(client, session):
         client.app.dependency_overrides.pop(get_admin_facultatif, None)
     assert r.status_code == 200, r.text
     assert r.json()["total_ar"] == 80000
+
+
+# ── Vérification publique du code promo (GET /orders/promo/{code}) ──
+from core.limiter import limiter
+from services.commandes import taux_promo
+
+
+def test_taux_promo_source_unique():
+    assert taux_promo(" artjatie10 ") == 0.10      # casse et espaces ignorés
+    assert taux_promo("FAUX") is None
+    assert taux_promo("") is None and taux_promo(None) is None
+
+
+def test_route_promo_valide(client):
+    limiter.reset()
+    r = client.get("/orders/promo/artjatie10")
+    assert r.status_code == 200
+    assert r.json() == {"valide": True, "code": "ARTJATIE10", "taux": 0.10}
+
+
+def test_route_promo_invalide(client):
+    limiter.reset()
+    r = client.get("/orders/promo/FAUX")
+    assert r.status_code == 200
+    assert r.json() == {"valide": False, "code": "FAUX", "taux": 0}
+
+
+def test_route_promo_limitee(client):
+    limiter.reset()
+    codes = [client.get(f"/orders/promo/ESSAI{i}").status_code for i in range(11)]
+    limiter.reset()
+    assert codes[:10] == [200] * 10 and codes[10] == 429

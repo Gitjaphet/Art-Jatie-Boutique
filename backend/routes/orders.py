@@ -7,7 +7,7 @@ Gestion des commandes — supporte panier complet + MVola + Orange Money + Whats
 import json
 import os
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File
 from sqlmodel import Session, select
 from pydantic import BaseModel
 from typing import Optional, List
@@ -16,7 +16,8 @@ from botocore.config import Config
 
 from models.models import Order, Product, Client
 from core.auth import get_current_admin, get_admin_facultatif
-from services.commandes import Ligne, creer_commande, liste
+from services.commandes import Ligne, creer_commande, liste, taux_promo
+from core.limiter import limiter
 from database import get_session
 
 
@@ -198,6 +199,17 @@ def create_order(
         code_promo=body.promo_code,
         paiement=body.model_dump(),
     )
+
+
+@router.get("/promo/{code}")
+# shared_limit : UN compteur par IP pour toute la route. Avec limiter.limit, slowapi compte par
+# adresse exacte (/promo/A, /promo/B…) et quelqu'un qui essaie des codes différents n'est jamais freiné.
+@limiter.shared_limit("10/minute", scope="verifier_promo")
+async def verifier_promo(request: Request, code: str):
+    """Public : le panier vérifie un code promo avant la commande.
+    Le taux vient de services/commandes (source unique). 10 essais/minute/IP contre le devinage."""
+    taux = taux_promo(code)
+    return {"valide": taux is not None, "code": code.strip().upper(), "taux": taux or 0}
 
 
 @router.get("/{order_id}", dependencies=ADMIN)

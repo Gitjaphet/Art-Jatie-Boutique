@@ -232,3 +232,13 @@ export function adminFetch(input: string, init: RequestInit = {}): Promise<Respo
   if (token) headers.set("Authorization", `Bearer ${token}`);
   return fetch(input, { ...init, headers });
 }
+
+// ── Code promo : le serveur est la seule source (services/commandes.py) ──
+export interface PromoVerifiee { valide: boolean; code: string; taux: number }
+
+export async function verifierPromo(code: string): Promise<PromoVerifiee> {
+  const res = await fetch(`${API_URL}/orders/promo/${encodeURIComponent(code.trim())}`, { cache: "no-store" });
+  if (res.status === 429) throw new Error("trop_essais");
+  if (!res.ok) throw new Error("indisponible");
+  return res.json();
+}

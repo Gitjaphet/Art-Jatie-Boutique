@@ -28,6 +28,12 @@ MOYENS_PAIEMENT = {"whatsapp", "mvola", "orange_money"}
 QUANTITE_MAX = 10
 
 
+def taux_promo(code):
+    """Taux de remise d'un code promo (casse et espaces ignorés), ou None s'il n'existe pas.
+    Seul endroit qui lit CODES_PROMO : le calcul de commande et la route de vérification l'utilisent."""
+    return CODES_PROMO.get((code or "").strip().upper())
+
+
 @dataclass
 class Ligne:
     product_id: int
@@ -87,10 +93,10 @@ def calculer(session: Session, lignes: list, zone: str, code_promo: str = None) 
             "sizes": ligne.tailles, "colors": ligne.couleurs,
         })
 
-    code = (code_promo or "").strip().upper()
-    if code and code not in CODES_PROMO:
+    taux = taux_promo(code_promo)
+    if (code_promo or "").strip() and taux is None:
         _refus("Code promo invalide.")
-    remise = round(sous_total * CODES_PROMO[code]) if code else 0
+    remise = round(sous_total * taux) if taux else 0
     livraison = FRAIS_LIVRAISON[zone]
     return {"articles": articles, "sous_total": sous_total, "remise": remise,
             "livraison": livraison, "total": sous_total - remise + livraison}

@@ -1,6 +1,7 @@
 "use client";
 import { CONTACT } from "@/lib/contact";
 import { useCartStore } from "@/lib/cart";
+import { verifierPromo } from "@/lib/api";
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -19,6 +20,8 @@ import {
 import styles from "./CartePage.module.css";
 
 const EXCHANGE_RATE = 4800;
+
+type Promo = { code: string; taux: number };
 
 type DeliveryZone =
   | "tana"
@@ -43,7 +46,9 @@ export default function CartContent() {
   const { items, removeItem, updateQuantity, clearCart } = useCartStore();
   const [removing, setRemoving] = useState<number | null>(null);
   const [promoCode, setPromoCode] = useState("");
-  const [promoApplied, setPromoApplied] = useState(false);
+  const [promo, setPromo] = useState<Promo | null>(null);       // code validé PAR LE SERVEUR
+  const [promoVerif, setPromoVerif] = useState(false);           // vérification en cours
+  const [promoErreur, setPromoErreur] = useState("");
   const [zone, setZone] = useState<DeliveryZone>("nosybe_ville");
   const [horsCoop, setHorsCoop] = useState<HorsCooperative>("service_rapide");
   const [autreCoopText, setAutreCoopText] = useState("");
@@ -54,7 +59,7 @@ export default function CartContent() {
   );
 
   const deliveryCost = DELIVERY_COSTS[zone] ?? 0;
-  const discount = promoApplied ? Math.round(subtotal * 0.1) : 0;
+  const discount = promo ? Math.round(subtotal * promo.taux) : 0;
   const total = subtotal - discount + deliveryCost;
 
   const formatAr = (p: number) =>
@@ -69,8 +74,37 @@ export default function CartContent() {
     }, 300);
   };
 
-  const handlePromo = () => {
-    if (promoCode.toUpperCase() === "ARTJATIE10") setPromoApplied(true);
+  // Vérifie le code auprès du serveur. ok=false : on bloque la commande (message affiché).
+  const handlePromo = async (): Promise<{ ok: boolean; promo: Promo | null }> => {
+    const code = promoCode.trim().toUpperCase();
+    setPromoErreur("");
+    if (!code) {
+      setPromo(null);
+      return { ok: true, promo: null };
+    }
+    if (promo?.code === code) return { ok: true, promo };
+    setPromoVerif(true);
+    try {
+      const r = await verifierPromo(code);
+      if (r.valide) {
+        const valide = { code: r.code, taux: r.taux };
+        setPromo(valide);
+        return { ok: true, promo: valide };
+      }
+      setPromo(null);
+      setPromoErreur("Ce code promo n'est pas valide. Corrigez-le ou videz le champ.");
+      return { ok: false, promo: null };
+    } catch (e) {
+      setPromo(null);
+      setPromoErreur(
+        e instanceof Error && e.message === "trop_essais"
+          ? "Trop d'essais. Réessayez dans une minute."
+          : "Vérification du code impossible pour le moment. Réessayez ou videz le champ.",
+      );
+      return { ok: false, promo: null };
+    } finally {
+      setPromoVerif(false);
+    }
   };
 
   // Label livraison pour le récapitulatif
@@ -111,7 +145,8 @@ export default function CartContent() {
   };
 
   // ── Passer la commande ─────────────────────────────────────────────────
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
+    if (promoVerif) return;
     if (zone === "nosybe_autre") {
       alert(
         `Pour cette zone, veuillez nous contacter directement au ${CONTACT.telephone}.`,
@@ -119,15 +154,20 @@ export default function CartContent() {
       return;
     }
 
-    // On encode les infos dans l'URL pour les récupérer dans la page checkout
+    // Un code tapé mais pas encore validé est vérifié ici : jamais de remise perdue en silence.
+    const verif = await handlePromo();
+    if (!verif.ok) return;
+    const remise = verif.promo ? Math.round(subtotal * verif.promo.taux) : 0;
+
+    // Affichage du checkout uniquement : le serveur recalcule tout à la création de la commande.
     const params = new URLSearchParams({
       zone,
       deliveryCost: String(deliveryCost),
       deliveryLabel: deliveryZoneLabel(),
       subtotal: String(subtotal),
-      discount: String(discount),
-      total: String(total),
-      promo: promoApplied ? promoCode.trim().toUpperCase() : "",
+      discount: String(remise),
+      total: String(subtotal - remise + deliveryCost),
+      promo: verif.promo ? verif.promo.code : "",
     });
 
     router.push(`/checkout?${params.toString()}`);
@@ -446,7 +486,7 @@ export default function CartContent() {
 
             {discount > 0 && (
               <div className={styles.summaryRow}>
-                <span className={styles.promoLabel}>Code promo ARTJATIE10</span>
+                <span className={styles.promoLabel}>Code promo {promo?.code}</span>
                 <span className={styles.promoValue}>−{formatAr(discount)}</span>
               </div>
             )}
@@ -495,18 +535,35 @@ export default function CartContent() {
               <Tag size={14} />
               <input
                 value={promoCode}
-                onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                onChange={(e) => {
+                  const v = e.target.value.toUpperCase();
+                  setPromoCode(v);
+                  setPromoErreur("");
+                  if (promo && v.trim() !== promo.code) setPromo(null); // code modifié : ancienne remise retirée
+                }}
                 placeholder="Code promo"
                 className={styles.promoField}
-                onKeyDown={(e) => e.key === "Enter" && handlePromo()}
+                aria-invalid={promoErreur ? true : undefined}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void handlePromo();
+                }}
               />
-              <button onClick={handlePromo} className={styles.promoBtn}>
-                Appliquer
+              <button
+                onClick={() => void handlePromo()}
+                className={styles.promoBtn}
+                disabled={promoVerif}
+              >
+                {promoVerif ? "Vérification…" : "Appliquer"}
               </button>
             </div>
-            {promoApplied && (
+            {promo && (
               <p className={styles.promoSuccess}>
-                ✓ Réduction de 10% appliquée !
+                ✓ Réduction de {Math.round(promo.taux * 100)}% appliquée !
+              </p>
+            )}
+            {promoErreur && (
+              <p className={styles.promoErreur} role="alert">
+                {promoErreur}
               </p>
             )}
           </div>
