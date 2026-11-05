@@ -33,6 +33,7 @@ type Order = {
   payment_proof_text?: string;
   payment_proof_image?: string;
   is_pos?: boolean;
+  origine?: string | null; // "panier" | "sur_mesure" | "planning" | "caisse"
 };
 
 const STATUS_OPTIONS = [
@@ -110,7 +111,8 @@ export default function OrdersTab({ toast }: Props) {
       const res = await adminFetch(`${API}/orders/`);
       if (!res.ok) throw new Error();
       const all = await res.json();
-      setOrders(all.filter((o: Order) => !o.is_pos && !o.cart_items_json));
+      // Origine écrite par le serveur : plus aucune déduction (cart_items_json, is_pos…)
+      setOrders(all.filter((o: Order) => o.origine === "sur_mesure"));
     } catch {
       toast("Impossible de charger les commandes.", "error");
     } finally {

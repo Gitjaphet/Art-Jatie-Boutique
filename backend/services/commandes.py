@@ -25,6 +25,7 @@ FRAIS_LIVRAISON = {
 }
 CODES_PROMO = {"ARTJATIE10": 0.10}   # code -> taux de remise sur le sous-total
 MOYENS_PAIEMENT = {"whatsapp", "mvola", "orange_money"}
+ORIGINES = {"panier", "sur_mesure", "planning", "caisse"}   # Order.origine — source unique
 QUANTITE_MAX = 10
 
 
@@ -115,8 +116,10 @@ def _paiement(champs: dict) -> dict:
     return {"payment_method": methode, **{k: champs.get(k) for k in cles}}
 
 
-def creer_commande(session: Session, *, client: dict, lignes: list, zone: str,
+def creer_commande(session: Session, *, origine: str, client: dict, lignes: list, zone: str,
                    delivery_label: str = None, code_promo: str = None, paiement: dict = None) -> Order:
+    if origine not in ORIGINES:
+        raise ValueError(f"Origine de commande inconnue : {origine!r}")   # erreur de code, pas du client
     nom = (client.get("name") or "").strip()[:120]
     if not nom:
         _refus("Le nom est requis.")
@@ -125,6 +128,7 @@ def creer_commande(session: Session, *, client: dict, lignes: list, zone: str,
 
     order = Order(
         client_id=None,
+        origine=origine,
         client_name=nom,
         client_email=((client.get("email") or "").strip() or "non renseigné")[:120],
         client_whatsapp=normaliser_whatsapp(client.get("whatsapp")),

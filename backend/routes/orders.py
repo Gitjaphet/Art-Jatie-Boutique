@@ -138,6 +138,7 @@ def get_planning_orders(session: Session = Depends(get_session)):
 def _creer_commande_manuelle(body: CreateOrderRequest, session: Session) -> Order:
     """Commande saisie par l'équipe (Planning, retrait sur place) : montants saisis conservés."""
     order = Order(
+        origine="planning",
         client_id=None,
         client_name=body.client_name,
         client_email=body.client_email,
@@ -182,8 +183,10 @@ def create_order(
         return _creer_commande_manuelle(body, session)
 
     if body.cart_items:
+        origine = "panier"
         lignes = [Ligne(product_id=i.id, quantite=i.quantity) for i in body.cart_items]
     elif body.product_id:
+        origine = "sur_mesure"
         lignes = [Ligne(product_id=body.product_id,
                         tailles=liste(body.selected_size), couleurs=liste(body.selected_color))]
     else:
@@ -191,6 +194,7 @@ def create_order(
 
     return creer_commande(
         session,
+        origine=origine,
         client={"name": body.client_name, "email": body.client_email,
                 "whatsapp": body.client_whatsapp, "message": body.client_message},
         lignes=lignes,
@@ -451,6 +455,7 @@ def create_pos_order(body: PosOrderRequest, session: Session = Depends(get_sessi
 
     # 3. 🧾 CRÉATION DE LA COMMANDE POS
     order = Order(
+        origine="caisse",
         client_id=client.id,
         client_name=body.client_name,
         client_whatsapp=body.client_whatsapp,

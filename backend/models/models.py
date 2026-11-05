@@ -159,6 +159,9 @@ class Order(SQLModel, table=True):
 
 
     is_pos: bool = Field(default=False) # True = Vente en boutique, False = Web
+    # Origine de la commande : décide de l'onglet du dashboard (plus aucune déduction).
+    # "panier" | "sur_mesure" | "planning" | "caisse" — voir services/commandes.ORIGINES
+    origine: Optional[str] = Field(default=None)
     amount_tendered: int = Field(default=0) # Montant donné par le client
     change_ar: int = Field(default=0) # Monnaie rendue
 

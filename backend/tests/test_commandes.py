@@ -102,3 +102,22 @@ def test_route_promo_limitee(client):
     codes = [client.get(f"/orders/promo/ESSAI{i}").status_code for i in range(11)]
     limiter.reset()
     assert codes[:10] == [200] * 10 and codes[10] == 429
+
+
+# ── Origine de la commande (onglet du dashboard) ──
+import pytest
+from services.commandes import creer_commande as _creer, Ligne as _Ligne
+
+_CLIENT = {"name": "Test Origine", "whatsapp": "0340000000"}
+
+
+def test_origine_enregistree(session, product):
+    o = _creer(session, origine="sur_mesure", client=_CLIENT,
+               lignes=[_Ligne(product_id=product.id, quantite=1)], zone="a_confirmer")
+    assert o.origine == "sur_mesure"
+
+
+def test_origine_inconnue_refusee(session, product):
+    with pytest.raises(ValueError):
+        _creer(session, origine="inconnue", client=_CLIENT,
+               lignes=[_Ligne(product_id=product.id, quantite=1)], zone="tana")

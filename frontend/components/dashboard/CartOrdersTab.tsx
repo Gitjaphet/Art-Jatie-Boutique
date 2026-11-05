@@ -52,6 +52,7 @@ type CartOrder = {
   created_at: string;
 
   is_pos?: boolean;
+  origine?: string | null; // "panier" | "sur_mesure" | "planning" | "caisse"
 };
 
 // ─── Constantes ──────────────────────────────────────────────────────────────
@@ -137,8 +138,8 @@ export default function CartOrdersTab({ toast }: Props) {
       const res = await adminFetch(`${API}/orders/`);
       if (!res.ok) throw new Error();
       const all: CartOrder[] = await res.json();
-      // On garde seulement les commandes avec panier (cart_items_json non null)
-      setOrders(all.filter((o) => o.cart_items_json && !o.is_pos));
+      // Origine écrite par le serveur : plus aucune déduction (cart_items_json, is_pos…)
+      setOrders(all.filter((o) => o.origine === "panier"));
     } catch {
       toast("Impossible de charger les commandes.", "error");
     } finally {
