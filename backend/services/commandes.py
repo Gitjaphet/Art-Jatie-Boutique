@@ -23,6 +23,16 @@ FRAIS_LIVRAISON = {
     "hors_nosybe": 0,   # coopérative choisie par la cliente
     "a_confirmer": 0,   # « Commander sur mesure » : livraison convenue ensuite avec l'équipe
 }
+# Libellés affichés (dashboard, WhatsApp, Jatie) — mêmes zones que FRAIS_LIVRAISON (vérifié par test).
+LIBELLES_ZONE = {
+    "tana": "Antananarivo (coopérative)",
+    "nosybe_ville": "Nosy Be — En ville",
+    "darsalam": "Nosy Be — Darsalam",
+    "dzamanjar": "Nosy Be — Dzamanjar",
+    "nosybe_autre": "Autre zone Nosy Be (sur devis)",
+    "hors_nosybe": "Hors Nosy Be (coopérative)",
+    "a_confirmer": "À convenir avec l'équipe",
+}
 CODES_PROMO = {"ARTJATIE10": 0.10}   # code -> taux de remise sur le sous-total
 MOYENS_PAIEMENT = {"whatsapp", "mvola", "orange_money"}
 ORIGINES = {"panier", "sur_mesure", "planning", "caisse"}   # Order.origine — source unique
@@ -136,7 +146,7 @@ def creer_commande(session: Session, *, origine: str, client: dict, lignes: list
         cart_items_json=json.dumps(calc["articles"], ensure_ascii=False),
         delivery_zone=zone,
         delivery_cost=calc["livraison"],
-        delivery_label=((delivery_label or "").strip() or zone)[:150],
+        delivery_label=((delivery_label or "").strip() or LIBELLES_ZONE[zone])[:150],
         subtotal_ar=calc["sous_total"],
         discount_ar=calc["remise"],
         total_ar=calc["total"],

@@ -121,3 +121,17 @@ def test_origine_inconnue_refusee(session, product):
     with pytest.raises(ValueError):
         _creer(session, origine="inconnue", client=_CLIENT,
                lignes=[_Ligne(product_id=product.id, quantite=1)], zone="tana")
+
+
+# ── Libellés de livraison ──
+from services.commandes import FRAIS_LIVRAISON, LIBELLES_ZONE
+
+
+def test_chaque_zone_a_son_libelle():
+    assert set(LIBELLES_ZONE) == set(FRAIS_LIVRAISON)
+
+
+def test_libelle_lisible_par_defaut(session, product):
+    o = _creer(session, origine="sur_mesure", client=_CLIENT,
+               lignes=[_Ligne(product_id=product.id, quantite=1)], zone="a_confirmer")
+    assert o.delivery_label == "À convenir avec l'équipe"
