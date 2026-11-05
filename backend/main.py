@@ -1,3 +1,4 @@
+import logging
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from fastapi import FastAPI, Query
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -22,7 +23,7 @@ async def lifespan(app: FastAPI):
         create_db_and_tables()
         print("Tables vérifiées avec succès.")
     except Exception as e:
-        print(f"Attention : Erreur : {e}")
+        logging.getLogger("demarrage").exception("Synchronisation de la base en échec : %s", e)
     yield
 
 
