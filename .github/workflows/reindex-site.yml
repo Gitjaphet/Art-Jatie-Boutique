@@ -11,7 +11,7 @@ jobs:
     if: >
       github.event_name != 'deployment_status' ||
       (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Production')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Attendre la mise en ligne du site
         if: github.event_name == 'deployment_status'
