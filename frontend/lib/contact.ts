@@ -1,5 +1,5 @@
 // lib/contact.ts — SOURCE UNIQUE des coordonnées d'Art Jatie.
-// Modifier ici met à jour tout le site (et le chatbot à la prochaine indexation).
+// Mêmes valeurs que backend/services/contact.py (vérifié par backend/tests/test_contact.py).
 const WHATSAPP = "034 30 513 60";
 const TELEPHONE = "032 02 251 70";
 

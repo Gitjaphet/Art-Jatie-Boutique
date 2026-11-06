@@ -1,11 +1,12 @@
 # ai/agents/faq.py
 """FAQ en RAG : la réponse est construite uniquement à partir des passages du site trouvés par chercher_passages()."""
+from services.contact import WHATSAPP
 from ai.core.llm import appeler_llm, ModeleIndisponible
 from ai.core.prompts import FAQ
 
 FALLBACK_SANS_INFO = ("Je n'ai pas cette information pour le moment 😊 Écrivez-nous sur WhatsApp "
-                      "au 034 30 513 60, nous vous répondrons avec plaisir 💕")
-_FALLBACK_PANNE = "Pour toute question, n'hésitez pas à nous contacter directement sur WhatsApp au 034 30 513 60 ! 💕"
+                      f"au {WHATSAPP}, nous vous répondrons avec plaisir 💕")
+_FALLBACK_PANNE = f"Pour toute question, n'hésitez pas à nous contacter directement sur WhatsApp au {WHATSAPP} ! 💕"
 
 
 def llm5_faq(token_log: list, message: str, passages: list[dict], history: list = None) -> str:

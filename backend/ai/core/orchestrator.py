@@ -1,4 +1,5 @@
 # ai/core/orchestrator.py
+from services.contact import WHATSAPP
 import json
 import logging
 import time
@@ -166,7 +167,7 @@ def run_multi_agent(
 
     # ── Fallback ──────────────────────────────────────────────────────
     else:
-        reponse = "Je rencontre un petit souci technique 😔 Réessayez dans un instant, ou écrivez-nous sur WhatsApp : 034 30 513 60 💕"
+        reponse = f"Je rencontre un petit souci technique 😔 Réessayez dans un instant, ou écrivez-nous sur WhatsApp : {WHATSAPP} 💕"
 
     summary = log_summary(token_log)
     logging.info(f"[ORCHESTRATOR] ── Total : {time.time() - t_total:.2f}s | Tokens : {summary['total_tokens']}")
