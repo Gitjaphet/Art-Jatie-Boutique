@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import "@/css/globals.css";
+import { classesPolices } from "@/lib/polices";
 import dynamic from "next/dynamic";
 import Header from "@/components/layout/Header";
 import SmoothScroll from "@/components/SmoothScroll";
@@ -36,10 +37,11 @@ export default function RootLayout({
     pathname === "/";
 
   return (
-    <html lang="fr">
+    <html lang="fr" className={classesPolices}>
       <body
         style={{
           margin: 0,
+          fontFamily: "var(--font-body)",
           padding: 0,
           backgroundColor: isHome ? "#2d2d2d" : "#fdfaf7",
           color: isHome ? "#f8f4ef" : "#1a1a1a",

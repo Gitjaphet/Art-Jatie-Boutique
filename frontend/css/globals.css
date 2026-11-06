@@ -3,8 +3,9 @@
 
 @theme {
   --font-gochi: "Gochi Hand", cursive;
-  --font-display: "Cormorant Garamond", serif;
-  --font-body: "Inter", sans-serif;
+  --font-manuscrite: var(--nf-caveat), "Segoe Print", cursive;
+  --font-display: var(--nf-cormorant), Georgia, serif;
+  --font-body: var(--nf-jost), "Helvetica Neue", sans-serif;
 
   /* C'est ICI qu'il faut mettre les couleurs d'été ! */
   --color-background: #ffffff;
@@ -29,8 +30,9 @@
   --color-cream: #ffffff;
   --color-sand: #f3f4f6;
 
-  --font-display: "Cormorant Garamond", serif;
-  --font-body: "Inter", sans-serif;
+  --font-manuscrite: var(--nf-caveat), "Segoe Print", cursive;
+  --font-display: var(--nf-cormorant), Georgia, serif;
+  --font-body: var(--nf-jost), "Helvetica Neue", sans-serif;
 }
 
 /* On désactive le mode sombre forcé si tu veux garder une identité "luxe claire" */
