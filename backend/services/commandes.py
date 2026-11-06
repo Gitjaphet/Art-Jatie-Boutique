@@ -33,6 +33,7 @@ LIBELLES_ZONE = {
     "hors_nosybe": "Hors Nosy Be (coopérative)",
     "a_confirmer": "À convenir avec l'équipe",
 }
+TAUX_ACOMPTE_SUR_MESURE = 0.5   # avance demandée pour lancer une fabrication sur commande
 CODES_PROMO = {"ARTJATIE10": 0.10}   # code -> taux de remise sur le sous-total
 MOYENS_PAIEMENT = {"whatsapp", "mvola", "orange_money"}
 ORIGINES = {"panier", "sur_mesure", "planning", "caisse"}   # Order.origine — source unique
