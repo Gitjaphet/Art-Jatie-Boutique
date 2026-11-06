@@ -129,7 +129,8 @@ export async function chatWithJatie(
   clientWhatsapp: string,
   channel: string = "web",
   historiqueCommande: Record<string, any> | null = null,
-  history: { role: string; content: string }[] = []
+  history: { role: string; content: string }[] = [],
+  commander: number | null = null, // id produit : bouton « Commander » d'une carte
 ){
   const res = await fetch(`${API_URL}/agent/chat`, {
     method: "POST",
@@ -138,6 +139,7 @@ export async function chatWithJatie(
       message,
       history,
       historique_commande: historiqueCommande,
+      commander,
     }),
   });
   if (!res.ok) throw new Error("Erreur agent IA");

@@ -16,7 +16,7 @@ type Produit = {
   disponibilite: string;
 };
 
-type Message = { from: "bot" | "user"; text: string; produits?: Produit[] };
+type Message = { from: "bot" | "user"; text: string; produits?: Produit[]; suggestions?: string[] };
 
 const HISTORIQUE_MAX = 10;
 const formatAr = (n: number) => `${n.toLocaleString("fr-FR")} Ar`;
@@ -67,7 +67,15 @@ function TexteBot({ texte }: { texte: string }) {
   return <div className={styles.botText}>{blocs}</div>;
 }
 
-function CarteProduit({ p, onOuvrir }: { p: Produit; onOuvrir: () => void }) {
+function CarteProduit({
+  p,
+  onOuvrir,
+  onCommander,
+}: {
+  p: Produit;
+  onOuvrir: () => void;
+  onCommander: (p: Produit) => void;
+}) {
   const contenu = (
     <>
       {p.image ? (
@@ -86,10 +94,24 @@ function CarteProduit({ p, onOuvrir }: { p: Produit; onOuvrir: () => void }) {
       </div>
     </>
   );
-  return p.url ? (
-    <Link href={p.url} className={styles.produitCard} onClick={onOuvrir}>{contenu}</Link>
-  ) : (
-    <div className={styles.produitCard}>{contenu}</div>
+  const epuise = p.disponibilite.startsWith("Épuisé");
+  // Bloc = lien vers la fiche + bouton séparé (jamais de bouton dans un lien)
+  return (
+    <div className={styles.produitCard}>
+      {p.url ? (
+        <Link href={p.url} className={styles.produitLien} onClick={onOuvrir}>{contenu}</Link>
+      ) : (
+        <div className={styles.produitLien}>{contenu}</div>
+      )}
+      <button
+        type="button"
+        className={styles.produitCommander}
+        onClick={() => onCommander(p)}
+        disabled={epuise}
+      >
+        {epuise ? "Épuisé" : "Commander"}
+      </button>
+    </div>
   );
 }
 
@@ -100,7 +122,7 @@ export default function FloatingAI() {
   const cardRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [historiqueCommande, setHistoriqueCommande] = useState<Record<string, string | number | null> | null>(null);
+  const [historiqueCommande, setHistoriqueCommande] = useState<Record<string, unknown> | null>(null);
   const [clientId] = useState(() => {
     if (typeof window === "undefined") return "anonymous";
     let id = localStorage.getItem("jatie_client_id");
@@ -172,9 +194,10 @@ export default function FloatingAI() {
     if (window.innerWidth < 501) setIsOpen(false);
   };
 
-  const send = async () => {
-    if (!input.trim() || isLoading) return;
-    const userText = input.trim();
+  // Un seul chemin d'envoi : saisie, bouton de réponse rapide et bouton « Commander » d'une carte.
+  const envoyer = async (texte: string, commander: number | null = null) => {
+    const userText = texte.trim();
+    if (!userText || isLoading) return;
     setInput("");
     setMessages(prev => [...prev, { from: "user", text: userText }]);
     setIsLoading(true);
@@ -185,8 +208,13 @@ export default function FloatingAI() {
           ? `${m.text}\n[Produits proposés : ${m.produits.map(p => p.nom).join(" ; ")}]`
           : m.text,
       }));
-      const result = await chatWithJatie(userText, clientId, "web", historiqueCommande, formattedHistory);
-      setMessages(prev => [...prev, { from: "bot", text: result.response, produits: result.produits ?? [] }]);
+      const result = await chatWithJatie(userText, clientId, "web", historiqueCommande, formattedHistory, commander);
+      setMessages(prev => [...prev, {
+        from: "bot",
+        text: result.response,
+        produits: result.produits ?? [],
+        suggestions: result.suggestions ?? [],
+      }]);
       setHistoriqueCommande(result.historique_commande ?? null);
     } catch {
       setMessages(prev => [...prev, { from: "bot", text: "Désolée, problème technique 😅" }]);
@@ -194,6 +222,8 @@ export default function FloatingAI() {
       setIsLoading(false);
     }
   };
+  const send = () => envoyer(input);
+  const commander = (p: Produit) => envoyer(`Je souhaite commander « ${p.nom} »`, p.id);
 
   if (!isOpen) return (
     <>
@@ -229,7 +259,19 @@ export default function FloatingAI() {
                 <TexteBot texte={m.text} />
                 {!!m.produits?.length && (
                   <div className={styles.produits}>
-                    {m.produits.map(p => <CarteProduit key={p.id} p={p} onOuvrir={fermerSurMobile} />)}
+                    {m.produits.map(p => (
+                      <CarteProduit key={p.id} p={p} onOuvrir={fermerSurMobile} onCommander={commander} />
+                    ))}
+                  </div>
+                )}
+                {/* Réponses rapides : seulement sous le dernier message de Jatie */}
+                {i === messages.length - 1 && !isLoading && !!m.suggestions?.length && (
+                  <div className={styles.suggestions}>
+                    {m.suggestions.map(s => (
+                      <button key={s} type="button" className={styles.suggestion} onClick={() => envoyer(s)}>
+                        {s}
+                      </button>
+                    ))}
                   </div>
                 )}
               </div>

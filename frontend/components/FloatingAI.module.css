@@ -394,3 +394,59 @@
     border-radius: 3px;
   }
 }
+
+/* ── Commande dans le chat (brique 2d) ── */
+.produitLien {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  color: inherit;
+  text-decoration: none;
+}
+.produitCommander {
+  margin: 0 8px 8px;
+  min-height: 32px;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 7px;
+  background: #e86b8c;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.produitCommander:hover:not(:disabled) {
+  background: #d9557a;
+}
+.produitCommander:disabled {
+  background: #e5e7eb;
+  color: #999;
+  cursor: not-allowed;
+}
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.suggestion {
+  min-height: 34px;
+  padding: 7px 12px;
+  border: 1.5px solid #e86b8c;
+  border-radius: 999px;
+  background: #fff;
+  color: #c2185b;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.suggestion:hover {
+  background: #fdeef3;
+}
+@media (max-width: 500px) {
+  .suggestion {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+}
