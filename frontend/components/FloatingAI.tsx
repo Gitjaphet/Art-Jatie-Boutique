@@ -123,6 +123,31 @@ export default function FloatingAI() {
   const bodyRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [historiqueCommande, setHistoriqueCommande] = useState<Record<string, unknown> | null>(null);
+  // Fenêtre agrandie (ordinateur uniquement), mémorisée dans le navigateur quand c'est possible
+  const [agrandi, setAgrandi] = useState(false);
+  const changerTaille = (valeur: boolean) => {
+    setAgrandi(valeur);
+    try {
+      localStorage.setItem("jatie_agrandi", valeur ? "1" : "0");
+    } catch {
+      /* stockage indisponible : le bouton marche, sans mémoire */
+    }
+  };
+  useEffect(() => {
+    try {
+      setAgrandi(localStorage.getItem("jatie_agrandi") === "1");
+    } catch {
+      /* stockage indisponible */
+    }
+  }, []);
+  useEffect(() => {
+    if (!agrandi) return;
+    const surTouche = (e: KeyboardEvent) => {
+      if (e.key === "Escape") changerTaille(false);
+    };
+    window.addEventListener("keydown", surTouche);
+    return () => window.removeEventListener("keydown", surTouche);
+  }, [agrandi]);
   const [clientId] = useState(() => {
     if (typeof window === "undefined") return "anonymous";
     let id = localStorage.getItem("jatie_client_id");
@@ -239,7 +264,7 @@ export default function FloatingAI() {
   );
 
   return createPortal(
-    <div className={styles.card} ref={cardRef}>
+    <div className={agrandi ? `${styles.card} ${styles.cardAgrandie}` : styles.card} ref={cardRef}>
       <div className={styles.header}>
         <div className={styles.headerInfo}>
           <div className={styles.avatar}>J</div>
@@ -248,7 +273,18 @@ export default function FloatingAI() {
             <div className={styles.headerStatus}>● En ligne</div>
           </div>
         </div>
-        <button onClick={() => setIsOpen(false)} aria-label="Fermer le chat">✕</button>
+        <div className={styles.headerActions}>
+          <button
+            type="button"
+            className={styles.agrandir}
+            onClick={() => changerTaille(!agrandi)}
+            aria-label={agrandi ? "Réduire la fenêtre du chat" : "Agrandir la fenêtre du chat"}
+            title={agrandi ? "Réduire" : "Agrandir"}
+          >
+            {agrandi ? "⤡" : "⤢"}
+          </button>
+          <button onClick={() => setIsOpen(false)} aria-label="Fermer le chat">✕</button>
+        </div>
       </div>
       <div className={styles.body} ref={bodyRef}>
         {messages.map((m, i) => (

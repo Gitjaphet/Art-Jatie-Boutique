@@ -450,3 +450,34 @@
     padding: 8px 12px;
   }
 }
+
+/* ── Fenêtre agrandie (ordinateur), comme Messenger web ── */
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.header .agrandir {
+  display: none; /* mobile : le chat occupe déjà tout l'écran */
+}
+@media (min-width: 501px) {
+  .header .agrandir {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    min-height: 32px;
+    font-size: 1.15rem;
+    border-radius: 6px;
+  }
+  .header .agrandir:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+  .card {
+    transition: width 0.2s ease, height 0.2s ease;
+  }
+  .cardAgrandie {
+    width: min(760px, calc(100vw - 60px));
+    height: min(85vh, calc(100dvh - 130px));
+  }
+}
