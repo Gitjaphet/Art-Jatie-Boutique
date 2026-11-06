@@ -80,7 +80,12 @@ def mettre_a_jour(fiche: dict | None, lecture: Lecture, montres: dict | None = N
         f["tri"] = "prix_asc"
         return f, Decision("objection", cite)
 
-    # 4. Critères de recherche
+    # 4. « Voir toute la boutique » : on repart de zéro, la zone et la langue suivent la cliente
+    if lecture.tout_voir:
+        f.update(types=[], couleurs=[], tailles=[], budget_max=None, tri=None, exclus=[])
+        return f, Decision("recherche")
+
+    # 5. Critères de recherche
     change = False
     if lecture.types and lecture.types != f["types"]:
         f.update(types=lecture.types, couleurs=[], tailles=[], exclus=[])  # nouvelle recherche
@@ -94,14 +99,16 @@ def mettre_a_jour(fiche: dict | None, lecture: Lecture, montres: dict | None = N
         change = True
     if lecture.tri:
         f["tri"], change = lecture.tri, True
+    if lecture.sur_mesure:  # sur le modèle cité, sinon le premier montré
+        return f, Decision("sur_mesure", cite or (f["montres"][0] if f["montres"] else None))
     if change:
         return f, Decision("recherche")
 
-    # 5. Livraison (zone citée ou question sur la livraison)
+    # 6. Livraison (zone citée ou question sur la livraison)
     if lecture.livraison or lecture.zone:
         return f, Decision("livraison", cite)
 
-    # 6. Simple bonjour
+    # 7. Simple bonjour
     if lecture.salutation:
         return f, Decision("salutation")
 

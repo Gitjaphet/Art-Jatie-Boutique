@@ -5,6 +5,7 @@ import psycopg2
 from sqlmodel import Session, select, or_
 from database import engine
 from models.models import Product
+from services.catalogue import familles
 from ai.core.db import db_config
 from ai.utils.embedding import get_text_embedding
 from ai.utils.texte import BONUS_MOT_NOM, BONUS_MOT_AUTRE, mots as _mots, score_lexical  # noqa: F401
@@ -24,6 +25,8 @@ def _produit_dict(p: Product) -> dict:
         "prix_ar": p.price_ar,
         "ancien_prix_ar": p.old_price_ar,
         "couleurs": p.colors,
+        "familles": familles(p.colors),
+        "type_article": p.type_article,
         "tailles": p.sizes,
         "stock": p.stock_quantity,
         "badge": p.badge,

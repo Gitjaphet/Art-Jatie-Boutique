@@ -16,6 +16,7 @@ _AVANT_TAILLE = {"taille", "en", "size", "t"}
 _MOTS_LIVRAISON = {"livrer", "livrez", "livraison", "livre", "livrent", "frais", "expedition", "envoyer"}
 _MOTS_REMISE = {"remise", "reduction", "promo", "rabais", "solde", "gerant", "instructions"}
 _MOTS_MOINS_CHER = ("moins cher", "pas cher", "moins chere", "le moins", "petit prix", "pas trop cher")
+_TOUT_VOIR = ("toute la boutique", "tout voir", "tous les modeles", "tous vos modeles", "tout le catalogue")
 _REPONSE_COURTE = 5  # mots maximum pour lire un oui/non comme une réponse
 
 # 30000 | 30 000 | 30.000 | 30k ; ignore « 50 % », « 2 ans », « 6 mois »
@@ -38,12 +39,14 @@ class Lecture:
     question_prix: bool = False
     demande_remise: bool = False
     salutation: bool = False
+    sur_mesure: bool = False
+    tout_voir: bool = False
 
     def compris(self) -> bool:
         """Vrai si le code a reconnu au moins une intention ou un critère."""
         return any([self.types, self.couleurs, self.tailles, self.montant, self.tri, self.trop_cher,
                     self.reponse, self.zone, self.livraison, self.question_prix, self.demande_remise,
-                    self.salutation])
+                    self.salutation, self.sur_mesure, self.tout_voir])
 
 
 def _montant(texte: str) -> int | None:
@@ -54,6 +57,12 @@ def _montant(texte: str) -> int | None:
         if valeur >= 1000:  # en dessous : quantité, taille ou âge, pas un prix en ariary
             return valeur
     return None
+
+
+def _montant_dans(message: str, texte: str) -> int | None:
+    """« moins de 40 000 » : strictement moins cher (39 999) ; « 30000 » seul : budget maximum."""
+    valeur = _montant(message)
+    return valeur - 1 if valeur and " moins de " in texte else valeur
 
 
 def _tailles(liste_mots: list[str]) -> list[str]:
@@ -78,7 +87,7 @@ def lire(message: str) -> Lecture:
         types=types_cites(m),
         couleurs=couleurs_citees(m),
         tailles=_tailles(m),
-        montant=_montant(message),
+        montant=_montant_dans(message, texte),
         tri="prix_asc" if any(f" {e} " in texte for e in _MOTS_MOINS_CHER) else None,
         trop_cher=any(f" {e} " in texte for e in EXPRESSIONS_TROP_CHER),
         reponse=reponse,
@@ -87,4 +96,6 @@ def lire(message: str) -> Lecture:
         question_prix=any(x in QUESTION_PRIX for x in m),
         demande_remise=any(x in _MOTS_REMISE for x in m),
         salutation=bool(m) and m[0] in SALUTATIONS,
+        sur_mesure=" sur mesure " in texte,
+        tout_voir=any(f" {e} " in texte for e in _TOUT_VOIR),
     )
