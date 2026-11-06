@@ -77,6 +77,8 @@ function mapApiProduct(
     oldPriceEur,
     image: (raw.image as string) ?? "",
     colors,
+    famillesCouleur: Array.isArray(raw.famillesCouleur) ? (raw.famillesCouleur as string[]) : [],
+    typeArticle: (raw.typeArticle as string) || null,
     sizes,
     badge: raw.badge ? String(raw.badge) : undefined,
     is_hot: Boolean(raw.hot),

@@ -1,3 +1,4 @@
+from services.catalogue import familles, valider_type
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, BackgroundTasks
 from sqlmodel import Session, select
 from typing import List, Optional
@@ -51,6 +52,13 @@ def get_unique_slug(name: str, session: Session, exclude_id: Optional[int] = Non
 # ROUTES LECTURE
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _type_ou_422(valeur: Optional[str]) -> Optional[str]:
+    try:
+        return valider_type(valeur)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
 @router.get("/")
 def get_products(
     on_order: Optional[bool] = None,
@@ -81,6 +89,7 @@ def get_products(
             {"id": c.id, "name": c.name, "hex_code": c.hex_code}
             for c in p.colors_list
         ]
+        p_dict["familles_couleur"] = familles(p.colors)
         result.append(p_dict)
 
     return result
@@ -206,10 +215,12 @@ async def create_product(
     badge: str = Form("Nouveau"),
     is_hot: bool = Form(False),
     on_order: bool = Form(False),
+    type_article: Optional[str] = Form(None),
     stock_quantity: int = Form(1),
     images: List[UploadFile] = File(default=[]),
     session: Session = Depends(get_session)
 ):
+    type_valide = _type_ou_422(type_article)
     try:
         image_urls = []
         for img in images:
@@ -242,6 +253,7 @@ async def create_product(
             badge=badge,
             is_hot=is_hot,
             on_order=on_order,
+            type_article=type_valide,
             stock_quantity=stock_quantity,
             image=first_image,
             images=all_images,
@@ -288,6 +300,7 @@ async def update_product(
     badge: str = Form("Nouveau"),
     is_hot: bool = Form(False),
     on_order: bool = Form(False),
+    type_article: Optional[str] = Form(None),
     stock_quantity: int = Form(1),
     images: List[UploadFile] = File([]),
     session: Session = Depends(get_session)
@@ -309,6 +322,8 @@ async def update_product(
     product.is_hot = is_hot
     product.on_order = on_order
     product.stock_quantity = stock_quantity
+    if type_article is not None:
+        product.type_article = _type_ou_422(type_article)
 
     if not product.slug or product.name != name:
         product.slug = get_unique_slug(name, session, exclude_id=product_id)

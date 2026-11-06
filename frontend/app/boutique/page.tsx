@@ -75,6 +75,8 @@ function mapApiProduct(
     oldPriceEur,
     image: (raw.image as string) ?? "",
     colors,
+    famillesCouleur: Array.isArray(raw.famillesCouleur) ? (raw.famillesCouleur as string[]) : [],
+    typeArticle: (raw.typeArticle as string) || null,
     sizes,
     badge: raw.badge ? String(raw.badge) : undefined,
     is_hot: Boolean(raw.hot),
@@ -107,9 +109,6 @@ export default async function BoutiquePage() {
 
   const rate = Number(settings.exchange_rate_eur) || 4800;
 
-  const availableColors = settings.available_colors
-    ? settings.available_colors.split(",").map((c: string) => c.trim()).filter(Boolean)
-    : [];
 
   const availableSizes = parseSizes(settings.available_sizes);
 
@@ -133,7 +132,6 @@ export default async function BoutiquePage() {
   return (
     <BoutiqueClient
       initialProducts={initialProducts}
-      availableColors={availableColors}
       availableSizes={availableSizes}
       availableCategories={availableCategories}
       availableGenres={availableGenres}

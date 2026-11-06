@@ -34,6 +34,7 @@ class Product(SQLModel, table=True):
     slug: Optional[str] = Field(default=None, unique=True, index=True)
     genre: str
     category: str
+    type_article: Optional[str] = Field(default=None)  # services.catalogue.TYPES_ARTICLE
     price_ar: int
     old_price_ar: Optional[int] = None
     image: str

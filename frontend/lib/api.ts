@@ -22,6 +22,8 @@ interface ApiProduct {
   is_hot: boolean;
   on_order: boolean;
   colors?: string; // stocké sous forme "Rouge,Bleu"
+  familles_couleur?: string[]; // calculées par le serveur (services/catalogue.py)
+  type_article?: string | null;
   sizes?: string; // stocké sous forme "S,M,L"
   description?: string; // au cas où tu as une description
   stock_quantity?: number;
@@ -58,6 +60,8 @@ export async function getProducts(onOrder?: boolean) {
     imagesString: p.images || "",
     hot: p.is_hot,
     colorsArray: p.colors ? p.colors.split(",").map((c) => c.trim()) : [],
+    famillesCouleur: p.familles_couleur ?? [],
+    typeArticle: p.type_article ?? null,
     sizesArray: p.sizes ? p.sizes.split(",").map((s) => s.trim()) : [],
     stock_quantity: p.stock_quantity ?? 0,
     description: p.description,
@@ -116,6 +120,8 @@ export async function getProductBySlug(slug: string) {
     on_order: p.on_order,           // ← aussi absent, à ajouter
     stock_quantity: p.stock_quantity ?? 0,  // ← aussi absent
     colorsArray: p.colors ? p.colors.split(",").map((c) => c.trim()) : [],
+    famillesCouleur: p.familles_couleur ?? [],
+    typeArticle: p.type_article ?? null,
     sizesArray: p.sizes ? p.sizes.split(",").map((s) => s.trim()) : [],
     description: p.description || "Un magnifique article Art Jatie.",
   };

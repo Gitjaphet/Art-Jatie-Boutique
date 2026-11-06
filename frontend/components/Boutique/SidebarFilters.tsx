@@ -1,5 +1,6 @@
 "use client";
 
+import { LIBELLES_TYPE } from "@/lib/catalogue";
 import styles from "./SidebarFilters.module.css";
 
 // ─── TYPE ─────────────────────────────────────────────────────────────────────
@@ -32,6 +33,9 @@ type Props = {
    */
   availableSizes?: SizeItem[];
   availableGenres?: string[];
+  selectedType?: string;
+  onTypeChange?: (type: string) => void;
+  availableTypes?: readonly string[];
 };
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
@@ -41,6 +45,7 @@ const COLOR_MAP: Record<string, string> = {
   Marron: "#795548", Noir: "#1a1a1a", Or: "#C9A84C",
   Rose: "#E86B8C", Rouge: "#E53935", Vert: "#4CAF50",
   Gris: "#9E9E9E", Naturel: "#C8B89A", Orange: "#F97316",
+  Jaune: "#F2C230", Violet: "#8E5BB5",
   Multicolore: "linear-gradient(135deg, #f43f5e, #3b82f6, #22c55e)",
 };
 
@@ -95,6 +100,9 @@ export default function SidebarFilters({
   availableColors,
   availableSizes,
   availableGenres,
+  selectedType = "",
+  onTypeChange,
+  availableTypes = [],
 }: Props) {
 
   // Couleurs
@@ -124,11 +132,19 @@ export default function SidebarFilters({
 
       {/* ── CATÉGORIES ── */}
       <div className={styles.block}>
-        <h4 className={styles.blockTitle}>CATÉGORIES</h4>
+        <h4 className={styles.blockTitle}>TYPE D&rsquo;ARTICLE</h4>
         <ul className={styles.categoryList}>
-          <li><a href="#">Tous les produits</a></li>
-          <li><a href="#">Nouveautés</a></li>
-          <li><a href="#">Meilleures ventes</a></li>
+          {["", ...availableTypes].map(t => (
+            <li key={t || "tous"}>
+              <button
+                type="button"
+                className={`${styles.typeBtn} ${selectedType === t ? styles.typeActif : ""}`}
+                onClick={() => onTypeChange?.(t)}
+              >
+                {t ? LIBELLES_TYPE[t] ?? t : "Tous les produits"}
+              </button>
+            </li>
+          ))}
         </ul>
       </div>
 

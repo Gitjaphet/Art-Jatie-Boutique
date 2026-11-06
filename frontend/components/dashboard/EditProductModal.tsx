@@ -1,3 +1,4 @@
+import { TYPES_ARTICLE } from "@/lib/catalogue";
 import { adminFetch } from "@/lib/api";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import styles from "./EditProductModal.module.css";
@@ -80,6 +81,7 @@ type ProductType = {
   tag?: string;
   badge: string;
   on_order?: boolean;      // ✅ Ajouté
+  type_article?: string | null;
   stock_quantity?: number;
   is_hot?: boolean;
   hot?: boolean;
@@ -113,6 +115,7 @@ export default function EditProductModal({
   const [cat, setCat] = useState("");
   const [genre, setGenre] = useState("");
   const [tag, setTag] = useState("");
+  const [typeArticle, setTypeArticle] = useState("");
   
   const [onOrder, setOnOrder] = useState("false");   // ✅ Séparé
   const [badge, setBadge] = useState("");            // ✅ Séparé
@@ -170,6 +173,7 @@ export default function EditProductModal({
     setCat(productToEdit.category);
     setGenre(productToEdit.genre);
     setTag(productToEdit.tag || "");
+    setTypeArticle(productToEdit.type_article || "");
     
     setOnOrder(productToEdit.on_order ? "true" : "false"); // ✅
     setBadge(productToEdit.badge || "");                   // ✅
@@ -309,6 +313,7 @@ export default function EditProductModal({
     formData.append("category", cat);
     formData.append("genre", currentGenre);
     formData.append("tag", tag);
+    formData.append("type_article", typeArticle);
     formData.append("sizes", sizes.join(","));
     
     if (badge) formData.append("badge", badge);
@@ -399,6 +404,13 @@ export default function EditProductModal({
                 <label className={styles.label}>Cible</label>
                 <select className={styles.input} value={currentGenre} onChange={(e) => setGenre(e.target.value)}>
                   {GENRES.map((g) => <option key={g} value={g}>{g}</option>)}
+                </select>
+              </div>
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>Type d&rsquo;article</label>
+                <select className={styles.input} value={typeArticle} onChange={(e) => setTypeArticle(e.target.value)}>
+                  <option value="">— À choisir —</option>
+                  {TYPES_ARTICLE.map((t) => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
             </div>

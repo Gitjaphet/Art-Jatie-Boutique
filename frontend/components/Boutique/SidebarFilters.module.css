@@ -191,3 +191,21 @@
   padding: 0;
   text-align: left;
 }
+
+/* Filtre Type d'article (boutons sobres, comme des liens) */
+.typeBtn {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.typeBtn:hover {
+  color: #c2185b;
+}
+.typeActif {
+  color: #c2185b;
+  font-weight: 600;
+}

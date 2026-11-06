@@ -1,3 +1,4 @@
+import { TYPES_ARTICLE } from "@/lib/catalogue";
 import { adminFetch } from "@/lib/api";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import styles from "./AddProductModal.module.css";
@@ -89,6 +90,7 @@ export default function AddProductModal({
   const [cat, setCat] = useState("");
   const [genre, setGenre] = useState("");
   const [tag, setTag] = useState("");
+  const [typeArticle, setTypeArticle] = useState("");
   const [onOrder, setOnOrder] = useState("false"); 
   const [badge, setBadge] = useState("");
   const [qty, setQty] = useState("1");
@@ -261,6 +263,7 @@ export default function AddProductModal({
     formData.append("category", currentCat);
     formData.append("genre", currentGenre);
     formData.append("tag", tag);
+    formData.append("type_article", typeArticle);
     formData.append("sizes", sizes.join(","));
     if (badge) {
       formData.append("badge", badge);
@@ -372,6 +375,13 @@ export default function AddProductModal({
                 <label className={styles.label}>Cible</label>
                 <select className={styles.input} value={currentGenre} onChange={(e) => setGenre(e.target.value)}>
                   {GENRES.map((g) => <option key={g} value={g}>{g}</option>)}
+                </select>
+              </div>
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>Type d&rsquo;article</label>
+                <select className={styles.input} value={typeArticle} onChange={(e) => setTypeArticle(e.target.value)}>
+                  <option value="">— À choisir —</option>
+                  {TYPES_ARTICLE.map((t) => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
             </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { FAMILLES, TYPES_ARTICLE } from "@/lib/catalogue";
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import styles from "./BoutiquePage.module.css";
@@ -21,6 +22,8 @@ export type Product = {
   oldPriceEur?: string;
   image: string;
   colors: string[];
+  famillesCouleur: string[];
+  typeArticle?: string | null;
   sizes: string[];
   badge?: string;
   is_hot?: boolean;
@@ -31,6 +34,7 @@ export type Product = {
 
 export type Filters = {
   category: string;
+  typeArticle: string;
   genre: string;
   colors: string[];
   sizes: string[];
@@ -41,6 +45,7 @@ export type Filters = {
 
 const DEFAULT_FILTERS: Filters = {
   category: "",
+  typeArticle: "",
   genre: "",
   colors: [],
   sizes: [],
@@ -51,7 +56,6 @@ const DEFAULT_FILTERS: Filters = {
 
 type BoutiqueClientProps = {
   initialProducts: Product[];
-  availableColors: string[];
   availableSizes: SizeItem[];
   availableCategories: string;
   availableGenres: string[];
@@ -59,7 +63,6 @@ type BoutiqueClientProps = {
 
 export default function BoutiqueClient({
   initialProducts,
-  availableColors,
   availableSizes,
   availableCategories,
   availableGenres,
@@ -89,6 +92,16 @@ export default function BoutiqueClient({
         : [...filters.sizes, size],
     );
 
+  // Palette et types calculés depuis les produits présents : aucun filtre vide, rien à régler à la main
+  const famillesPresentes = useMemo(
+    () => FAMILLES.filter((f) => allProducts.some((p) => p.famillesCouleur.includes(f))),
+    [allProducts],
+  );
+  const typesPresents = useMemo(
+    () => TYPES_ARTICLE.filter((t) => allProducts.some((p) => p.typeArticle === t)),
+    [allProducts],
+  );
+
   const products = useMemo(() => {
     let result = [...allProducts];
 
@@ -96,9 +109,11 @@ export default function BoutiqueClient({
       result = result.filter((p) => p.category === filters.category);
     if (filters.genre)
       result = result.filter((p) => p.genre === filters.genre);
+    if (filters.typeArticle)
+      result = result.filter((p) => p.typeArticle === filters.typeArticle);
     if (filters.colors.length > 0)
       result = result.filter((p) =>
-        filters.colors.some((c) => p.colors.includes(c)),
+        filters.colors.some((c) => p.famillesCouleur.includes(c)),
       );
     if (filters.sizes.length > 0)
       result = result.filter((p) =>
@@ -145,13 +160,16 @@ export default function BoutiqueClient({
             <SidebarFilters
               selectedGenre={filters.genre}
               selectedColors={filters.colors}
+              selectedType={filters.typeArticle}
+              onTypeChange={(t) => updateFilter("typeArticle", t)}
+              availableTypes={typesPresents}
               selectedSizes={filters.sizes}
               selectedPrice={filters.priceRange}
               onGenreChange={(g) => updateFilter("genre", g)}
               onColorToggle={toggleColor}
               onSizeToggle={toggleSize}
               onPriceChange={(v) => updateFilter("priceRange", v)}
-              availableColors={availableColors}
+              availableColors={famillesPresentes}
               availableSizes={availableSizes}
               availableGenres={availableGenres}
             />
