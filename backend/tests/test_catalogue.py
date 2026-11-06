@@ -48,7 +48,10 @@ def test_familles_vides():
 @pytest.mark.parametrize("nom, categorie, attendu", [
     ("Robe Crochet Sirène Rayée Corail & Blanc", "TENUES", "Robe"),
     ("Robe Rayée & Sac Assorti", "TENUES", "Robe"),
-    ("Ensemble Robe & Chapeau Rose", "TENUES", "Ensemble"),
+    ("Ensemble Robe & Chapeau Rose", "TENUES", "Robe"),
+    ("Ensemble Bikini Crochet Rose Fuchsia", "TENUES", "Maillot"),
+    ("Maillot de bain la leine Rose Soutien-Gorge & Short", "TENUES", "Maillot"),
+    ("Ensemble Short & Chaussons Crochet Fleur", "TENUES", "Ensemble"),
     ("Ensemble Brassière Jupe Crochet", "TENUES", "Ensemble"),
     ("Short Crochet Rayé Rose & Blanc", "TENUES", "Short"),
     ("Bas String Ficelle Nude", "TENUES", "Maillot"),

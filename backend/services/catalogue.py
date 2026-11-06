@@ -29,14 +29,15 @@ SEUIL_MULTICOLORE = 3  # familles distinctes
 FAMILLES = (*RACINES_FAMILLE, MULTICOLORE)
 
 # Types d'article (liste fermée, choisie dans le dashboard). Ordre = priorité de devinette :
-# « Ensemble Robe & Chapeau » -> Ensemble ; « Robe Rayée & Sac Assorti » -> Robe.
+# la pièce principale passe avant « Ensemble » (« Ensemble Robe & Chapeau » -> Robe,
+# « Ensemble Bikini » -> Maillot) ; « Robe Rayée & Sac Assorti » -> Robe.
 RACINES_TYPE: dict[str, tuple[str, ...]] = {
-    "Ensemble": ("ensemble",),
     "Robe":     ("robe",),
+    "Maillot":  ("maillot", "bikini", "string"),
+    "Ensemble": ("ensemble",),
     "Jupe":     ("jupe",),
     "Short":    ("short",),
     "Haut":     ("brassiere", "haut", "top", "crop"),
-    "Maillot":  ("maillot", "bikini", "string"),
     "Sac":      ("sac",),
     "Pochette": ("pochette",),
     "Chapeau":  ("chapeau", "bob", "bonnet"),
