@@ -917,3 +917,18 @@
   margin: 0 auto 8px;
   color: #e86b8c;
 }
+
+/* ── Police manuscrite (Caveat) sur les titres du chat ── */
+.headerName,
+.centreTitre h2 {
+  font-family: var(--font-manuscrite);
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.1;
+}
+.headerName {
+  font-size: 24px;
+}
+.centreTitre h2 {
+  font-size: 32px;
+}
