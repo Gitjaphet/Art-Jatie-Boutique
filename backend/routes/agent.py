@@ -15,7 +15,8 @@ router = APIRouter()
 
 class ChatRequest(BaseModel):
     message: str
-    historique_commande: Optional[Dict[str, Any]] = None
+    historique_commande: Optional[Dict[str, Any]] = None   # brouillon du parcours guidé
+    commander: Optional[int] = None                         # id produit : bouton « Commander » d'une carte
     history: Optional[list] = None
 
 
@@ -30,6 +31,7 @@ async def chat(body: ChatRequest):
             run_multi_agent,
             message=body.message,
             historique_commande=body.historique_commande,
+            commander=body.commander,
             history=body.history or [],
         )
         logging.info(f"[ROUTER] Total : {time.time() - t0:.2f}s")
@@ -39,6 +41,7 @@ async def chat(body: ChatRequest):
             "historique_commande":  resultat.get("historique_commande"),
             "produits":             resultat.get("produits", []),
             "liens":                resultat.get("liens", []),
+            "suggestions":          resultat.get("suggestions", []),
         }
     except Exception as e:
         logging.error(f"[ROUTER] Erreur critique : {str(e)}", exc_info=True)

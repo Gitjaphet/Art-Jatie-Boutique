@@ -8,13 +8,15 @@ from ai.core.llm import masquer_donnees_perso
 from ai.agents.classifier import llm1_classifier
 from ai.agents.router import llm2_router
 from ai.data.cartes import construire_cartes, texte_cartes
-from ai.agents.order_agent import llm4_commande
+from ai.agents.extracteur_commande import extraire_champs
+from ai.commande.parcours import demarrer, repondre
 from ai.agents.faq import llm5_faq
 from ai.knowledge.recherche import chercher_passages
 from ai.data.products import get_products, recherche_semantique
 from ai.data.stats import get_stats
 from ai.data.stats_texte import formater_stats
-from ai.data.orders import passer_commande
+from sqlmodel import Session
+from database import engine
 
 
 def execute_tool(tool_name: str, tool_args: dict) -> list | dict:
@@ -72,6 +74,7 @@ def run_multi_agent(
     message: str,
     history: list = None,
     historique_commande: dict = None,
+    commander: int = None,
 ) -> dict:
     token_log = []
     t_total = time.time()
@@ -85,14 +88,22 @@ def run_multi_agent(
 
     logging.info(f"[ORCHESTRATOR] ── Début : '{message_masque}'")
 
-    # LLM 1 — Classifier
-    classifier_result = llm1_classifier(token_log, message_masque, history=history_masque)
-    intent = classifier_result.get("intent", "indisponible")
+    # Commande en cours (brouillon du parcours guidé) ou bouton « Commander » : pas de classification,
+    # Jatie ne change pas de sujet tant que la commande n'est pas confirmée ou annulée.
+    commande_en_cours = bool(commander) or bool((historique_commande or {}).get("etape"))
+    if commande_en_cours:
+        intent = "commande"
+    else:
+        # LLM 1 — Classifier
+        classifier_result = llm1_classifier(token_log, message_masque, history=history_masque)
+        intent = classifier_result.get("intent", "indisponible")
+        historique_commande = None  # ancien format de brouillon (sans étape) : ignoré
     logging.info(f"[ORCHESTRATOR] Intent : {intent}")
 
     reponse = ""
     produits = []
     liens = []
+    suggestions = []
 
     # ── Salutation ────────────────────────────────────────────────────
     if intent == "salutation":
@@ -120,63 +131,24 @@ def run_multi_agent(
         else:
             reponse = "Je suis désolée, je rencontre un petit problème pour effectuer cette recherche. Réessayez dans un instant 💕"
 
-    # ── Commande ──────────────────────────────────────────────────────
+    # ── Commande : parcours guidé par le code (ai/commande/parcours.py) ───
     elif intent == "commande":
-        if historique_commande is None:
-            historique_commande = {
-                "product_id":      None,
-                "product_name":    None,
-                "taille":          None,
-                "couleur":         None,
-                "client_name":     None,
-                "client_whatsapp": None,
-                "client_email":    None,
-            }
-
-        # ── Chercher le produit UNIQUEMENT dans l'historique ────────────
-        if not historique_commande.get("product_id"):
-            produit_trouve = None
-
-            # Chercher dans les messages précédents uniquement
-            if history and len(history) > 0:
-                historique_texte = " ".join([
-                    m.get("content", "") for m in history_masque
-                    if m.get("role") == "user"  # uniquement les messages du client
-                ])
-                # Chercher seulement si l'historique mentionne un produit réel
-                mots_cles_produit = ["robe", "sac", "pochette", "lampe", "panier", "chemise", "tenue"]
-                if any(mot in historique_texte.lower() for mot in mots_cles_produit):
-                    candidats = recherche_semantique(historique_texte, top_k=1)
-                    if candidats:
-                        produit_trouve = candidats[0]
-
-            if produit_trouve:
-                # Produit trouvé dans historique → confirmer
-                historique_commande["product_id"]   = produit_trouve["id"]
-                historique_commande["product_name"] = produit_trouve.get("nom", "")
-                logging.info(f"[ORCHESTRATOR] Produit trouvé dans historique : {historique_commande['product_name']}")
-            else:
-                # Aucun produit mentionné → laisser product_id None
-                # order_collect.txt va demander au client ce qu'il veut
-                logging.info("[ORCHESTRATOR] Aucun produit dans historique → demande au client")
-
-        champs_manquants = [k for k, v in historique_commande.items() if not v]
-
-        if not champs_manquants:
-            logging.info("[ORCHESTRATOR] Tous les champs collectés → passer_commande()")
-            commande_result = passer_commande(
-                product_id=historique_commande["product_id"],
-                client_name=historique_commande["client_name"],
-                client_whatsapp=historique_commande["client_whatsapp"],
-                client_email=historique_commande.get("client_email") or "",
-                taille=historique_commande["taille"],
-                couleur=historique_commande["couleur"],
-            )
-            reponse = llm4_commande(token_log, message, historique_commande, commande_result=commande_result)
-            if commande_result.get("succes"):
-                historique_commande = None
+        if commande_en_cours:
+            # Message NON masqué : nom et numéro sont justement ce qu'on collecte
+            # (chaîne « commande » : Groq puis OpenRouter, sans entraînement sur les données).
+            with Session(engine) as session:
+                if commander:
+                    r = demarrer(session, int(commander))
+                else:
+                    r = repondre(session, historique_commande, message,
+                                 extraire=lambda m, ta, co, zo: extraire_champs(m, ta, co, zo, token_log=token_log))
+            reponse, suggestions, historique_commande = r["texte"], r["suggestions"], r["brouillon"]
         else:
-            reponse = llm4_commande(token_log, message, historique_commande, history=history)
+            # « Je veux commander… » sans le bouton : on montre les modèles, la commande part du bouton.
+            candidats = recherche_semantique(message_masque, top_k=3)
+            produits = construire_cartes(candidats) if candidats else []
+            reponse = ("Pour commander, cliquez sur « Commander » sous le modèle de votre choix 👇" if produits
+                       else "Dites-moi quel modèle vous intéresse, je vous le montre ✨")
 
     # ── FAQ ───────────────────────────────────────────────────────────
     elif intent == "faq":
@@ -204,4 +176,5 @@ def run_multi_agent(
         "historique_commande": historique_commande,
         "produits": produits,
         "liens": liens,
+        "suggestions": suggestions,
     }

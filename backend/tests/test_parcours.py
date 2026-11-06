@@ -122,3 +122,19 @@ def test_extracteur_filtre_et_tolere_une_panne(monkeypatch):
         raise ex.ModeleIndisponible("aucun modèle disponible")
     monkeypatch.setattr(ex, "appeler_llm", panne)
     assert ex.extraire_champs("du M", ["S", "M"], [], {}) == {}
+
+
+# ── Brique 2c : branchement dans l'orchestrateur ──
+def test_orchestrateur_bouton_commander_sans_classification(session, product, monkeypatch):
+    import ai.core.orchestrator as orch
+
+    def classifieur_interdit(*a, **k):
+        raise AssertionError("le classifieur ne doit pas être appelé pendant une commande")
+    monkeypatch.setattr(orch, "engine", session.get_bind())
+    monkeypatch.setattr(orch, "llm1_classifier", classifieur_interdit)
+    _produit(session, product)
+
+    r = orch.run_multi_agent("", commander=product.id)
+    assert r["intent"] == "commande" and r["suggestions"] == ["S", "M"]
+    r = orch.run_multi_agent("M", historique_commande=r["historique_commande"])
+    assert r["historique_commande"]["etape"] == "couleur" and r["suggestions"] == ["Rose", "Blanc"]
