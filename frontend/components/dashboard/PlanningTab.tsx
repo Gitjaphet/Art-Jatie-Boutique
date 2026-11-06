@@ -317,6 +317,111 @@ function etatSolde(prixTotal: number, acompte: number) {
     : { texte: "✓ Soldé", couleur: "#16a34a" };
 }
 
+// ── Commandes annulées (section repliée sous le tableau) ──────────────────
+function AnnuleesSection({
+  commandes,
+  ouvert,
+  onBasculer,
+  onRetablir,
+}: {
+  commandes: ApiOrder[];
+  ouvert: boolean;
+  onBasculer: () => void;
+  onRetablir: (id: number) => void;
+}) {
+  if (commandes.length === 0) return null;
+  const nomArticle = (o: ApiOrder) => {
+    if (o.product_name) return o.product_name;
+    try {
+      return JSON.parse(o.cart_items_json || "[]")[0]?.name?.trim() || "Article";
+    } catch {
+      return "Article";
+    }
+  };
+  return (
+    <section style={{ marginTop: 24, border: "1px solid #f0f0f0", borderRadius: 12, background: "#fff" }}>
+      <button
+        onClick={onBasculer}
+        aria-expanded={ouvert}
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 8,
+          padding: "14px 16px",
+          border: "none",
+          background: "transparent",
+          cursor: "pointer",
+          fontSize: 13,
+          fontWeight: 700,
+          color: "#555",
+        }}
+      >
+        <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Ban size={14} color="#ef4444" /> Commandes annulées ({commandes.length})
+        </span>
+        <span aria-hidden>{ouvert ? "▲" : "▼"}</span>
+      </button>
+      {ouvert && (
+        <ul style={{ listStyle: "none", margin: 0, padding: "0 16px 12px" }}>
+          {commandes.map((o) => (
+            <li
+              key={o.id}
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                gap: "6px 14px",
+                padding: "10px 0",
+                borderTop: "1px solid #f5f5f5",
+                fontSize: 12,
+              }}
+            >
+              <span style={{ fontWeight: 700, color: "#1a1a1a", flex: "1 1 180px", minWidth: 0 }}>
+                {o.client_name} — {nomArticle(o)}
+                <span style={{ display: "block", fontWeight: 400, color: "#aaa", fontSize: 11 }}>
+                  CMD-{String(o.id).padStart(4, "0")} · {new Date(o.created_at).toLocaleDateString("fr-FR")}
+                </span>
+              </span>
+              <span style={{ color: "#555" }}>{(o.total_ar ?? 0).toLocaleString()} Ar</span>
+              {(o.acompte ?? 0) > 0 && (
+                <span
+                  style={{
+                    color: "#b45309",
+                    background: "#fef3c7",
+                    borderRadius: 6,
+                    padding: "2px 8px",
+                    fontWeight: 600,
+                  }}
+                >
+                  ⚠ Acompte reçu {(o.acompte ?? 0).toLocaleString()} Ar — à régler avec la cliente
+                </span>
+              )}
+              <button
+                onClick={() => onRetablir(o.id)}
+                style={{
+                  marginLeft: "auto",
+                  padding: "6px 12px",
+                  border: "1.5px solid #e5e7eb",
+                  borderRadius: 7,
+                  background: "#fff",
+                  cursor: "pointer",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: "#555",
+                }}
+              >
+                Rétablir
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 // ── NoteModal — Acompte + Note ─────────────────────────────────────────
 function NoteModal({
   order,
@@ -1389,8 +1494,19 @@ export default function PlanningTab({ products }: PlanningTabProps) {
   const [filterPriority, setFilterPriority] = useState("Toutes");
   const [editingNote, setEditingNote] = useState<PlanningOrder | null>(null);
   const [showNewOrder, setShowNewOrder] = useState(false);
+  const [annulees, setAnnulees] = useState<ApiOrder[]>([]);
+  const [voirAnnulees, setVoirAnnulees] = useState(false);
 
   console.log(`[PlanningTab] ${products?.length || 0} produits`);
+
+  const chargerAnnulees = useCallback(async () => {
+    try {
+      const res = await adminFetch(`${API}/orders/planning/annulees`);
+      if (res.ok) setAnnulees(await res.json());
+    } catch {
+      /* section secondaire : le Planning reste utilisable */
+    }
+  }, []);
 
   const fetchPlanning = useCallback(async () => {
     setLoading(true);
@@ -1399,13 +1515,14 @@ export default function PlanningTab({ products }: PlanningTabProps) {
       const res = await adminFetch(`${API}/orders/planning`);
       if (!res.ok) throw new Error();
       setOrders((await res.json()).map(mapApiOrder));
+      chargerAnnulees();
     } catch (e) {
       setError("Impossible de charger le planning.");
       console.error(e);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [chargerAnnulees]);
 
   useEffect(() => {
     fetchPlanning();
@@ -1456,9 +1573,21 @@ export default function PlanningTab({ products }: PlanningTabProps) {
         method: "PATCH",
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      chargerAnnulees();
     } catch {
       fetchPlanning(); // le serveur a refusé : on recharge pour rester juste
     }
+  }
+
+  async function retablirCommande(id: number) {
+    if (!confirm("Rétablir cette commande ? Elle reviendra dans « À fabriquer ».")) return;
+    try {
+      const res = await adminFetch(`${API}/orders/${id}/retablir`, { method: "POST" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    } catch {
+      alert("Rétablissement impossible pour le moment.");
+    }
+    fetchPlanning();
   }
 
   async function saveNote(id: number, note: string, acompte: number) {
@@ -1785,6 +1914,12 @@ export default function PlanningTab({ products }: PlanningTabProps) {
           })}
         </div>
       )}
+      <AnnuleesSection
+        commandes={annulees}
+        ouvert={voirAnnulees}
+        onBasculer={() => setVoirAnnulees((v) => !v)}
+        onRetablir={retablirCommande}
+      />
     </div>
   );
 }

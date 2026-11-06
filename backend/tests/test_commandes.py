@@ -178,3 +178,37 @@ def test_planning_enregistre_l_acompte(client):
 
 def test_planning_refuse_un_acompte_superieur_au_prix(client):
     assert _post_admin(client, total_ar=40000, acompte=50000).status_code == 422
+
+
+# ── Commandes annulées du Planning ──
+def _commande(session, nom, statut, origine="planning", planning=None):
+    from models.models import Order
+    o = Order(client_name=nom, client_email="x@artjatie.mg", client_whatsapp="0340000000",
+              status=statut, origine=origine, planning_status=planning, total_ar=40000, acompte=20000)
+    session.add(o); session.commit(); session.refresh(o)
+    return o
+
+
+def test_planning_liste_seulement_ses_annulees(client, session, admin):
+    _commande(session, "Annulee", "Annulée")
+    _commande(session, "Active", "Confirmée", planning="a_fabriquer")
+    _commande(session, "PanierAnnule", "Annulée", origine="panier")
+    noms = [o["client_name"] for o in client.get("/orders/planning/annulees").json()]
+    assert "Annulee" in noms and "Active" not in noms and "PanierAnnule" not in noms
+
+
+def test_retablir_remet_a_fabriquer(client, session, admin):
+    o = _commande(session, "Erreur", "Annulée")
+    r = client.post(f"/orders/{o.id}/retablir")
+    assert r.status_code == 200 and r.json()["status"] == "Confirmée" and r.json()["planning_status"] == "a_fabriquer"
+    assert "Erreur" in [x["client_name"] for x in client.get("/orders/planning").json()]
+
+
+def test_retablir_refuse_une_commande_non_annulee(client, session, admin):
+    o = _commande(session, "Active2", "Confirmée", planning="a_fabriquer")
+    assert client.post(f"/orders/{o.id}/retablir").status_code == 409
+
+
+def test_annulees_et_retablir_reserves_a_l_admin(client):
+    assert client.get("/orders/planning/annulees").status_code in (401, 403)
+    assert client.post("/orders/1/retablir").status_code in (401, 403)

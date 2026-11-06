@@ -137,6 +137,34 @@ def get_planning_orders(session: Session = Depends(get_session)):
     return orders
 
 
+
+@router.get("/planning/annulees", dependencies=ADMIN)
+def get_planning_annulees(session: Session = Depends(get_session)):
+    """Commandes saisies au Planning puis annulées : consultation, acompte à régler, rétablissement."""
+    return session.exec(
+        select(Order)
+        .where(Order.origine == "planning")
+        .where(Order.status == "Annulée")
+        .order_by(Order.created_at.desc())
+    ).all()
+
+
+@router.post("/{order_id}/retablir", dependencies=ADMIN)
+def retablir_commande(order_id: int, session: Session = Depends(get_session)):
+    """Annulation faite par erreur : la commande du Planning revient « À fabriquer ».
+    Route dédiée : la route de statut générale déduirait le stock et toucherait au CRM."""
+    order = session.get(Order, order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Commande introuvable.")
+    if order.origine != "planning" or order.status != "Annulée":
+        raise HTTPException(status_code=409, detail="Seule une commande du Planning annulée peut être rétablie.")
+    order.status = "Confirmée"
+    order.planning_status = "a_fabriquer"
+    session.add(order)
+    session.commit()
+    session.refresh(order)
+    return order
+
 def _creer_commande_manuelle(body: CreateOrderRequest, session: Session) -> Order:
     """Commande saisie par l'équipe (Planning, retrait sur place) : montants saisis conservés."""
     if not body.total_ar or body.total_ar <= 0:
