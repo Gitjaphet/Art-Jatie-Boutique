@@ -33,6 +33,10 @@ LIBELLES_ZONE = {
     "hors_nosybe": "Hors Nosy Be (coopérative)",
     "a_confirmer": "À convenir avec l'équipe",
 }
+# Délais en jours — DOIVENT rester égaux à DELAIS de frontend/lib/contact.ts (vérifié par test).
+DELAIS = {"stock": (1, 2), "fabrication": (7, 14)}
+DELAI_TRAITEMENT = f"{DELAIS['stock'][0] * 24} à {DELAIS['stock'][1] * 24} h"          # « 24 à 48 h »
+DELAI_FABRICATION = f"{DELAIS['fabrication'][0]} à {DELAIS['fabrication'][1]} jours"   # « 7 à 14 jours »
 TAUX_ACOMPTE_SUR_MESURE = 0.5   # avance demandée pour lancer une fabrication sur commande
 CODES_PROMO = {"ARTJATIE10": 0.10}   # code -> taux de remise sur le sous-total
 MOYENS_PAIEMENT = {"whatsapp", "mvola", "orange_money"}

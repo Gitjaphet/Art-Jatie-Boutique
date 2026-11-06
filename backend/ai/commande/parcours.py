@@ -12,7 +12,7 @@ from sqlmodel import Session
 from ai.utils.texte import normaliser
 from models.models import Product
 from services.commandes import (
-    FRAIS_LIVRAISON, LIBELLES_ZONE, TAUX_ACOMPTE_SUR_MESURE,
+    DELAI_FABRICATION, DELAI_TRAITEMENT, FRAIS_LIVRAISON, LIBELLES_ZONE, TAUX_ACOMPTE_SUR_MESURE,
     Ligne, calculer, creer_commande, liste, normaliser_whatsapp,
 )
 
@@ -57,7 +57,8 @@ def _libelle_zone(zone: str) -> str:
 
 
 def _sur_mesure(p: Product) -> bool:
-    return bool(getattr(p, "on_order", False))
+    """Fabrication sur commande seulement quand le stock est épuisé : une pièce prête se vend en stock."""
+    return bool(getattr(p, "on_order", False)) and (p.stock_quantity or 0) <= 0
 
 
 def _disponible(p: Product) -> bool:
@@ -205,7 +206,10 @@ def demarrer(session: Session, product_id: int) -> dict:
          "client_name": None, "client_whatsapp": None, "zone": None}
     b["etape"] = _etapes(p)[0]
     q = _question(session, p, b)
-    q["texte"] = f"Avec plaisir ! Commandons « {p.name} » ({_fmt(p.price_ar)}).\n" + q["texte"]
+    delai = (f"Pièce fabriquée sur commande : {DELAI_FABRICATION} après l'avance de "
+             f"{int(TAUX_ACOMPTE_SUR_MESURE * 100)} %." if _sur_mesure(p)
+             else f"Pièce en stock, préparée sous {DELAI_TRAITEMENT}.")
+    q["texte"] = f"Avec plaisir ! Commandons « {p.name} » ({_fmt(p.price_ar)}).\n{delai}\n" + q["texte"]
     return q
 
 

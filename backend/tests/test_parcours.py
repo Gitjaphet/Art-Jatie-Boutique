@@ -138,3 +138,37 @@ def test_orchestrateur_bouton_commander_sans_classification(session, product, mo
     assert r["intent"] == "commande" and r["suggestions"] == ["S", "M"]
     r = orch.run_multi_agent("M", historique_commande=r["historique_commande"])
     assert r["historique_commande"]["etape"] == "couleur" and r["suggestions"] == ["Rose", "Blanc"]
+
+
+# ── Stock ou sur commande : annoncé dès le premier message ──
+def test_annonce_piece_en_stock(session, product):
+    r = demarrer(session, _produit(session, product).id)
+    assert "en stock" in r["texte"] and "24 à 48 h" in r["texte"]
+
+
+def test_annonce_piece_sur_commande(session, product):
+    r = demarrer(session, _produit(session, product, stock=0, sur_commande=True).id)
+    assert "sur commande" in r["texte"] and "7 à 14 jours" in r["texte"]
+
+
+def test_piece_sur_commande_encore_en_stock_se_vend_en_stock(session, product):
+    p = _produit(session, product, stock=1, sur_commande=True)
+    r = _suivre(session, demarrer(session, p.id), "S", "Rose", "Lalao", "0341234567")
+    r = _suivre(session, r, r["suggestions"][0])
+    assert "avance" not in r["texte"]
+    r = _suivre(session, r, OUI)
+    assert session.get(Order, r["commande"]["id"]).origine == "panier"
+
+
+def test_delais_identiques_serveur_et_site():
+    import re
+    from pathlib import Path
+    import pytest
+    from services.commandes import DELAIS
+    contact = Path(__file__).resolve().parents[2] / "frontend" / "lib" / "contact.ts"
+    if not contact.exists():
+        pytest.skip("frontend absent de ce checkout")
+    texte = contact.read_text(encoding="utf-8")
+    for cle in ("stock", "fabrication"):
+        m = re.search(cle + r":\s*\{\s*min:\s*(\d+),\s*max:\s*(\d+)", texte)
+        assert m and (int(m.group(1)), int(m.group(2))) == DELAIS[cle], f"délai « {cle} » différent du site"
