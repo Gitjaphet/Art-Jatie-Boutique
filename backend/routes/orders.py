@@ -55,6 +55,7 @@ class CreateOrderRequest(BaseModel):
     subtotal_ar: Optional[int] = None      # ignoré pour une commande publique (recalculé)
     discount_ar: Optional[int] = 0         # idem
     total_ar: Optional[int] = None         # idem
+    acompte: Optional[int] = None          # saisie de l'équipe (Planning) uniquement
     promo_code: Optional[str] = None
 
     payment_method: str = "whatsapp"
@@ -130,6 +131,7 @@ def get_planning_orders(session: Session = Depends(get_session)):
     orders = session.exec(
         select(Order)
         .where(Order.planning_status != None)  # noqa: E711
+        .where(Order.status != "Annulée")      # une commande annulée quitte l'atelier (sans être supprimée)
         .order_by(Order.created_at.desc())
     ).all()
     return orders
@@ -137,6 +139,11 @@ def get_planning_orders(session: Session = Depends(get_session)):
 
 def _creer_commande_manuelle(body: CreateOrderRequest, session: Session) -> Order:
     """Commande saisie par l'équipe (Planning, retrait sur place) : montants saisis conservés."""
+    if not body.total_ar or body.total_ar <= 0:
+        raise HTTPException(status_code=422, detail="Le prix total est requis (supérieur à 0).")
+    acompte = body.acompte or 0
+    if not 0 <= acompte <= body.total_ar:
+        raise HTTPException(status_code=422, detail="L'acompte doit être compris entre 0 et le prix total.")
     order = Order(
         origine="planning",
         client_id=None,
@@ -151,6 +158,7 @@ def _creer_commande_manuelle(body: CreateOrderRequest, session: Session) -> Orde
         subtotal_ar=body.subtotal_ar,
         discount_ar=body.discount_ar or 0,
         total_ar=body.total_ar,
+        acompte=acompte,
         payment_method=body.payment_method,
         mvola_account_name=body.mvola_account_name,
         mvola_phone=body.mvola_phone,

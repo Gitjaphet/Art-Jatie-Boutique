@@ -18,6 +18,7 @@ import {
   Plus,
   Phone,
   StickyNote,
+  Ban,
   ChevronLeft,
   ChevronRight,
   Truck,
@@ -305,6 +306,15 @@ function ModalHeader({
       </button>
     </div>
   );
+}
+
+// Solde affiché : jamais « Soldé » quand aucun prix n'est saisi (cas de la commande #34).
+function etatSolde(prixTotal: number, acompte: number) {
+  if (!prixTotal || prixTotal <= 0) return { texte: "Prix à définir", couleur: "#f59e0b" };
+  const solde = prixTotal - (acompte || 0);
+  return solde > 0
+    ? { texte: `${solde.toLocaleString()} Ar`, couleur: "#e91e8c" }
+    : { texte: "✓ Soldé", couleur: "#16a34a" };
 }
 
 // ── NoteModal — Acompte + Note ─────────────────────────────────────────
@@ -813,7 +823,8 @@ function NewOrderModal({
               await onSave(form);
               setSaving(false);
             }}
-            disabled={saving}
+            disabled={saving || !(form.total_ar > 0)}
+            title={form.total_ar > 0 ? undefined : "Indiquez le prix total"}
             style={{
               flex: 2,
               padding: "12px",
@@ -821,14 +832,14 @@ function NewOrderModal({
               borderRadius: 9,
               background: "#e91e8c",
               color: "#fff",
-              cursor: "pointer",
+              cursor: form.total_ar > 0 ? "pointer" : "not-allowed",
               fontWeight: 700,
               fontSize: 13,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               gap: 6,
-              opacity: saving ? 0.75 : 1,
+              opacity: form.total_ar > 0 ? (saving ? 0.75 : 1) : 0.5,  // grisé tant qu'aucun prix
             }}
           >
             <Plus size={14} /> {saving ? "Création…" : "Créer la commande"}
@@ -871,17 +882,19 @@ function OrderCard({
   onDeliver,
   onOpenNote,
   onProgress,
+  onCancel,
 }: {
   order: PlanningOrder;
   onMove: (id: number, dir: "prev" | "next") => void;
   onDeliver: (id: number) => void;
   onOpenNote: (o: PlanningOrder) => void;
   onProgress: (id: number, p: number) => void;
+  onCancel: (id: number) => void;
 }) {
   const days = daysLeft(order.dateLivraison);
   const dlColor = days < 0 ? "#ef4444" : days <= 2 ? "#f97316" : "#16a34a";
   const pColor = priorityColor(order.priority);
-  const solde = order.prixTotal - order.acompte;
+  const solde = etatSolde(order.prixTotal, order.acompte);
   const CategoryIcon =
     (
       {
@@ -1066,11 +1079,11 @@ function OrderCard({
             style={{
               fontSize: 13,
               fontWeight: 700,
-              color: solde > 0 ? "#e91e8c" : "#16a34a",
+              color: solde.couleur,
               marginTop: 2,
             }}
           >
-            {solde > 0 ? `${solde.toLocaleString()} Ar` : "✓ Soldé"}
+            {solde.texte}
           </div>
         </div>
         {order.acompte > 0 && (
@@ -1282,6 +1295,24 @@ function OrderCard({
           </button>
         )}
         <button
+          onClick={() => onCancel(order.id)}
+          title="Annuler la commande"
+          aria-label="Annuler la commande"
+          style={{
+            padding: "7px 8px",
+            border: "1.5px solid #fecaca",
+            borderRadius: 7,
+            background: "#fff",
+            cursor: "pointer",
+            color: "#ef4444",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Ban size={12} />
+        </button>
+        <button
           onClick={() => onOpenNote(order)}
           style={{
             flex: 1,
@@ -1413,6 +1444,20 @@ export default function PlanningTab({ products }: PlanningTabProps) {
       });
     } catch {
       fetchPlanning();
+    }
+  }
+
+  // Annuler = statut « Annulée » : la commande quitte le Planning mais reste dans l'historique.
+  async function annulerCommande(id: number) {
+    if (!confirm("Annuler cette commande ? Elle quittera le Planning mais restera dans l'historique.")) return;
+    setOrders((prev) => prev.filter((x) => x.id !== id));
+    try {
+      const res = await adminFetch(`${API}/orders/${id}/status?status=${encodeURIComponent("Annulée")}`, {
+        method: "PATCH",
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    } catch {
+      fetchPlanning(); // le serveur a refusé : on recharge pour rester juste
     }
   }
 
@@ -1730,6 +1775,7 @@ export default function PlanningTab({ products }: PlanningTabProps) {
                         onDeliver={deliverOrder}
                         onOpenNote={setEditingNote}
                         onProgress={updateProgress}
+                        onCancel={annulerCommande}
                       />
                     ))
                   )}

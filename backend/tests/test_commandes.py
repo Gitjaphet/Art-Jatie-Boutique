@@ -135,3 +135,46 @@ def test_libelle_lisible_par_defaut(session, product):
     o = _creer(session, origine="sur_mesure", client=_CLIENT,
                lignes=[_Ligne(product_id=product.id, quantite=1)], zone="a_confirmer")
     assert o.delivery_label == "À convenir avec l'équipe"
+
+
+# ── Planning (saisie de l'équipe) ──
+def test_planning_refuse_un_prix_nul(client):
+    from main import app
+    from core.auth import get_admin_facultatif
+    app.dependency_overrides[get_admin_facultatif] = lambda: {"sub": "admin", "is_admin": True}
+    try:
+        r = client.post("/orders/", json={"client_name": "Atelier", "client_email": "a@artjatie.mg",
+                                          "client_whatsapp": "0340000000", "total_ar": 0})
+    finally:
+        app.dependency_overrides.pop(get_admin_facultatif, None)
+    assert r.status_code == 422
+
+
+def test_planning_masque_les_commandes_annulees(client, session, admin):
+    from models.models import Order
+    for nom, statut in (("Garde", "Confirmée"), ("Masque", "Annulée")):
+        session.add(Order(client_name=nom, client_email="x@artjatie.mg", client_whatsapp="0340000000",
+                          status=statut, planning_status="a_fabriquer", origine="planning"))
+    session.commit()
+    noms = [o["client_name"] for o in client.get("/orders/planning").json()]
+    assert "Garde" in noms and "Masque" not in noms
+
+
+def _post_admin(client, **corps):
+    from main import app
+    from core.auth import get_admin_facultatif
+    app.dependency_overrides[get_admin_facultatif] = lambda: {"sub": "admin", "is_admin": True}
+    try:
+        return client.post("/orders/", json={"client_name": "Atelier", "client_email": "a@artjatie.mg",
+                                             "client_whatsapp": "0340000000", **corps})
+    finally:
+        app.dependency_overrides.pop(get_admin_facultatif, None)
+
+
+def test_planning_enregistre_l_acompte(client):
+    r = _post_admin(client, total_ar=40000, acompte=20000)
+    assert r.status_code == 200 and r.json()["acompte"] == 20000
+
+
+def test_planning_refuse_un_acompte_superieur_au_prix(client):
+    assert _post_admin(client, total_ar=40000, acompte=50000).status_code == 422
