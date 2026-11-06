@@ -22,6 +22,9 @@ _MOTS_OUI = {"oui", "ok", "je confirme", "confirmer", "confirme"}
 _MOTS_ANNULER = {"annuler", "annule", "stop", "laisse tomber", "abandonner"}
 _CHAMPS = {"Taille": "taille", "Couleur": "couleur", "Nom": "nom", "WhatsApp": "whatsapp", "Livraison": "zone"}
 _ETAPES_VALIDES = {"taille", "couleur", "nom", "whatsapp", "zone", "recap", "modifier"}
+_CLE_ETAPE = {"taille": "taille", "couleur": "couleur", "nom": "client_name",
+              "whatsapp": "client_whatsapp", "zone": "zone"}
+_ETAPE_CHAMP = {v: k for k, v in _CLE_ETAPE.items()}
 
 
 # ── Petits utilitaires ───────────────────────────────────────────────────
@@ -123,7 +126,7 @@ def _valider(p: Product, b: dict, message: str):
         b[e] = choix
     elif e == "nom":
         nom = " ".join((message or "").split())[:120]
-        if len(nom) < 2 or any(c.isdigit() for c in nom):
+        if len(nom) < 2 or len(nom.split()) > 4 or any(c.isdigit() for c in nom):
             return "Pouvez-vous m'indiquer votre nom (sans chiffres) ?"
         b["client_name"] = nom
     elif e == "whatsapp":
@@ -142,6 +145,30 @@ def _valider(p: Product, b: dict, message: str):
             return "Choisissez une zone de livraison dans la liste."
         b["zone"] = zone
     return None
+
+
+# ── Texte libre (brique 2b) : valeurs extraites, vérifiées comme une réponse tapée ──
+def _prochaine(b: dict, etapes: list) -> str:
+    return next((e for e in etapes if e != "recap" and not b.get(_CLE_ETAPE[e])), "recap")
+
+
+def _completer(p: Product, b: dict, etapes: list, champs: dict) -> bool:
+    """Applique les valeurs extraites par le modèle ; chacune passe par _valider.
+    Ne remplace jamais une réponse déjà donnée, sauf celle de l'étape en cours."""
+    acceptes = 0
+    for champ, valeur in (champs or {}).items():
+        etape = _ETAPE_CHAMP.get(champ)
+        if etape not in etapes or (b.get(champ) and etape != b["etape"]):
+            continue
+        if etape == "zone" and valeur in ZONES_CHAT:
+            b["zone"] = valeur
+            acceptes += 1
+            continue
+        essai = {**b, "etape": etape}
+        if _valider(p, essai, str(valeur)) is None:
+            b[champ] = essai[champ]
+            acceptes += 1
+    return acceptes > 0
 
 
 # ── Création (même service que le site) ──────────────────────────────────
@@ -182,8 +209,10 @@ def demarrer(session: Session, product_id: int) -> dict:
     return q
 
 
-def repondre(session: Session, brouillon: dict, message: str) -> dict:
-    """Une réponse du client à l'étape en cours."""
+def repondre(session: Session, brouillon: dict, message: str, extraire=None) -> dict:
+    """Une réponse du client à l'étape en cours.
+    extraire(message, tailles, couleurs, zones) -> dict : appelé seulement si la réponse
+    n'est pas comprise directement (un bouton cliqué ne coûte aucun token)."""
     b = dict(brouillon or {})
     p = session.get(Product, b.get("product_id") or 0)
     if not p or b.get("etape") not in _ETAPES_VALIDES:
@@ -210,7 +239,13 @@ def repondre(session: Session, brouillon: dict, message: str) -> dict:
         return _question(session, p, b)
 
     erreur = _valider(p, b, message)
+    if erreur and extraire:
+        champs = extraire(message, liste(p.sizes), liste(p.colors), {z: LIBELLES_ZONE[z] for z in ZONES_CHAT})
+        if _completer(p, b, etapes, champs):
+            b.pop("retour_recap", None)
+            b["etape"] = _prochaine(b, etapes)
+            return _question(session, p, b)
     if erreur:
         return _reponse(erreur, _question(session, p, b)["suggestions"], b)
-    b["etape"] = "recap" if b.pop("retour_recap", False) else etapes[etapes.index(b["etape"]) + 1]
+    b["etape"] = "recap" if b.pop("retour_recap", False) else _prochaine(b, etapes)
     return _question(session, p, b)

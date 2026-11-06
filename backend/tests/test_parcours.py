@@ -69,3 +69,56 @@ def test_sur_mesure_annonce_l_avance_et_se_classe_sur_mesure(session, product):
 def test_produit_epuise_refuse(session, product):
     r = demarrer(session, _produit(session, product, stock=0).id)
     assert r["brouillon"] is None
+
+
+# ── Brique 2b : texte libre (faux extracteur, aucun appel réel au modèle) ──
+def _faux(champs, appels=None):
+    def extraire(message, tailles, couleurs, zones):
+        if appels is not None:
+            appels.append(message)
+        return champs
+    return extraire
+
+
+def test_texte_libre_remplit_plusieurs_etapes(session, product):
+    r = demarrer(session, _produit(session, product).id)
+    champs = {"taille": "M", "couleur": "Rose", "client_name": "Lalao",
+              "client_whatsapp": "034 12 345 67", "zone": "darsalam"}
+    r = repondre(session, r["brouillon"], "en M rose pour Lalao, 034 12 345 67, à Darsalam", extraire=_faux(champs))
+    b = r["brouillon"]
+    assert b["etape"] == "recap"
+    assert (b["taille"], b["couleur"], b["client_whatsapp"], b["zone"]) == ("M", "Rose", "0341234567", "darsalam")
+
+
+def test_valeur_extraite_invalide_ignoree(session, product):
+    r = demarrer(session, _produit(session, product).id)
+    r = repondre(session, r["brouillon"], "du XL en rose", extraire=_faux({"taille": "XL", "couleur": "Rose"}))
+    b = r["brouillon"]
+    assert b["etape"] == "taille" and b["taille"] is None and b["couleur"] == "Rose"
+
+
+def test_extraction_n_ecrase_pas_une_reponse_deja_donnee(session, product):
+    r = _suivre(session, demarrer(session, _produit(session, product).id), "S", "Rose", "Lalao")
+    r = repondre(session, r["brouillon"], "mon numéro c'est le 034 12 345 67, et en blanc",
+                 extraire=_faux({"client_whatsapp": "034 12 345 67", "couleur": "Blanc"}))
+    b = r["brouillon"]
+    assert b["client_whatsapp"] == "0341234567" and b["couleur"] == "Rose" and b["etape"] == "zone"
+
+
+def test_un_bouton_n_appelle_pas_le_modele(session, product):
+    appels = []
+    r = demarrer(session, _produit(session, product).id)
+    repondre(session, r["brouillon"], "M", extraire=_faux({}, appels))
+    assert appels == []
+
+
+def test_extracteur_filtre_et_tolere_une_panne(monkeypatch):
+    import ai.agents.extracteur_commande as ex
+    monkeypatch.setattr(ex, "appeler_llm", lambda *a, **k: {"tool_calls": [{"function": {
+        "arguments": '{"taille": "M", "inconnu": "x", "couleur": ""}'}}]})
+    assert ex.extraire_champs("du M", ["S", "M"], [], {"darsalam": "Nosy Be — Darsalam"}) == {"taille": "M"}
+
+    def panne(*a, **k):
+        raise ex.ModeleIndisponible("aucun modèle disponible")
+    monkeypatch.setattr(ex, "appeler_llm", panne)
+    assert ex.extraire_champs("du M", ["S", "M"], [], {}) == {}
