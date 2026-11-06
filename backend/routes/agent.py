@@ -42,6 +42,7 @@ async def chat(body: ChatRequest):
             "produits":             resultat.get("produits", []),
             "liens":                resultat.get("liens", []),
             "suggestions":          resultat.get("suggestions", []),
+            "commande_resume":      resultat.get("commande_resume"),
         }
     except Exception as e:
         logging.error(f"[ROUTER] Erreur critique : {str(e)}", exc_info=True)

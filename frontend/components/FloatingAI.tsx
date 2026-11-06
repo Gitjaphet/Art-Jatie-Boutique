@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import styles from "./FloatingAI.module.css";
 import { chatWithJatie } from "@/lib/api";
+import { CONTACT, DELAI_FABRICATION, DELAI_TRAITEMENT } from "@/lib/contact";
 
 type Produit = {
   id: number;
@@ -17,6 +18,23 @@ type Produit = {
 };
 
 type Message = { from: "bot" | "user"; text: string; produits?: Produit[]; suggestions?: string[] };
+// Commande en cours, résumée par le serveur (chiffres du serveur, jamais recalculés ici)
+type Resume = {
+  produit: string;
+  image: string;
+  prix_ar: number;
+  sur_mesure: boolean;
+  taille: string | null;
+  couleur: string | null;
+  client_name: string | null;
+  zone: string | null;
+  total_ar: number | null;
+  etape: string | null;
+};
+const ACCUEIL: Message = {
+  from: "bot",
+  text: "Bonjour ! Je suis Jatie, l'assistante d'Art Jatie ✨ Comment puis-je vous aider ?",
+};
 
 const HISTORIQUE_MAX = 10;
 const formatAr = (n: number) => `${n.toLocaleString("fr-FR")} Ar`;
@@ -115,15 +133,119 @@ function CarteProduit({
   );
 }
 
+// ── Plein écran (ordinateur) : colonne de gauche — raccourcis ─────────────
+const RACCOURCIS = [
+  { icone: "✨", libelle: "Nouveautés", message: "Montrez-moi vos nouveautés" },
+  { icone: "👗", libelle: "Robes", message: "Montrez-moi vos robes" },
+  { icone: "👜", libelle: "Sacs et pochettes", message: "Montrez-moi vos sacs et pochettes" },
+  { icone: "👕", libelle: "Tenues", message: "Montrez-moi vos tenues" },
+  { icone: "✂️", libelle: "Sur mesure", message: "Comment fonctionne le sur mesure ?" },
+  { icone: "🚚", libelle: "Livraison", message: "Quels sont les tarifs et délais de livraison ?" },
+  { icone: "💳", libelle: "Paiement", message: "Quels sont vos moyens de paiement ?" },
+];
+
+function ColonneRaccourcis({
+  onEnvoyer,
+  onNouvelle,
+  commandeEnCours,
+  occupe,
+}: {
+  onEnvoyer: (texte: string) => void;
+  onNouvelle: () => void;
+  commandeEnCours: boolean;
+  occupe: boolean;
+}) {
+  return (
+    <aside className={styles.colGauche} aria-label="Raccourcis">
+      <button type="button" className={styles.nouvelle} onClick={onNouvelle} disabled={occupe}>
+        + Nouvelle conversation
+      </button>
+      <p className={styles.colTitre}>Raccourcis</p>
+      {RACCOURCIS.map(r => (
+        <button
+          key={r.libelle}
+          type="button"
+          className={styles.raccourci}
+          onClick={() => onEnvoyer(r.message)}
+          disabled={commandeEnCours || occupe}
+        >
+          <span aria-hidden>{r.icone}</span> {r.libelle}
+        </button>
+      ))}
+      {commandeEnCours && (
+        <p className={styles.colNote}>Terminez ou annulez la commande en cours pour utiliser les raccourcis.</p>
+      )}
+    </aside>
+  );
+}
+
+// ── Plein écran (ordinateur) : colonne de droite — commande en cours + contacts ──
+function ColonneCommande({ resume }: { resume: Resume | null }) {
+  const lignes: [string, string | null, string][] = resume
+    ? [
+        ["Taille", resume.taille, "taille"],
+        ["Couleur", resume.couleur, "couleur"],
+        ["Au nom de", resume.client_name, "nom"],
+        ["Livraison", resume.zone, "zone"],
+      ]
+    : [];
+  return (
+    <aside className={styles.colDroite} aria-label="Votre commande et contacts">
+      {resume && (
+        <section className={styles.panneau}>
+          <p className={styles.colTitre}>Votre commande</p>
+          {resume.image && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={resume.image} alt={resume.produit} className={styles.panneauImg} />
+          )}
+          <p className={styles.panneauNom}>
+            {resume.sur_mesure ? `Sur mesure inspiré de « ${resume.produit} »` : resume.produit}
+          </p>
+          <p className={styles.panneauPrix}>
+            {resume.sur_mesure ? "Prix de base : " : ""}
+            {formatAr(resume.prix_ar)}
+          </p>
+          <dl className={styles.panneauLignes}>
+            {lignes.map(([nom, valeur, etape]) => (
+              <div key={nom} className={resume.etape === etape ? styles.ligneActive : undefined}>
+                <dt>{nom}</dt>
+                <dd>{valeur ?? "—"}</dd>
+              </div>
+            ))}
+            <div className={styles.ligneTotal}>
+              <dt>{resume.sur_mesure ? "Total estimé" : "Total"}</dt>
+              <dd>{resume.total_ar !== null ? formatAr(resume.total_ar) : "—"}</dd>
+            </div>
+          </dl>
+        </section>
+      )}
+      <section className={styles.panneau}>
+        <p className={styles.colTitre}>Besoin d&rsquo;aide ?</p>
+        <a href={CONTACT.whatsappLien} target="_blank" rel="noopener noreferrer" className={styles.panneauWhatsapp}>
+          Écrire à l&rsquo;équipe sur WhatsApp
+        </a>
+        <p className={styles.panneauInfo}>
+          📞 <a href={CONTACT.telephoneLien}>{CONTACT.telephone}</a>
+        </p>
+        <p className={styles.panneauInfo}>📍 {CONTACT.adresse}</p>
+        <p className={styles.panneauInfo}>
+          ⏱ En stock : {DELAI_TRAITEMENT} · Sur mesure : {DELAI_FABRICATION}
+        </p>
+      </section>
+    </aside>
+  );
+}
+
 export default function FloatingAI() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<Message[]>([{ from: "bot", text: "Bonjour !" }]);
+  const [messages, setMessages] = useState<Message[]>([ACCUEIL]);
   const cardRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [historiqueCommande, setHistoriqueCommande] = useState<Record<string, unknown> | null>(null);
   // Fenêtre agrandie (ordinateur uniquement), mémorisée dans le navigateur quand c'est possible
+  const [resume, setResume] = useState<Resume | null>(null);
   const [agrandi, setAgrandi] = useState(false);
   const changerTaille = (valeur: boolean) => {
     setAgrandi(valeur);
@@ -241,6 +363,7 @@ export default function FloatingAI() {
         suggestions: result.suggestions ?? [],
       }]);
       setHistoriqueCommande(result.historique_commande ?? null);
+      setResume(result.commande_resume ?? null);
     } catch {
       setMessages(prev => [...prev, { from: "bot", text: "Désolée, problème technique 😅" }]);
     } finally {
@@ -248,6 +371,13 @@ export default function FloatingAI() {
     }
   };
   const send = () => envoyer(input);
+  const nouvelleConversation = () => {
+    if (isLoading) return;
+    setMessages([ACCUEIL]);
+    setHistoriqueCommande(null);
+    setResume(null);
+    setInput("");
+  };
   const commander = (p: Produit) => envoyer(`Je souhaite commander « ${p.nom} »`, p.id);
 
   if (!isOpen) return (
@@ -278,14 +408,24 @@ export default function FloatingAI() {
             type="button"
             className={styles.agrandir}
             onClick={() => changerTaille(!agrandi)}
-            aria-label={agrandi ? "Réduire la fenêtre du chat" : "Agrandir la fenêtre du chat"}
-            title={agrandi ? "Réduire" : "Agrandir"}
+            aria-label={agrandi ? "Réduire le chat" : "Afficher le chat en plein écran"}
+            title={agrandi ? "Réduire (Échap)" : "Plein écran"}
           >
             {agrandi ? "⤡" : "⤢"}
           </button>
           <button onClick={() => setIsOpen(false)} aria-label="Fermer le chat">✕</button>
         </div>
       </div>
+      <div className={styles.contenu}>
+        {agrandi && (
+          <ColonneRaccourcis
+            onEnvoyer={texte => envoyer(texte)}
+            onNouvelle={nouvelleConversation}
+            commandeEnCours={!!historiqueCommande}
+            occupe={isLoading}
+          />
+        )}
+        <div className={styles.colCentre}>
       <div className={styles.body} ref={bodyRef}>
         {messages.map((m, i) => (
           <div key={i} className={m.from === "bot" ? styles.botRow : styles.userRow}>
@@ -329,6 +469,9 @@ export default function FloatingAI() {
       <div className={styles.footer}>
         <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder="Écrire…" disabled={isLoading} />
         <button onClick={send} aria-label="Envoyer le message">➤</button>
+      </div>
+        </div>
+        {agrandi && <ColonneCommande resume={resume} />}
       </div>
     </div>,
     document.body

@@ -283,3 +283,21 @@ def test_taille_indisponible_propose_le_sur_mesure(session, product):
     assert SUR_MESURE in r["suggestions"] and r["brouillon"]["etape"] == "taille"
     r = _suivre(session, r, SUR_MESURE)
     assert r["brouillon"]["mode"] == "sur_mesure" and r["brouillon"]["etape"] == "taille"
+
+
+# ── Résumé pour le panneau « Votre commande » ──
+def test_resume_se_remplit_au_fil_du_parcours(session, product):
+    p = _produit(session, product)
+    r = demarrer(session, p.id)
+    assert r["resume"]["produit"] == p.name and r["resume"]["total_ar"] is None
+    r = _suivre(session, _ouvrir(session, p.id), "S", "Rose", "Lalao", "0341234567")
+    r = _suivre(session, r, next(s for s in r["suggestions"] if "Darsalam" in s))
+    res = r["resume"]
+    assert (res["taille"], res["couleur"], res["etape"]) == ("S", "Rose", "recap")
+    assert res["total_ar"] == p.price_ar + FRAIS_LIVRAISON["darsalam"] and "Darsalam" in res["zone"]
+
+
+def test_resume_vide_apres_la_commande(session, product):
+    r = _suivre(session, _ouvrir(session, _produit(session, product).id), "S", "Rose", "Lalao", "0341234567")
+    r = _suivre(session, r, r["suggestions"][0], OUI)
+    assert r["commande"] is not None and r["resume"] is None

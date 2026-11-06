@@ -319,7 +319,7 @@ def _creer(session: Session, p: Product, b: dict) -> dict:
 
 
 # ── Points d'entrée ──────────────────────────────────────────────────────
-def demarrer(session: Session, product_id: int) -> dict:
+def _demarrer(session: Session, product_id: int) -> dict:
     """Bouton « Commander » d'une carte produit."""
     p = session.get(Product, product_id)
     if not p:
@@ -340,7 +340,7 @@ def demarrer(session: Session, product_id: int) -> dict:
     return q
 
 
-def repondre(session: Session, brouillon: dict, message: str, extraire=None) -> dict:
+def _repondre(session: Session, brouillon: dict, message: str, extraire=None) -> dict:
     """Une réponse du client à l'étape en cours.
     extraire(message, tailles, couleurs, zones) -> dict : appelé seulement si la réponse
     n'est pas comprise directement (un bouton cliqué ne coûte aucun token)."""
@@ -408,3 +408,38 @@ def repondre(session: Session, brouillon: dict, message: str, extraire=None) -> 
         return _reponse(erreur, suggestions, b)
     b["etape"] = "recap" if b.pop("retour_recap", False) else _prochaine(b, etapes)
     return _question(session, p, b)
+
+
+# ── Résumé pour le panneau « Votre commande » (chiffres du serveur, jamais du navigateur) ──
+def _resume(session: Session, b: dict):
+    if not b:
+        return None
+    p = session.get(Product, b.get("product_id") or 0)
+    if not p:
+        return None
+    total = None
+    if b.get("zone"):
+        try:
+            total = calculer(session, _lignes(b), b["zone"])["total"]
+        except HTTPException:
+            total = None
+    return {
+        "produit": p.name, "image": p.image or "", "prix_ar": p.price_ar, "sur_mesure": _sur_mesure(b),
+        "taille": b.get("taille"), "couleur": b.get("couleur"), "client_name": b.get("client_name"),
+        "zone": _libelle_zone(b["zone"]) if b.get("zone") else None,
+        "total_ar": total, "etape": b.get("etape"),
+    }
+
+
+def demarrer(session: Session, product_id: int) -> dict:
+    """Point d'entrée : bouton « Commander » (+ résumé de la commande en cours)."""
+    r = _demarrer(session, product_id)
+    r["resume"] = _resume(session, r["brouillon"])
+    return r
+
+
+def repondre(session: Session, brouillon: dict, message: str, extraire=None) -> dict:
+    """Point d'entrée : une réponse de la cliente (+ résumé de la commande en cours)."""
+    r = _repondre(session, brouillon, message, extraire=extraire)
+    r["resume"] = _resume(session, r["brouillon"])
+    return r

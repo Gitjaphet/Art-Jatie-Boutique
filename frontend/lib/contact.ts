@@ -14,6 +14,7 @@ export const CONTACT = {
   email: "jatieart@gmail.com",
   mvola: WHATSAPP,
   orangeMoney: TELEPHONE,
+  adresse: "Seganinga, Nosy Be, Madagascar",
   site: "artjatie.com",
 } as const;
 

@@ -104,6 +104,7 @@ def run_multi_agent(
     produits = []
     liens = []
     suggestions = []
+    commande_resume = None
 
     # ── Salutation ────────────────────────────────────────────────────
     if intent == "salutation":
@@ -143,6 +144,7 @@ def run_multi_agent(
                     r = repondre(session, historique_commande, message,
                                  extraire=lambda m, ta, co, zo: extraire_champs(m, ta, co, zo, token_log=token_log))
             reponse, suggestions, historique_commande = r["texte"], r["suggestions"], r["brouillon"]
+            commande_resume = r.get("resume")
         else:
             # « Je veux commander… » sans le bouton : on montre les modèles, la commande part du bouton.
             candidats = recherche_semantique(message_masque, top_k=3)
@@ -177,4 +179,5 @@ def run_multi_agent(
         "produits": produits,
         "liens": liens,
         "suggestions": suggestions,
+        "commande_resume": commande_resume,
     }
