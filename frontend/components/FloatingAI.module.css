@@ -873,3 +873,47 @@
 .contacts a {
   color: inherit;
 }
+
+/* ── Icônes lucide (couleur de la marque, centrées) ── */
+.header button,
+.footer button,
+.centreActions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.header .agrandir {
+  display: none; /* rappel : masqué sur mobile (règle prioritaire sur la précédente) */
+}
+@media (min-width: 501px) {
+  .header .agrandir {
+    display: inline-flex;
+  }
+}
+.raccourciIcone,
+.ligneIcone,
+.accueilIcone {
+  color: #c2185b;
+}
+.accueilIcone {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #fbf1f4;
+  margin-bottom: 4px;
+}
+.nouvelle,
+.panneauWhatsapp {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.panneauVide svg {
+  display: block;
+  margin: 0 auto 8px;
+  color: #e86b8c;
+}

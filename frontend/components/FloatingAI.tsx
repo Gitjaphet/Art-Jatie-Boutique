@@ -5,6 +5,10 @@ import Link from "next/link";
 import styles from "./FloatingAI.module.css";
 import { chatWithJatie } from "@/lib/api";
 import { CONTACT, DELAI_FABRICATION, DELAI_TRAITEMENT } from "@/lib/contact";
+import {
+  Clock, CreditCard, MapPin, Maximize2, MessageCircle, Minimize2, Palette, Phone, Plus, Ruler,
+  Scissors, Send, Shirt, ShoppingBag, Sparkles, Sun, Truck, User, X, type LucideIcon,
+} from "lucide-react";
 
 type Produit = {
   id: number;
@@ -134,14 +138,14 @@ function CarteProduit({
 }
 
 // ── Plein écran (ordinateur) : raccourcis (colonne de gauche et cartes d'accueil) ──
-const RACCOURCIS = [
-  { icone: "✨", libelle: "Nouveautés", detail: "Nos dernières créations", message: "Montrez-moi vos nouveautés" },
-  { icone: "👗", libelle: "Robes", detail: "Robes en crochet fait main", message: "Montrez-moi vos robes" },
-  { icone: "👜", libelle: "Sacs et pochettes", detail: "Accessoires tissés à la main", message: "Montrez-moi vos sacs et pochettes" },
-  { icone: "👕", libelle: "Tenues", detail: "Ensembles et tenues de plage", message: "Montrez-moi vos tenues" },
-  { icone: "✂️", libelle: "Sur mesure", detail: "Votre pièce, à vos mesures", message: "Comment fonctionne le sur mesure ?" },
-  { icone: "🚚", libelle: "Livraison", detail: "Zones, tarifs et délais", message: "Quels sont les tarifs et délais de livraison ?" },
-  { icone: "💳", libelle: "Paiement", detail: "MVola, Orange Money, WhatsApp", message: "Quels sont vos moyens de paiement ?" },
+const RACCOURCIS: { icone: LucideIcon; libelle: string; detail: string; message: string }[] = [
+  { icone: Sparkles, libelle: "Nouveautés", detail: "Nos dernières créations", message: "Montrez-moi vos nouveautés" },
+  { icone: Shirt, libelle: "Robes", detail: "Robes en crochet fait main", message: "Montrez-moi vos robes" },
+  { icone: ShoppingBag, libelle: "Sacs et pochettes", detail: "Accessoires tissés à la main", message: "Montrez-moi vos sacs et pochettes" },
+  { icone: Sun, libelle: "Tenues", detail: "Ensembles et tenues de plage", message: "Montrez-moi vos tenues" },
+  { icone: Scissors, libelle: "Sur mesure", detail: "Votre pièce, à vos mesures", message: "Comment fonctionne le sur mesure ?" },
+  { icone: Truck, libelle: "Livraison", detail: "Zones, tarifs et délais", message: "Quels sont les tarifs et délais de livraison ?" },
+  { icone: CreditCard, libelle: "Paiement", detail: "MVola, Orange Money, WhatsApp", message: "Quels sont vos moyens de paiement ?" },
 ];
 const SUGGESTIONS_ACCUEIL = RACCOURCIS.filter(r =>
   ["Nouveautés", "Sur mesure", "Livraison", "Paiement"].includes(r.libelle),
@@ -161,7 +165,7 @@ function ColonneRaccourcis({
   return (
     <aside className={styles.colGauche} aria-label="Raccourcis">
       <button type="button" className={styles.nouvelle} onClick={onNouvelle} disabled={occupe}>
-        ＋ Nouvelle conversation
+        <Plus size={18} strokeWidth={2.25} /> Nouvelle conversation
       </button>
       <p className={styles.colTitre}>Raccourcis</p>
       {RACCOURCIS.map(r => (
@@ -172,7 +176,7 @@ function ColonneRaccourcis({
           onClick={() => onEnvoyer(r.message)}
           disabled={commandeEnCours || occupe}
         >
-          <span className={styles.raccourciIcone} aria-hidden>{r.icone}</span>
+          <span className={styles.raccourciIcone} aria-hidden><r.icone size={20} strokeWidth={1.75} /></span>
           <span className={styles.raccourciTexte}>
             <strong>{r.libelle}</strong>
             <span>{r.detail}</span>
@@ -188,12 +192,12 @@ function ColonneRaccourcis({
 
 // ── Plein écran (ordinateur) : colonne de droite — commande en cours + contacts ──
 function ColonneCommande({ resume }: { resume: Resume | null }) {
-  const lignes: [string, string, string | null, string][] = resume
+  const lignes: [LucideIcon, string, string | null, string][] = resume
     ? [
-        ["📏", "Taille", resume.taille, "taille"],
-        ["🎨", "Couleur", resume.couleur, "couleur"],
-        ["👤", "Au nom de", resume.client_name, "nom"],
-        ["🚚", "Livraison", resume.zone, "zone"],
+        [Ruler, "Taille", resume.taille, "taille"],
+        [Palette, "Couleur", resume.couleur, "couleur"],
+        [User, "Au nom de", resume.client_name, "nom"],
+        [Truck, "Livraison", resume.zone, "zone"],
       ]
     : [];
   return (
@@ -214,10 +218,10 @@ function ColonneCommande({ resume }: { resume: Resume | null }) {
               {formatAr(resume.prix_ar)}
             </p>
             <dl className={styles.panneauLignes}>
-              {lignes.map(([icone, nom, valeur, etape]) => (
+              {lignes.map(([Icone, nom, valeur, etape]) => (
                 <div key={nom} className={resume.etape === etape ? styles.ligneActive : undefined}>
                   <dt>
-                    <span className={styles.ligneIcone} aria-hidden>{icone}</span>
+                    <span className={styles.ligneIcone} aria-hidden><Icone size={15} strokeWidth={1.75} /></span>
                     {nom}
                   </dt>
                   <dd>{valeur ?? "—"}</dd>
@@ -231,7 +235,7 @@ function ColonneCommande({ resume }: { resume: Resume | null }) {
           </>
         ) : (
           <div className={styles.panneauVide}>
-            <span aria-hidden>🛍️</span>
+            <ShoppingBag size={34} strokeWidth={1.5} aria-hidden />
             <p>Aucune commande en cours.</p>
             <p>Cliquez sur « Commander » sous un modèle pour commencer.</p>
           </div>
@@ -240,23 +244,23 @@ function ColonneCommande({ resume }: { resume: Resume | null }) {
       <section className={styles.panneau}>
         <h3 className={styles.panneauTitre}>Besoin d&rsquo;aide ?</h3>
         <a href={CONTACT.whatsappLien} target="_blank" rel="noopener noreferrer" className={styles.panneauWhatsapp}>
-          Écrire à l&rsquo;équipe sur WhatsApp
+          <MessageCircle size={17} strokeWidth={2} /> Écrire à l&rsquo;équipe sur WhatsApp
         </a>
         <ul className={styles.contacts}>
           <li>
-            <span className={styles.ligneIcone} aria-hidden>📞</span>
+            <span className={styles.ligneIcone} aria-hidden><Phone size={15} strokeWidth={1.75} /></span>
             <a href={CONTACT.telephoneLien}>{CONTACT.telephone}</a>
           </li>
           <li>
-            <span className={styles.ligneIcone} aria-hidden>📍</span>
+            <span className={styles.ligneIcone} aria-hidden><MapPin size={15} strokeWidth={1.75} /></span>
             {CONTACT.adresse}
           </li>
           <li>
-            <span className={styles.ligneIcone} aria-hidden>⏱</span>
+            <span className={styles.ligneIcone} aria-hidden><Clock size={15} strokeWidth={1.75} /></span>
             En stock : {DELAI_TRAITEMENT}
           </li>
           <li>
-            <span className={styles.ligneIcone} aria-hidden>✂️</span>
+            <span className={styles.ligneIcone} aria-hidden><Scissors size={15} strokeWidth={1.75} /></span>
             Sur mesure : {DELAI_FABRICATION}
           </li>
         </ul>
@@ -440,9 +444,9 @@ export default function FloatingAI() {
             aria-label={agrandi ? "Réduire le chat" : "Afficher le chat en plein écran"}
             title={agrandi ? "Réduire (Échap)" : "Plein écran"}
           >
-            {agrandi ? "⤡" : "⤢"}
+            {agrandi ? <Minimize2 size={17} /> : <Maximize2 size={17} />}
           </button>
-          <button onClick={() => setIsOpen(false)} aria-label="Fermer le chat">✕</button>
+          <button onClick={() => setIsOpen(false)} aria-label="Fermer le chat"><X size={18} /></button>
         </div>
       </div>
       <div className={styles.contenu}>
@@ -468,10 +472,10 @@ export default function FloatingAI() {
               </div>
               <div className={styles.centreActions}>
                 <button type="button" onClick={() => changerTaille(false)} aria-label="Réduire le chat" title="Réduire (Échap)">
-                  ⤡
+                  <Minimize2 size={18} />
                 </button>
                 <button type="button" onClick={() => setIsOpen(false)} aria-label="Fermer le chat" title="Fermer">
-                  ✕
+                  <X size={18} />
                 </button>
               </div>
             </div>
@@ -517,7 +521,7 @@ export default function FloatingAI() {
                 onClick={() => envoyer(r.message)}
                 disabled={isLoading}
               >
-                <span className={styles.accueilIcone} aria-hidden>{r.icone}</span>
+                <span className={styles.accueilIcone} aria-hidden><r.icone size={20} strokeWidth={1.75} /></span>
                 <strong>{r.libelle}</strong>
                 <span>{r.detail}</span>
               </button>
@@ -535,7 +539,7 @@ export default function FloatingAI() {
       </div>
       <div className={styles.footer}>
         <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder="Écrire…" disabled={isLoading} />
-        <button onClick={send} aria-label="Envoyer le message">➤</button>
+        <button onClick={send} aria-label="Envoyer le message"><Send size={18} /></button>
       </div>
         </div>
         {agrandi && <ColonneCommande resume={resume} />}
