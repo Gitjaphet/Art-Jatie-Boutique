@@ -172,3 +172,31 @@ def test_delais_identiques_serveur_et_site():
     for cle in ("stock", "fabrication"):
         m = re.search(cle + r":\s*\{\s*min:\s*(\d+),\s*max:\s*(\d+)", texte)
         assert m and (int(m.group(1)), int(m.group(2))) == DELAIS[cle], f"délai « {cle} » différent du site"
+
+
+# ── Corrections après le test réel du 6 nov. (commande #42) ──
+def test_valeur_inventee_par_le_modele_refusee(session, product):
+    r = _suivre(session, demarrer(session, _produit(session, product).id), "S")
+    r = repondre(session, r["brouillon"], "Jaune", extraire=_faux({"couleur": "Blanc", "zone": "nosybe_ville"}))
+    b = r["brouillon"]
+    assert b["etape"] == "couleur" and b["couleur"] is None and b["zone"] is None
+
+
+def test_choix_unique_selectionne_automatiquement(session, product):
+    p = _produit(session, product)
+    p.sizes = "Sur mesure"
+    session.add(p); session.commit()
+    r = demarrer(session, p.id)
+    assert r["brouillon"]["etape"] == "couleur" and r["brouillon"]["taille"] == "Sur mesure"
+
+
+def test_oui_en_phrase_confirme(session, product):
+    r = _suivre(session, demarrer(session, _produit(session, product).id), "S", "Rose", "Lalao", "0341234567")
+    r = _suivre(session, r, r["suggestions"][0], "oui je valide")
+    assert r["commande"] is not None
+
+
+def test_non_ne_confirme_pas(session, product):
+    r = _suivre(session, demarrer(session, _produit(session, product).id), "S", "Rose", "Lalao", "0341234567")
+    r = _suivre(session, r, r["suggestions"][0], "non pas encore")
+    assert r["commande"] is None and r["brouillon"]["etape"] == "recap"

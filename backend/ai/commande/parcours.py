@@ -6,6 +6,8 @@ une validation par le code. Aucun appel au modèle ici (l'extraction du texte li
 Le brouillon fait l'aller-retour avec le navigateur : tout est revalidé à la création
 (services/commandes.creer_commande) — le navigateur ne décide jamais d'un prix.
 """
+import re
+
 from fastapi import HTTPException
 from sqlmodel import Session
 
@@ -18,7 +20,9 @@ from services.commandes import (
 
 ZONES_CHAT = ["nosybe_ville", "darsalam", "dzamanjar", "nosybe_autre", "tana", "hors_nosybe"]
 OUI, MODIFIER, ANNULER = "Oui, je confirme", "Modifier", "Annuler"
-_MOTS_OUI = {"oui", "ok", "je confirme", "confirmer", "confirme"}
+_DEBUT_OUI = {"oui", "ok", "okay", "yes", "eny", "daccord"}
+_NEGATIONS = {"non", "pas", "annule", "annuler", "attends", "attendez", "no"}
+_MOTS_ZONE_GENERIQUES = {"nosy", "zone", "devis", "frais", "sur"}
 _MOTS_ANNULER = {"annuler", "annule", "stop", "laisse tomber", "abandonner"}
 _CHAMPS = {"Taille": "taille", "Couleur": "couleur", "Nom": "nom", "WhatsApp": "whatsapp", "Livraison": "zone"}
 _ETAPES_VALIDES = {"taille", "couleur", "nom", "whatsapp", "zone", "recap", "modifier"}
@@ -40,6 +44,31 @@ def _choisir(message: str, options: list):
     """Bouton cliqué ou texte équivalent (casse, accents, espaces ignorés) → option exacte."""
     cle = _cle(message)
     return next((o for o in options if _cle(o) == cle), None)
+
+
+def _mots(texte: str) -> list:
+    return re.findall(r"[a-z0-9]+", _cle(texte))
+
+
+def _est_oui(message: str) -> bool:
+    """« oui », « oui je valide », « ok je confirme »… ; une négation l'emporte toujours."""
+    mots = _mots(message)
+    if not mots or any(m in _NEGATIONS for m in mots):
+        return False
+    return mots[0] in _DEBUT_OUI or "accord" in mots or any(m.startswith(("confirm", "valid")) for m in mots)
+
+
+def _present(champ: str, valeur: str, message: str) -> bool:
+    """Garde-fou anti-invention : une valeur extraite par le modèle doit se retrouver dans le message."""
+    if champ == "client_whatsapp":
+        chiffres = re.sub(r"\D", "", valeur)
+        return len(chiffres) >= 8 and chiffres[-8:] in re.sub(r"\D", "", message)
+    if champ == "zone":
+        mots_zone = {z for z in _mots(LIBELLES_ZONE.get(valeur, "")) if len(z) >= 4} - _MOTS_ZONE_GENERIQUES
+        return any(m in z or z in m for m in _mots(message) if len(m) >= 4 for z in mots_zone)
+    cible = " ".join(_mots(valeur))
+    return bool(cible) and re.search(r"(?<![a-z0-9])" + re.escape(cible) + r"(?![a-z0-9])",
+                                     " ".join(_mots(message))) is not None
 
 
 def _detail(exc: HTTPException) -> str:
@@ -66,8 +95,8 @@ def _disponible(p: Product) -> bool:
 
 
 def _etapes(p: Product) -> list:
-    etapes = ["taille"] if liste(p.sizes) else []
-    etapes += ["couleur"] if liste(p.colors) else []
+    etapes = ["taille"] if len(liste(p.sizes)) > 1 else []      # un seul choix : sélectionné d'office
+    etapes += ["couleur"] if len(liste(p.colors)) > 1 else []
     return etapes + ["nom", "whatsapp", "zone", "recap"]
 
 
@@ -153,7 +182,7 @@ def _prochaine(b: dict, etapes: list) -> str:
     return next((e for e in etapes if e != "recap" and not b.get(_CLE_ETAPE[e])), "recap")
 
 
-def _completer(p: Product, b: dict, etapes: list, champs: dict) -> bool:
+def _completer(p: Product, b: dict, etapes: list, champs: dict, message: str) -> bool:
     """Applique les valeurs extraites par le modèle ; chacune passe par _valider.
     Ne remplace jamais une réponse déjà donnée, sauf celle de l'étape en cours."""
     acceptes = 0
@@ -161,6 +190,8 @@ def _completer(p: Product, b: dict, etapes: list, champs: dict) -> bool:
         etape = _ETAPE_CHAMP.get(champ)
         if etape not in etapes or (b.get(champ) and etape != b["etape"]):
             continue
+        if not _present(champ, str(valeur), message):
+            continue  # valeur absente du message : inventée par le modèle, refusée
         if etape == "zone" and valeur in ZONES_CHAT:
             b["zone"] = valeur
             acceptes += 1
@@ -202,7 +233,10 @@ def demarrer(session: Session, product_id: int) -> dict:
         return _reponse("Je ne retrouve pas ce modèle. Choisissez-le à nouveau dans la boutique ?")
     if not _disponible(p):
         return _reponse(f"« {p.name} » est épuisé pour le moment. Je peux vous proposer d'autres modèles ✨")
-    b = {"product_id": p.id, "taille": None, "couleur": None,
+    tailles, couleurs = liste(p.sizes), liste(p.colors)
+    b = {"product_id": p.id,
+         "taille": tailles[0] if len(tailles) == 1 else None,
+         "couleur": couleurs[0] if len(couleurs) == 1 else None,
          "client_name": None, "client_whatsapp": None, "zone": None}
     b["etape"] = _etapes(p)[0]
     q = _question(session, p, b)
@@ -228,7 +262,7 @@ def repondre(session: Session, brouillon: dict, message: str, extraire=None) -> 
     champs = {k: v for k, v in _CHAMPS.items() if v in etapes}
 
     if b["etape"] == "recap":
-        if _choisir(message, [OUI]) or _cle(message) in _MOTS_OUI:
+        if _choisir(message, [OUI]) or _est_oui(message):
             return _creer(session, p, b)
         if _choisir(message, [MODIFIER]):
             b["etape"] = "modifier"
@@ -245,7 +279,7 @@ def repondre(session: Session, brouillon: dict, message: str, extraire=None) -> 
     erreur = _valider(p, b, message)
     if erreur and extraire:
         champs = extraire(message, liste(p.sizes), liste(p.colors), {z: LIBELLES_ZONE[z] for z in ZONES_CHAT})
-        if _completer(p, b, etapes, champs):
+        if _completer(p, b, etapes, champs, message):
             b.pop("retour_recap", None)
             b["etape"] = _prochaine(b, etapes)
             return _question(session, p, b)
