@@ -1,6 +1,6 @@
 "use client";
 
-import { CONTACT, lienWhatsApp } from "@/lib/contact";
+import { CONTACT, lienWhatsApp, DELAI_TRAITEMENT, DELAI_FABRICATION } from "@/lib/contact";
 import { useCartStore } from "@/lib/cart";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, Suspense } from "react";
@@ -794,9 +794,10 @@ function CheckoutContent() {
                 style={{ background: "#e86b8c" }}
               />
               <span>
-                <strong>Délai de traitement</strong> : les commandes confirmées
-                sont traitées sous 24–48h. Vous serez contacté(e) sur WhatsApp
-                pour la livraison.
+                <strong>Délais</strong> : article en stock préparé sous{" "}
+                {DELAI_TRAITEMENT}, pièce sur commande fabriquée en{" "}
+                {DELAI_FABRICATION} après réception de l&rsquo;avance. Vous serez
+                contacté(e) sur WhatsApp pour la livraison.
               </span>
             </li>
             <li>

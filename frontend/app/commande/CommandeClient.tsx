@@ -1,4 +1,5 @@
 "use client";
+import { DELAI_FABRICATION } from "@/lib/contact";
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
@@ -228,8 +229,8 @@ export default function CommandeClient({
               </p>
               <h3>Comment ça marche</h3>
               <p>
-                Une avance est demandée pour lancer la fabrication. Comptez 7 à
-                14 jours de fabrication, puis le délai de livraison de votre
+                Une avance est demandée pour lancer la fabrication. Comptez {DELAI_FABRICATION} de
+                fabrication, puis le délai de livraison de votre
                 zone. Nous livrons à Nosy Be, dans toute Madagascar et à
                 l&rsquo;international, avec un tarif sur devis. Tous les détails
                 sont sur la page{" "}

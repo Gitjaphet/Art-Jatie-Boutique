@@ -1,3 +1,4 @@
+import { DELAIS } from "@/lib/contact";
 import { getProductBySlug, getProducts, getProductReviews, getProductReviewAggregate } from "@/lib/api";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -80,8 +81,8 @@ export default async function ProductPage({
   // Délai de fabrication (sur commande) ou de préparation (en stock)
   const handlingTime = {
     "@type": "QuantitativeValue",
-    minValue: product.on_order ? 7 : 1,
-    maxValue: product.on_order ? 14 : 2,
+    minValue: product.on_order ? DELAIS.fabrication.min : DELAIS.stock.min,
+    maxValue: product.on_order ? DELAIS.fabrication.max : DELAIS.stock.max,
     unitCode: "DAY",
   };
 
