@@ -133,16 +133,19 @@ function CarteProduit({
   );
 }
 
-// ── Plein écran (ordinateur) : colonne de gauche — raccourcis ─────────────
+// ── Plein écran (ordinateur) : raccourcis (colonne de gauche et cartes d'accueil) ──
 const RACCOURCIS = [
-  { icone: "✨", libelle: "Nouveautés", message: "Montrez-moi vos nouveautés" },
-  { icone: "👗", libelle: "Robes", message: "Montrez-moi vos robes" },
-  { icone: "👜", libelle: "Sacs et pochettes", message: "Montrez-moi vos sacs et pochettes" },
-  { icone: "👕", libelle: "Tenues", message: "Montrez-moi vos tenues" },
-  { icone: "✂️", libelle: "Sur mesure", message: "Comment fonctionne le sur mesure ?" },
-  { icone: "🚚", libelle: "Livraison", message: "Quels sont les tarifs et délais de livraison ?" },
-  { icone: "💳", libelle: "Paiement", message: "Quels sont vos moyens de paiement ?" },
+  { icone: "✨", libelle: "Nouveautés", detail: "Nos dernières créations", message: "Montrez-moi vos nouveautés" },
+  { icone: "👗", libelle: "Robes", detail: "Robes en crochet fait main", message: "Montrez-moi vos robes" },
+  { icone: "👜", libelle: "Sacs et pochettes", detail: "Accessoires tissés à la main", message: "Montrez-moi vos sacs et pochettes" },
+  { icone: "👕", libelle: "Tenues", detail: "Ensembles et tenues de plage", message: "Montrez-moi vos tenues" },
+  { icone: "✂️", libelle: "Sur mesure", detail: "Votre pièce, à vos mesures", message: "Comment fonctionne le sur mesure ?" },
+  { icone: "🚚", libelle: "Livraison", detail: "Zones, tarifs et délais", message: "Quels sont les tarifs et délais de livraison ?" },
+  { icone: "💳", libelle: "Paiement", detail: "MVola, Orange Money, WhatsApp", message: "Quels sont vos moyens de paiement ?" },
 ];
+const SUGGESTIONS_ACCUEIL = RACCOURCIS.filter(r =>
+  ["Nouveautés", "Sur mesure", "Livraison", "Paiement"].includes(r.libelle),
+);
 
 function ColonneRaccourcis({
   onEnvoyer,
@@ -158,7 +161,7 @@ function ColonneRaccourcis({
   return (
     <aside className={styles.colGauche} aria-label="Raccourcis">
       <button type="button" className={styles.nouvelle} onClick={onNouvelle} disabled={occupe}>
-        + Nouvelle conversation
+        ＋ Nouvelle conversation
       </button>
       <p className={styles.colTitre}>Raccourcis</p>
       {RACCOURCIS.map(r => (
@@ -169,7 +172,11 @@ function ColonneRaccourcis({
           onClick={() => onEnvoyer(r.message)}
           disabled={commandeEnCours || occupe}
         >
-          <span aria-hidden>{r.icone}</span> {r.libelle}
+          <span className={styles.raccourciIcone} aria-hidden>{r.icone}</span>
+          <span className={styles.raccourciTexte}>
+            <strong>{r.libelle}</strong>
+            <span>{r.detail}</span>
+          </span>
         </button>
       ))}
       {commandeEnCours && (
@@ -181,56 +188,78 @@ function ColonneRaccourcis({
 
 // ── Plein écran (ordinateur) : colonne de droite — commande en cours + contacts ──
 function ColonneCommande({ resume }: { resume: Resume | null }) {
-  const lignes: [string, string | null, string][] = resume
+  const lignes: [string, string, string | null, string][] = resume
     ? [
-        ["Taille", resume.taille, "taille"],
-        ["Couleur", resume.couleur, "couleur"],
-        ["Au nom de", resume.client_name, "nom"],
-        ["Livraison", resume.zone, "zone"],
+        ["📏", "Taille", resume.taille, "taille"],
+        ["🎨", "Couleur", resume.couleur, "couleur"],
+        ["👤", "Au nom de", resume.client_name, "nom"],
+        ["🚚", "Livraison", resume.zone, "zone"],
       ]
     : [];
   return (
     <aside className={styles.colDroite} aria-label="Votre commande et contacts">
-      {resume && (
-        <section className={styles.panneau}>
-          <p className={styles.colTitre}>Votre commande</p>
-          {resume.image && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={resume.image} alt={resume.produit} className={styles.panneauImg} />
-          )}
-          <p className={styles.panneauNom}>
-            {resume.sur_mesure ? `Sur mesure inspiré de « ${resume.produit} »` : resume.produit}
-          </p>
-          <p className={styles.panneauPrix}>
-            {resume.sur_mesure ? "Prix de base : " : ""}
-            {formatAr(resume.prix_ar)}
-          </p>
-          <dl className={styles.panneauLignes}>
-            {lignes.map(([nom, valeur, etape]) => (
-              <div key={nom} className={resume.etape === etape ? styles.ligneActive : undefined}>
-                <dt>{nom}</dt>
-                <dd>{valeur ?? "—"}</dd>
-              </div>
-            ))}
-            <div className={styles.ligneTotal}>
-              <dt>{resume.sur_mesure ? "Total estimé" : "Total"}</dt>
-              <dd>{resume.total_ar !== null ? formatAr(resume.total_ar) : "—"}</dd>
-            </div>
-          </dl>
-        </section>
-      )}
       <section className={styles.panneau}>
-        <p className={styles.colTitre}>Besoin d&rsquo;aide ?</p>
+        <h3 className={styles.panneauTitre}>Votre commande</h3>
+        {resume ? (
+          <>
+            {resume.image && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={resume.image} alt={resume.produit} className={styles.panneauImg} />
+            )}
+            <p className={styles.panneauNom}>
+              {resume.sur_mesure ? `Sur mesure inspiré de « ${resume.produit} »` : resume.produit}
+            </p>
+            <p className={styles.panneauPrix}>
+              {resume.sur_mesure ? "Prix de base : " : ""}
+              {formatAr(resume.prix_ar)}
+            </p>
+            <dl className={styles.panneauLignes}>
+              {lignes.map(([icone, nom, valeur, etape]) => (
+                <div key={nom} className={resume.etape === etape ? styles.ligneActive : undefined}>
+                  <dt>
+                    <span className={styles.ligneIcone} aria-hidden>{icone}</span>
+                    {nom}
+                  </dt>
+                  <dd>{valeur ?? "—"}</dd>
+                </div>
+              ))}
+              <div className={styles.ligneTotal}>
+                <dt>{resume.sur_mesure ? "Total estimé" : "Total"}</dt>
+                <dd>{resume.total_ar !== null ? formatAr(resume.total_ar) : "—"}</dd>
+              </div>
+            </dl>
+          </>
+        ) : (
+          <div className={styles.panneauVide}>
+            <span aria-hidden>🛍️</span>
+            <p>Aucune commande en cours.</p>
+            <p>Cliquez sur « Commander » sous un modèle pour commencer.</p>
+          </div>
+        )}
+      </section>
+      <section className={styles.panneau}>
+        <h3 className={styles.panneauTitre}>Besoin d&rsquo;aide ?</h3>
         <a href={CONTACT.whatsappLien} target="_blank" rel="noopener noreferrer" className={styles.panneauWhatsapp}>
           Écrire à l&rsquo;équipe sur WhatsApp
         </a>
-        <p className={styles.panneauInfo}>
-          📞 <a href={CONTACT.telephoneLien}>{CONTACT.telephone}</a>
-        </p>
-        <p className={styles.panneauInfo}>📍 {CONTACT.adresse}</p>
-        <p className={styles.panneauInfo}>
-          ⏱ En stock : {DELAI_TRAITEMENT} · Sur mesure : {DELAI_FABRICATION}
-        </p>
+        <ul className={styles.contacts}>
+          <li>
+            <span className={styles.ligneIcone} aria-hidden>📞</span>
+            <a href={CONTACT.telephoneLien}>{CONTACT.telephone}</a>
+          </li>
+          <li>
+            <span className={styles.ligneIcone} aria-hidden>📍</span>
+            {CONTACT.adresse}
+          </li>
+          <li>
+            <span className={styles.ligneIcone} aria-hidden>⏱</span>
+            En stock : {DELAI_TRAITEMENT}
+          </li>
+          <li>
+            <span className={styles.ligneIcone} aria-hidden>✂️</span>
+            Sur mesure : {DELAI_FABRICATION}
+          </li>
+        </ul>
       </section>
     </aside>
   );
@@ -426,6 +455,27 @@ export default function FloatingAI() {
           />
         )}
         <div className={styles.colCentre}>
+          {agrandi && (
+            <div className={styles.centreEntete}>
+              <div className={styles.centreTitre}>
+                <div className={styles.avatar}>J</div>
+                <div>
+                  <h2>Jatie ✨</h2>
+                  <p>
+                    Assistante Art Jatie · <span className={styles.enLigne}>● En ligne</span>
+                  </p>
+                </div>
+              </div>
+              <div className={styles.centreActions}>
+                <button type="button" onClick={() => changerTaille(false)} aria-label="Réduire le chat" title="Réduire (Échap)">
+                  ⤡
+                </button>
+                <button type="button" onClick={() => setIsOpen(false)} aria-label="Fermer le chat" title="Fermer">
+                  ✕
+                </button>
+              </div>
+            </div>
+          )}
       <div className={styles.body} ref={bodyRef}>
         {messages.map((m, i) => (
           <div key={i} className={m.from === "bot" ? styles.botRow : styles.userRow}>
@@ -457,6 +507,23 @@ export default function FloatingAI() {
             {m.from === "user" && <div className={styles.avatarSmallUser}>C</div>}
           </div>
         ))}
+        {agrandi && messages.length === 1 && (
+          <div className={styles.accueilVide}>
+            {SUGGESTIONS_ACCUEIL.map(r => (
+              <button
+                key={r.libelle}
+                type="button"
+                className={styles.accueilCarte}
+                onClick={() => envoyer(r.message)}
+                disabled={isLoading}
+              >
+                <span className={styles.accueilIcone} aria-hidden>{r.icone}</span>
+                <strong>{r.libelle}</strong>
+                <span>{r.detail}</span>
+              </button>
+            ))}
+          </div>
+        )}
         {isLoading && (
           <div className={styles.botRow}>
             <div className={styles.avatarSmall}>J</div>
