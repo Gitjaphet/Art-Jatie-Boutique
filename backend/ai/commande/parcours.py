@@ -1,8 +1,15 @@
 """
-ai/commande/parcours.py — commande guidée dans le chat Jatie (brique 2a).
+ai/commande/parcours.py — commande guidée dans le chat Jatie.
 
 Le code mène la conversation : une question par étape, des réponses rapides (boutons),
-une validation par le code. Aucun appel au modèle ici (l'extraction du texte libre = brique 2b).
+une validation par le code. Le modèle n'intervient que pour extraire un texte libre (brique 2b),
+et chaque valeur extraite est revérifiée ici : elle doit figurer dans le message (anti-invention).
+
+Deux modes :
+- « stock »      : la pièce telle qu'elle est, choix du catalogue ;
+- « sur_mesure » : même style, taille et couleur libres, prix de base à confirmer par l'équipe
+                   (proposé pour tous les modèles ; automatique quand le stock est épuisé).
+
 Le brouillon fait l'aller-retour avec le navigateur : tout est revalidé à la création
 (services/commandes.creer_commande) — le navigateur ne décide jamais d'un prix.
 """
@@ -20,12 +27,18 @@ from services.commandes import (
 
 ZONES_CHAT = ["nosybe_ville", "darsalam", "dzamanjar", "nosybe_autre", "tana", "hors_nosybe"]
 OUI, MODIFIER, ANNULER = "Oui, je confirme", "Modifier", "Annuler"
+EN_STOCK, SUR_MESURE = "Celle-ci, en stock", "Sur mesure, même style"
+MENSURATIONS = "Mes mensurations"
+TAILLES_SUR_MESURE = ["XS", "S", "M", "L", "XL"]
+PALETTE_SUR_MESURE = ["Beige", "Blanc", "Noir", "Rose", "Rouge", "Bleu", "Marron", "Kaki", "Multicolore"]  # filtres boutique
+AVANCE = int(TAUX_ACOMPTE_SUR_MESURE * 100)
+
 _DEBUT_OUI = {"oui", "ok", "okay", "yes", "eny", "daccord"}
 _NEGATIONS = {"non", "pas", "annule", "annuler", "attends", "attendez", "no"}
-_MOTS_ZONE_GENERIQUES = {"nosy", "zone", "devis", "frais", "sur"}
 _MOTS_ANNULER = {"annuler", "annule", "stop", "laisse tomber", "abandonner"}
+_MOTS_ZONE_GENERIQUES = {"nosy", "zone", "devis", "frais", "sur"}
 _CHAMPS = {"Taille": "taille", "Couleur": "couleur", "Nom": "nom", "WhatsApp": "whatsapp", "Livraison": "zone"}
-_ETAPES_VALIDES = {"taille", "couleur", "nom", "whatsapp", "zone", "recap", "modifier"}
+_ETAPES_VALIDES = {"mode", "taille", "couleur", "nom", "whatsapp", "zone", "recap", "modifier"}
 _CLE_ETAPE = {"taille": "taille", "couleur": "couleur", "nom": "client_name",
               "whatsapp": "client_whatsapp", "zone": "zone"}
 _ETAPE_CHAMP = {v: k for k, v in _CLE_ETAPE.items()}
@@ -40,14 +53,14 @@ def _cle(texte: str) -> str:
     return normaliser(texte or "").strip()
 
 
+def _mots(texte: str) -> list:
+    return re.findall(r"[a-z0-9]+", _cle(texte))
+
+
 def _choisir(message: str, options: list):
     """Bouton cliqué ou texte équivalent (casse, accents, espaces ignorés) → option exacte."""
     cle = _cle(message)
     return next((o for o in options if _cle(o) == cle), None)
-
-
-def _mots(texte: str) -> list:
-    return re.findall(r"[a-z0-9]+", _cle(texte))
 
 
 def _est_oui(message: str) -> bool:
@@ -85,25 +98,38 @@ def _libelle_zone(zone: str) -> str:
     return f"{LIBELLES_ZONE[zone]} ({suffixe})"
 
 
-def _sur_mesure(p: Product) -> bool:
-    """Fabrication sur commande seulement quand le stock est épuisé : une pièce prête se vend en stock."""
-    return bool(getattr(p, "on_order", False)) and (p.stock_quantity or 0) <= 0
+def _en_stock(p: Product) -> bool:
+    return (p.stock_quantity or 0) > 0
 
 
-def _disponible(p: Product) -> bool:
-    return _sur_mesure(p) or (p.stock_quantity or 0) > 0
+def _sur_mesure(b: dict) -> bool:
+    return b.get("mode") == "sur_mesure"
 
 
-def _etapes(p: Product) -> list:
+def _options(p: Product, b: dict, quoi: str) -> list:
+    """Choix proposés : ceux du catalogue (stock) ou ceux de l'atelier (sur mesure)."""
+    if _sur_mesure(b):
+        return TAILLES_SUR_MESURE if quoi == "taille" else PALETTE_SUR_MESURE
+    return liste(p.sizes if quoi == "taille" else p.colors)
+
+
+def _etapes(p: Product, b: dict) -> list:
+    if _sur_mesure(b):
+        return ["taille", "couleur", "nom", "whatsapp", "zone", "recap"]
     etapes = ["taille"] if len(liste(p.sizes)) > 1 else []      # un seul choix : sélectionné d'office
     etapes += ["couleur"] if len(liste(p.colors)) > 1 else []
     return etapes + ["nom", "whatsapp", "zone", "recap"]
 
 
+def _prochaine(b: dict, etapes: list) -> str:
+    return next((e for e in etapes if e != "recap" and not b.get(_CLE_ETAPE[e])), "recap")
+
+
 def _lignes(b: dict) -> list:
     return [Ligne(product_id=b["product_id"], quantite=1,
                   tailles=[b["taille"]] if b.get("taille") else [],
-                  couleurs=[b["couleur"]] if b.get("couleur") else [])]
+                  couleurs=[b["couleur"]] if b.get("couleur") else [],
+                  sur_mesure=_sur_mesure(b))]
 
 
 # ── Questions (écrites par le code) ──────────────────────────────────────
@@ -113,26 +139,45 @@ def _recap(session: Session, p: Product, b: dict) -> dict:
     except HTTPException as exc:
         return _reponse(f"Je ne peux pas finaliser cette commande : {_detail(exc)}", [MODIFIER, ANNULER], b)
     options = " · ".join(x for x in (b.get("taille"), b.get("couleur")) if x)
-    lignes = [
-        f"**{p.name}**" + (f" — {options}" if options else ""),
-        f"- Article : {_fmt(calc['sous_total'])}",
-        f"- Livraison : {_libelle_zone(b['zone'])}",
-        f"- **Total : {_fmt(calc['total'])}**",
-        f"- Au nom de {b['client_name']}, WhatsApp {b['client_whatsapp']}",
-    ]
-    if _sur_mesure(p):
-        avance = round(calc["sous_total"] * TAUX_ACOMPTE_SUR_MESURE)
-        lignes.append(f"- Pièce fabriquée sur commande : avance de {int(TAUX_ACOMPTE_SUR_MESURE * 100)} % "
-                      f"({_fmt(avance)}) pour lancer la fabrication")
+    qui = f"- Au nom de {b['client_name']}, WhatsApp {b['client_whatsapp']}"
+    if _sur_mesure(b):
+        lignes = [
+            f"**Sur mesure inspiré de « {p.name} »**" + (f" — {options}" if options else ""),
+            f"- Prix de base : {_fmt(calc['sous_total'])} (il peut varier selon la taille et les couleurs ; "
+            "notre équipe vous le confirme)",
+            f"- Livraison : {_libelle_zone(b['zone'])}",
+            f"- **Total estimé : {_fmt(calc['total'])}**",
+            f"- Fabrication : {DELAI_FABRICATION} après l'avance de {AVANCE} % du prix confirmé",
+            qui,
+        ]
+    else:
+        lignes = [
+            f"**{p.name}**" + (f" — {options}" if options else ""),
+            f"- Article : {_fmt(calc['sous_total'])}",
+            f"- Livraison : {_libelle_zone(b['zone'])}",
+            f"- **Total : {_fmt(calc['total'])}**",
+            qui,
+        ]
     texte = "Voici le récapitulatif de votre commande :\n" + "\n".join(lignes) + "\n\nJe confirme ?"
     return _reponse(texte, [OUI, MODIFIER, ANNULER], b)
 
 
 def _question(session: Session, p: Product, b: dict) -> dict:
     e = b["etape"]
+    if e == "mode":
+        return _reponse("La voulez-vous telle qu'elle est, ou sur mesure dans le même style "
+                        "(autre taille, autre couleur) ?", [EN_STOCK, SUR_MESURE], b)
     if e == "taille":
+        if _sur_mesure(b):
+            if b.get("attente_mensurations"):
+                return _reponse("Indiquez vos mensurations (tour de poitrine, de taille, de hanches…) :", [], b)
+            return _reponse("Quelle taille souhaitez-vous ? Vous pouvez aussi me donner vos mensurations.",
+                            TAILLES_SUR_MESURE + [MENSURATIONS], b)
         return _reponse(f"Quelle taille souhaitez-vous pour « {p.name} » ?", liste(p.sizes), b)
     if e == "couleur":
+        if _sur_mesure(b):
+            return _reponse("Quelle(s) couleur(s) souhaitez-vous ? Choisissez dans notre palette "
+                            "ou écrivez votre envie (ex. rose et blanc).", PALETTE_SUR_MESURE, b)
         return _reponse("Quelle couleur préférez-vous ?", liste(p.colors), b)
     if e == "nom":
         return _reponse("À quel nom dois-je enregistrer la commande ?", [], b)
@@ -148,14 +193,31 @@ def _question(session: Session, p: Product, b: dict) -> dict:
 def _valider(p: Product, b: dict, message: str):
     """None si la réponse est acceptée (brouillon mis à jour), sinon le message d'erreur."""
     e = b["etape"]
-    if e in ("taille", "couleur"):
-        options = liste(p.sizes if e == "taille" else p.colors)
-        choix = _choisir(message, options)
+    texte = " ".join((message or "").split())
+    if e in ("taille", "couleur") and _sur_mesure(b):
+        if e == "taille" and b.get("attente_mensurations"):
+            if not 3 <= len(texte) <= 200:
+                return "Pouvez-vous préciser vos mensurations ?"
+            b["taille"] = f"Mensurations : {texte}"
+            b.pop("attente_mensurations", None)
+            return None
+        choix = _choisir(texte, _options(p, b, e))
+        if not choix and e == "taille" and 1 <= len(texte) <= 40 and len(texte.split()) <= 5:
+            choix = texte                                   # taille libre (« 42 », « 4-6 ans »…)
+        if (not choix and e == "couleur" and 2 <= len(texte) <= 60 and len(texte.split()) <= 4
+                and not any(c.isdigit() for c in texte)):
+            choix = texte[0].upper() + texte[1:]            # envie libre (« jaune et blanc »)
+        if not choix:
+            return f"Pouvez-vous préciser la {e} souhaitée ?"
+        b[e] = choix
+    elif e in ("taille", "couleur"):
+        options = _options(p, b, e)
+        choix = _choisir(texte, options)
         if not choix:
             return f"Je ne trouve pas cette {e} pour ce modèle. Choisissez parmi : {', '.join(options)}."
         b[e] = choix
     elif e == "nom":
-        nom = " ".join((message or "").split())[:120]
+        nom = texte[:120]
         if len(nom) < 2 or len(nom.split()) > 4 or any(c.isdigit() for c in nom):
             return "Pouvez-vous m'indiquer votre nom (sans chiffres) ?"
         b["client_name"] = nom
@@ -166,9 +228,9 @@ def _valider(p: Product, b: dict, message: str):
             return _detail(exc)
     elif e == "zone":
         par_libelle = {_libelle_zone(z): z for z in ZONES_CHAT}
-        zone = par_libelle.get(_choisir(message, list(par_libelle)))
+        zone = par_libelle.get(_choisir(texte, list(par_libelle)))
         if not zone:  # texte libre : « darsalam », « tana »… accepté s'il désigne une seule zone
-            cle = _cle(message)
+            cle = _cle(texte)
             candidats = [z for z in ZONES_CHAT if cle and cle in _cle(LIBELLES_ZONE[z])]
             zone = candidats[0] if len(candidats) == 1 else None
         if not zone:
@@ -178,12 +240,8 @@ def _valider(p: Product, b: dict, message: str):
 
 
 # ── Texte libre (brique 2b) : valeurs extraites, vérifiées comme une réponse tapée ──
-def _prochaine(b: dict, etapes: list) -> str:
-    return next((e for e in etapes if e != "recap" and not b.get(_CLE_ETAPE[e])), "recap")
-
-
 def _completer(p: Product, b: dict, etapes: list, champs: dict, message: str) -> bool:
-    """Applique les valeurs extraites par le modèle ; chacune passe par _valider.
+    """Applique les valeurs extraites par le modèle ; chacune doit figurer dans le message et passer _valider.
     Ne remplace jamais une réponse déjà donnée, sauf celle de l'étape en cours."""
     acceptes = 0
     for champ, valeur in (champs or {}).items():
@@ -205,12 +263,17 @@ def _completer(p: Product, b: dict, etapes: list, champs: dict, message: str) ->
 
 # ── Création (même service que le site) ──────────────────────────────────
 def _creer(session: Session, p: Product, b: dict) -> dict:
+    sur_mesure = _sur_mesure(b)
+    if not sur_mesure and not _en_stock(p):
+        return _reponse("Cette pièce vient d'être vendue 😔 Je peux la faire fabriquer pour vous sur mesure, "
+                        "dans le même style.", [SUR_MESURE, ANNULER], {**b, "etape": "mode"})
+    note = (f"Sur mesure inspiré du modèle « {p.name} » — prix à confirmer avec la cliente. "
+            "Commande passée via le chat Jatie." if sur_mesure else "Commande passée via le chat Jatie")
     try:
         order = creer_commande(
             session,
-            origine="sur_mesure" if _sur_mesure(p) else "panier",
-            client={"name": b["client_name"], "whatsapp": b["client_whatsapp"],
-                    "message": "Commande passée via le chat Jatie"},
+            origine="sur_mesure" if sur_mesure else "panier",
+            client={"name": b["client_name"], "whatsapp": b["client_whatsapp"], "message": note},
             lignes=_lignes(b),
             zone=b["zone"],
             paiement={"payment_method": "whatsapp"},
@@ -218,32 +281,36 @@ def _creer(session: Session, p: Product, b: dict) -> dict:
     except HTTPException as exc:
         return _reponse(f"Je n'ai pas pu enregistrer la commande : {_detail(exc)}", [MODIFIER, ANNULER],
                         {**b, "etape": "recap"})
-    suite = "l'avance et la livraison" if _sur_mesure(p) else "le paiement et la livraison"
-    texte = (f"Merci {order.client_name} ! Votre commande n° {order.id} est enregistrée ✨\n"
-             f"Total : **{_fmt(order.total_ar)}**. Notre équipe vous contacte sur WhatsApp "
-             f"au {order.client_whatsapp} pour {suite}.")
+    if sur_mesure:
+        texte = (f"Merci {order.client_name} ! Votre demande sur mesure n° {order.id} est enregistrée ✨\n"
+                 f"Notre équipe vous appelle au {order.client_whatsapp} pour confirmer le prix, "
+                 "les détails et l'avance.")
+    else:
+        texte = (f"Merci {order.client_name} ! Votre commande n° {order.id} est enregistrée ✨\n"
+                 f"Total : **{_fmt(order.total_ar)}**. Notre équipe vous contacte sur WhatsApp "
+                 f"au {order.client_whatsapp} pour le paiement et la livraison.")
     return _reponse(texte, commande={"id": order.id, "total_ar": order.total_ar})
 
 
 # ── Points d'entrée ──────────────────────────────────────────────────────
 def demarrer(session: Session, product_id: int) -> dict:
-    """Bouton « Commander » d'une carte produit : première question."""
+    """Bouton « Commander » d'une carte produit."""
     p = session.get(Product, product_id)
     if not p:
         return _reponse("Je ne retrouve pas ce modèle. Choisissez-le à nouveau dans la boutique ?")
-    if not _disponible(p):
-        return _reponse(f"« {p.name} » est épuisé pour le moment. Je peux vous proposer d'autres modèles ✨")
-    tailles, couleurs = liste(p.sizes), liste(p.colors)
-    b = {"product_id": p.id,
-         "taille": tailles[0] if len(tailles) == 1 else None,
-         "couleur": couleurs[0] if len(couleurs) == 1 else None,
+    b = {"product_id": p.id, "mode": None, "taille": None, "couleur": None,
          "client_name": None, "client_whatsapp": None, "zone": None}
-    b["etape"] = _etapes(p)[0]
+    entete = f"Avec plaisir ! « {p.name} » ({_fmt(p.price_ar)})"
+    if _en_stock(p):
+        b["etape"] = "mode"
+        q = _question(session, p, b)
+        q["texte"] = f"{entete} : pièce en stock, préparée sous {DELAI_TRAITEMENT}.\n" + q["texte"]
+        return q
+    b["mode"], b["etape"] = "sur_mesure", "taille"
     q = _question(session, p, b)
-    delai = (f"Pièce fabriquée sur commande : {DELAI_FABRICATION} après l'avance de "
-             f"{int(TAUX_ACOMPTE_SUR_MESURE * 100)} %." if _sur_mesure(p)
-             else f"Pièce en stock, préparée sous {DELAI_TRAITEMENT}.")
-    q["texte"] = f"Avec plaisir ! Commandons « {p.name} » ({_fmt(p.price_ar)}).\n{delai}\n" + q["texte"]
+    q["texte"] = (f"{entete} n'est plus en stock, mais nous la fabriquons pour vous sur commande, dans le même "
+                  f"style : {DELAI_FABRICATION} après l'avance de {AVANCE} %. Le prix peut varier selon la taille "
+                  "et les couleurs.\n" + q["texte"])
     return q
 
 
@@ -258,7 +325,24 @@ def repondre(session: Session, brouillon: dict, message: str, extraire=None) -> 
     if _choisir(message, [ANNULER]) or _cle(message) in _MOTS_ANNULER:
         return _reponse("Commande annulée. Je reste à votre disposition si vous avez une question ✨")
 
-    etapes = _etapes(p)
+    if b["etape"] == "mode":
+        cle = _cle(message)
+        if _choisir(message, [SUR_MESURE]) or "mesure" in cle:
+            b.update(mode="sur_mesure", taille=None, couleur=None, etape="taille")
+            q = _question(session, p, b)
+            q["texte"] = ("Parfait, faisons-la sur mesure ! Le prix peut varier selon la taille et les couleurs ; "
+                          "notre équipe vous le confirmera.\n" + q["texte"])
+            return q
+        if _choisir(message, [EN_STOCK]) or "stock" in cle or "telle" in cle:
+            tailles, couleurs = liste(p.sizes), liste(p.colors)
+            b.update(mode="stock",
+                     taille=tailles[0] if len(tailles) == 1 else None,
+                     couleur=couleurs[0] if len(couleurs) == 1 else None)
+            b["etape"] = _prochaine(b, _etapes(p, b))
+            return _question(session, p, b)
+        return _reponse("La pièce en stock, ou sur mesure dans le même style ?", [EN_STOCK, SUR_MESURE], b)
+
+    etapes = _etapes(p, b)
     champs = {k: v for k, v in _CHAMPS.items() if v in etapes}
 
     if b["etape"] == "recap":
@@ -276,10 +360,15 @@ def repondre(session: Session, brouillon: dict, message: str, extraire=None) -> 
         b["etape"], b["retour_recap"] = champs[choix], True
         return _question(session, p, b)
 
+    if b["etape"] == "taille" and _sur_mesure(b) and _choisir(message, [MENSURATIONS]):
+        b["attente_mensurations"] = True
+        return _question(session, p, b)
+
     erreur = _valider(p, b, message)
     if erreur and extraire:
-        champs = extraire(message, liste(p.sizes), liste(p.colors), {z: LIBELLES_ZONE[z] for z in ZONES_CHAT})
-        if _completer(p, b, etapes, champs, message):
+        zones = {z: LIBELLES_ZONE[z] for z in ZONES_CHAT}
+        trouves = extraire(message, _options(p, b, "taille"), _options(p, b, "couleur"), zones)
+        if _completer(p, b, etapes, trouves, message):
             b.pop("retour_recap", None)
             b["etape"] = _prochaine(b, etapes)
             return _question(session, p, b)

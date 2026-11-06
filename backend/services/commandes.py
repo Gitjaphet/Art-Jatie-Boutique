@@ -56,6 +56,7 @@ class Ligne:
     quantite: int = 1
     tailles: list = field(default_factory=list)
     couleurs: list = field(default_factory=list)
+    sur_mesure: bool = False   # même style, taille/couleur libres (prix du catalogue, à confirmer)
 
 
 def _refus(message: str):
@@ -99,14 +100,19 @@ def calculer(session: Session, lignes: list, zone: str, code_promo: str = None) 
         p = session.get(Product, ligne.product_id)
         if not p:
             _refus(f"Produit introuvable (n°{ligne.product_id}).")
-        _verifier_choix(ligne.tailles, set(liste(p.sizes)), "Taille", p.name)
-        couleurs = set(liste(p.colors)) | {c.name for c in (p.colors_list or [])}
-        _verifier_choix(ligne.couleurs, couleurs, "Couleur", p.name)
+        if ligne.sur_mesure:   # même style sur mesure : choix libres, seule leur longueur est contrôlée
+            choix = ligne.tailles + ligne.couleurs
+            if len(choix) > 6 or any(len(c) > 200 for c in choix):
+                _refus("Précisions sur mesure trop longues.")
+        else:
+            _verifier_choix(ligne.tailles, set(liste(p.sizes)), "Taille", p.name)
+            couleurs = set(liste(p.colors)) | {c.name for c in (p.colors_list or [])}
+            _verifier_choix(ligne.couleurs, couleurs, "Couleur", p.name)
         sous_total += p.price_ar * ligne.quantite
         articles.append({
             "id": p.id, "name": p.name, "price": p.price_ar, "quantity": ligne.quantite,
             "image": p.image or "", "category": p.category, "discount": 0,
-            "sizes": ligne.tailles, "colors": ligne.couleurs,
+            "sizes": ligne.tailles, "colors": ligne.couleurs, "sur_mesure": ligne.sur_mesure,
         })
 
     taux = taux_promo(code_promo)
