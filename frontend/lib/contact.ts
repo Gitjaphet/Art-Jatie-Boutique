@@ -26,6 +26,7 @@ export const DELAI_TRAITEMENT = `${DELAIS.stock.min * 24} à ${DELAIS.stock.max 
 export const DELAI_FABRICATION = `${DELAIS.fabrication.min} à ${DELAIS.fabrication.max} jours`;
 
 // Lien WhatsApp AVEC message prérempli (texte normal, encodé ici — jamais à la main).
-// api.whatsapp.com/send directement : wa.me y redirige et casse les emojis (�) pendant la redirection.
+// Adresse FINALE de WhatsApp (/send/ + type + app_absent) : aucune redirection, donc aucun emoji cassé (�).
+// wa.me et /send (sans « / ») redirigent, et la redirection abîme les emojis sur ordinateur.
 export const lienWhatsApp = (message: string) =>
-  `https://api.whatsapp.com/send?phone=${international(WHATSAPP)}&text=${encodeURIComponent(message)}`;
+  `https://api.whatsapp.com/send/?phone=${international(WHATSAPP)}&text=${encodeURIComponent(message)}&type=phone_number&app_absent=0`;
