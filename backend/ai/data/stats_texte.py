@@ -2,7 +2,9 @@
 """Transforme le résultat de get_stats() en phrase pour la cliente, sans LLM : zéro invention, zéro token."""
 
 _INVITATION = "Souhaitez-vous que je vous montre quelques modèles ? 😊"
-_SECOURS = "Je n'arrive pas à obtenir cette information pour le moment 😔 Écrivez-nous sur WhatsApp : 034 30 513 60 💕"
+from services.contact import WHATSAPP
+
+_SECOURS = f"Je n'arrive pas à obtenir cette information pour le moment 😔 Écrivez-nous sur WhatsApp : {WHATSAPP} 💕"
 
 
 def _nombre(n) -> str:
