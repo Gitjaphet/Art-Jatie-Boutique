@@ -1,6 +1,7 @@
 "use client";
 
 import { CONTACT, DELAI_FABRICATION } from "@/lib/contact";
+import { FRAIS_LIVRAISON, ZONES_LIBELLES, formatPrixAr } from "@/lib/livraison";
 import Link from "next/link";
 import { useState } from "react";
 import s from "./PageLivraison.module.css";
@@ -140,16 +141,16 @@ const zones: Zone[] = [
   },
   {
     icon: <IconMapPin size={14} />,
-    name: "Nosy Be — Darsalam",
+    name: ZONES_LIBELLES.darsalam,
     sub: "À partir de 1 km de Jabala",
-    price: "5 000 Ar",
+    price: formatPrixAr(FRAIS_LIVRAISON.darsalam),
     delay: "Demi-journée",
   },
   {
     icon: <IconMapPin size={14} />,
     name: "Nosy Be — Dzamanjar",
     sub: "À partir de 1 km de Jabala",
-    price: "7 000 Ar",
+    price: formatPrixAr(FRAIS_LIVRAISON.dzamanjar),
     delay: "Demi-journée",
   },
   {

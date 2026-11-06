@@ -37,6 +37,22 @@ _DEBUT_OUI = {"oui", "ok", "okay", "yes", "eny", "daccord"}
 _NEGATIONS = {"non", "pas", "annule", "annuler", "attends", "attendez", "no"}
 _MOTS_ANNULER = {"annuler", "annule", "stop", "laisse tomber", "abandonner"}
 _MOTS_ZONE_GENERIQUES = {"nosy", "zone", "devis", "frais", "sur"}
+
+# Lieux reconnus sans modèle (texte normalisé : minuscules, sans accents) → zone de livraison.
+_REGIONS = ["majunga", "mahajanga", "diego", "diego suarez", "antsiranana", "tamatave", "toamasina",
+            "tulear", "toliara", "fianarantsoa", "fianar", "antsirabe", "ambanja", "ambilobe", "morondava",
+            "fort dauphin", "taolagnaro", "sambava", "antalaha", "vohemar", "manakara", "mananjary",
+            "maroantsetra", "ankify"]
+LIEUX_ZONE = {
+    "hell ville": "nosybe_ville", "hellville": "nosybe_ville", "andoany": "nosybe_ville", "jabala": "nosybe_ville",
+    "darsalam": "darsalam", "dzamanjar": "dzamanjar", "dzamandzar": "dzamanjar", "djamandjary": "dzamanjar",
+    "ambatoloaka": "darsalam", "madirokely": "darsalam",          # même tarif que Darsalam
+    "andilana": "nosybe_autre",
+    "ambondrona": "nosybe_autre", "bemoko": "nosybe_autre", "mont passot": "nosybe_autre",
+    "ampasipohy": "nosybe_autre", "seganinga": "nosybe_autre", "ambonara": "nosybe_autre",
+    "tana": "tana", "antananarivo": "tana",
+    **{ville: "hors_nosybe" for ville in _REGIONS},
+}
 _CHAMPS = {"Taille": "taille", "Couleur": "couleur", "Nom": "nom", "WhatsApp": "whatsapp", "Livraison": "zone"}
 _ETAPES_VALIDES = {"mode", "taille", "couleur", "nom", "whatsapp", "zone", "recap", "modifier"}
 _CLE_ETAPE = {"taille": "taille", "couleur": "couleur", "nom": "client_name",
@@ -77,11 +93,19 @@ def _present(champ: str, valeur: str, message: str) -> bool:
         chiffres = re.sub(r"\D", "", valeur)
         return len(chiffres) >= 8 and chiffres[-8:] in re.sub(r"\D", "", message)
     if champ == "zone":
+        if _lieu(message) == valeur:
+            return True
         mots_zone = {z for z in _mots(LIBELLES_ZONE.get(valeur, "")) if len(z) >= 4} - _MOTS_ZONE_GENERIQUES
         return any(m in z or z in m for m in _mots(message) if len(m) >= 4 for z in mots_zone)
     cible = " ".join(_mots(valeur))
     return bool(cible) and re.search(r"(?<![a-z0-9])" + re.escape(cible) + r"(?![a-z0-9])",
                                      " ".join(_mots(message))) is not None
+
+
+def _lieu(message: str):
+    """Zone d'un lieu connu cité dans le message (« je suis à Majunga » → hors_nosybe), sinon None."""
+    texte = f" {' '.join(_mots(message))} "
+    return next((zone for lieu, zone in LIEUX_ZONE.items() if f" {lieu} " in texte), None)
 
 
 def _detail(exc: HTTPException) -> str:
@@ -214,7 +238,8 @@ def _valider(p: Product, b: dict, message: str):
         options = _options(p, b, e)
         choix = _choisir(texte, options)
         if not choix:
-            return f"Je ne trouve pas cette {e} pour ce modèle. Choisissez parmi : {', '.join(options)}."
+            return (f"Cette pièce en stock existe en : {', '.join(options)}. "
+                    "Je peux aussi la faire fabriquer sur mesure, dans le même style.")
         b[e] = choix
     elif e == "nom":
         nom = texte[:120]
@@ -229,7 +254,8 @@ def _valider(p: Product, b: dict, message: str):
     elif e == "zone":
         par_libelle = {_libelle_zone(z): z for z in ZONES_CHAT}
         zone = par_libelle.get(_choisir(texte, list(par_libelle)))
-        if not zone:  # texte libre : « darsalam », « tana »… accepté s'il désigne une seule zone
+        zone = zone or _lieu(texte)  # lieu connu : « je suis à Majunga », « Ambatoloaka »…
+        if not zone:  # texte libre : accepté s'il désigne une seule zone
             cle = _cle(texte)
             candidats = [z for z in ZONES_CHAT if cle and cle in _cle(LIBELLES_ZONE[z])]
             zone = candidats[0] if len(candidats) == 1 else None
@@ -325,14 +351,17 @@ def repondre(session: Session, brouillon: dict, message: str, extraire=None) -> 
     if _choisir(message, [ANNULER]) or _cle(message) in _MOTS_ANNULER:
         return _reponse("Commande annulée. Je reste à votre disposition si vous avez une question ✨")
 
+    passer_sur_mesure = _choisir(message, [SUR_MESURE]) and not _sur_mesure(b) and b["etape"] in ("mode", "taille", "couleur")
+    if passer_sur_mesure or (b["etape"] == "mode" and "mesure" in _cle(message)):
+        b.update(mode="sur_mesure", taille=None, couleur=None, etape="taille")
+        b.pop("retour_recap", None)
+        q = _question(session, p, b)
+        q["texte"] = ("Parfait, faisons-la sur mesure ! Le prix peut varier selon la taille et les couleurs ; "
+                      "notre équipe vous le confirmera.\n" + q["texte"])
+        return q
+
     if b["etape"] == "mode":
         cle = _cle(message)
-        if _choisir(message, [SUR_MESURE]) or "mesure" in cle:
-            b.update(mode="sur_mesure", taille=None, couleur=None, etape="taille")
-            q = _question(session, p, b)
-            q["texte"] = ("Parfait, faisons-la sur mesure ! Le prix peut varier selon la taille et les couleurs ; "
-                          "notre équipe vous le confirmera.\n" + q["texte"])
-            return q
         if _choisir(message, [EN_STOCK]) or "stock" in cle or "telle" in cle:
             tailles, couleurs = liste(p.sizes), liste(p.colors)
             b.update(mode="stock",
@@ -373,6 +402,9 @@ def repondre(session: Session, brouillon: dict, message: str, extraire=None) -> 
             b["etape"] = _prochaine(b, etapes)
             return _question(session, p, b)
     if erreur:
-        return _reponse(erreur, _question(session, p, b)["suggestions"], b)
+        suggestions = _question(session, p, b)["suggestions"]
+        if not _sur_mesure(b) and b["etape"] in ("taille", "couleur"):
+            suggestions = suggestions + [SUR_MESURE]
+        return _reponse(erreur, suggestions, b)
     b["etape"] = "recap" if b.pop("retour_recap", False) else _prochaine(b, etapes)
     return _question(session, p, b)

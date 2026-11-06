@@ -2,6 +2,7 @@
 import { CONTACT } from "@/lib/contact";
 import { useCartStore } from "@/lib/cart";
 import { verifierPromo } from "@/lib/api";
+import { FRAIS_LIVRAISON, ZONES_LIBELLES } from "@/lib/livraison";
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -32,14 +33,7 @@ type DeliveryZone =
   | "hors_nosybe";
 type HorsCooperative = "service_rapide" | "besady" | "cotisse" | "autre";
 
-const DELIVERY_COSTS: Record<DeliveryZone, number> = {
-  tana: 0,
-  nosybe_ville: 0,
-  darsalam: 5000,
-  dzamanjar: 7000,
-  nosybe_autre: 0,
-  hors_nosybe: 0,
-};
+const DELIVERY_COSTS: Record<DeliveryZone, number> = FRAIS_LIVRAISON; // source unique : lib/livraison.ts
 
 export default function CartContent() {
   const router = useRouter();
@@ -111,8 +105,8 @@ export default function CartContent() {
   const deliveryLabel = () => {
     if (zone === "tana") return "Gratuite";
     if (zone === "nosybe_ville") return "Gratuite";
-    if (zone === "darsalam") return formatAr(5000);
-    if (zone === "dzamanjar") return formatAr(7000);
+    if (zone === "darsalam") return formatAr(DELIVERY_COSTS.darsalam);
+    if (zone === "dzamanjar") return formatAr(DELIVERY_COSTS.dzamanjar);
     if (zone === "nosybe_autre") return "Sur devis";
     if (zone === "hors_nosybe") {
       if (horsCoop === "autre" && autreCoopText)
@@ -133,7 +127,7 @@ export default function CartContent() {
     const map: Record<DeliveryZone, string> = {
       tana: "Antananarivo",
       nosybe_ville: "Nosy Be — En ville",
-      darsalam: "Nosy Be — Darsalam",
+      darsalam: ZONES_LIBELLES.darsalam,
       dzamanjar: "Nosy Be — Dzamanjar",
       nosybe_autre: "Autre zone Nosy Be",
       hors_nosybe:
@@ -340,12 +334,12 @@ export default function CartContent() {
                 onChange={() => setZone("darsalam")}
               />
               <div className={styles.deliveryInfo}>
-                <span className={styles.deliveryName}>Nosy Be — Darsalam</span>
+                <span className={styles.deliveryName}>{ZONES_LIBELLES.darsalam}</span>
                 <span className={styles.deliveryDesc}>
                   À partir de 1 km de Jabala
                 </span>
               </div>
-              <span className={styles.deliveryPrice}>{formatAr(5000)}</span>
+              <span className={styles.deliveryPrice}>{formatAr(DELIVERY_COSTS.darsalam)}</span>
             </label>
 
             <label
@@ -364,7 +358,7 @@ export default function CartContent() {
                   À partir de 1 km de Jabala
                 </span>
               </div>
-              <span className={styles.deliveryPrice}>{formatAr(7000)}</span>
+              <span className={styles.deliveryPrice}>{formatAr(DELIVERY_COSTS.dzamanjar)}</span>
             </label>
 
             <label

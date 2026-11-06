@@ -26,7 +26,9 @@ def test_les_montants_du_navigateur_sont_ignores(client, session):
     r = client.post("/orders/", json=_panier(p))
     assert r.status_code == 200, r.text
     d = r.json()
-    assert (d["subtotal_ar"], d["delivery_cost"], d["total_ar"]) == (100000, 5000, 105000)
+    from services.commandes import FRAIS_LIVRAISON
+    frais = FRAIS_LIVRAISON["darsalam"]   # le tarif suit le serveur, jamais recopié
+    assert (d["subtotal_ar"], d["delivery_cost"], d["total_ar"]) == (100000, frais, 100000 + frais)
     assert d["client_whatsapp"] == "0341234567"
 
 
@@ -212,3 +214,17 @@ def test_retablir_refuse_une_commande_non_annulee(client, session, admin):
 def test_annulees_et_retablir_reserves_a_l_admin(client):
     assert client.get("/orders/planning/annulees").status_code in (401, 403)
     assert client.post("/orders/1/retablir").status_code in (401, 403)
+
+
+def test_frais_livraison_identiques_serveur_et_site():
+    import re
+    from pathlib import Path
+    import pytest
+    from services.commandes import FRAIS_LIVRAISON
+    fichier = Path(__file__).resolve().parents[2] / "frontend" / "lib" / "livraison.ts"
+    if not fichier.exists():
+        pytest.skip("frontend absent de ce checkout")
+    bloc = re.search(r"FRAIS_LIVRAISON = \{(.*?)\}", fichier.read_text(encoding="utf-8"), re.S).group(1)
+    site = {k: int(v) for k, v in re.findall(r"(\w+):\s*(\d+)", bloc)}
+    assert set(site) == set(FRAIS_LIVRAISON) - {"a_confirmer"}, f"zones différentes : site {sorted(site)}"
+    assert all(FRAIS_LIVRAISON[k] == v for k, v in site.items()), f"tarifs différents : site {site}"

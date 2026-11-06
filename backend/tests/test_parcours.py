@@ -5,6 +5,7 @@ from ai.commande.parcours import (
     ANNULER, EN_STOCK, MENSURATIONS, MODIFIER, OUI, SUR_MESURE, demarrer, repondre,
 )
 from models.models import Order
+from services.commandes import FRAIS_LIVRAISON
 
 
 def _produit(session, product, stock=2, sur_commande=False):
@@ -41,14 +42,15 @@ def test_parcours_complet_cree_la_commande(session, product):
     assert r["brouillon"]["etape"] == "recap" and r["suggestions"] == [OUI, MODIFIER, ANNULER]
     r = _suivre(session, r, OUI)
     o = session.get(Order, r["commande"]["id"])
-    assert (o.origine, o.delivery_cost, o.total_ar) == ("panier", 5000, p.price_ar + 5000)
+    frais = FRAIS_LIVRAISON["darsalam"]
+    assert (o.origine, o.delivery_cost, o.total_ar) == ("panier", frais, p.price_ar + frais)
     assert (o.selected_size, o.selected_color, o.client_whatsapp) == ("S", "Rose", "0341234567")
     assert r["brouillon"] is None
 
 
 def test_reponse_invalide_repose_la_question(session, product):
     r = _suivre(session, _ouvrir(session, _produit(session, product).id), "XXL")
-    assert r["brouillon"]["etape"] == "taille" and r["suggestions"] == ["S", "M"]
+    assert r["brouillon"]["etape"] == "taille" and r["suggestions"] == ["S", "M", SUR_MESURE]
 
 
 def test_numero_invalide_refuse(session, product):
@@ -247,3 +249,37 @@ def test_serveur_choix_libres_seulement_en_sur_mesure(session, product):
     calculer(session, [Ligne(product_id=p.id, tailles=["XL"], couleurs=["Jaune"], sur_mesure=True)], "tana")
     with pytest.raises(HTTPException):
         calculer(session, [Ligne(product_id=p.id, tailles=["XL"])], "tana")
+
+
+# ── Lieux reconnus sans modèle, sur mesure proposé quand indisponible (test réel du 6 nov.) ──
+def _jusqu_a_la_zone(session, product):
+    return _suivre(session, _ouvrir(session, _produit(session, product).id), "S", "Rose", "Lalao", "0341234567")
+
+
+def test_majunga_hors_nosybe(session, product):
+    r = _suivre(session, _jusqu_a_la_zone(session, product), "je suis à Majunga")
+    assert r["brouillon"]["zone"] == "hors_nosybe" and r["brouillon"]["etape"] == "recap"
+
+
+def test_ambatoloaka_meme_tarif_que_darsalam(session, product):
+    r = _suivre(session, _jusqu_a_la_zone(session, product), "à Ambatoloaka svp")
+    assert r["brouillon"]["zone"] == "darsalam"
+
+
+def test_andilana_autre_zone_nosybe(session, product):
+    r = _suivre(session, _jusqu_a_la_zone(session, product), "je suis à Andilana")
+    assert r["brouillon"]["zone"] == "nosybe_autre"
+
+
+def test_zone_du_modele_acceptee_si_lieu_connu(session, product):
+    r = _jusqu_a_la_zone(session, product)
+    r = repondre(session, r["brouillon"], "livrez-moi à Mahajanga merci beaucoup",
+                 extraire=_faux({"zone": "hors_nosybe"}))
+    assert r["brouillon"]["zone"] == "hors_nosybe"
+
+
+def test_taille_indisponible_propose_le_sur_mesure(session, product):
+    r = _suivre(session, _ouvrir(session, _produit(session, product).id), "XS")
+    assert SUR_MESURE in r["suggestions"] and r["brouillon"]["etape"] == "taille"
+    r = _suivre(session, r, SUR_MESURE)
+    assert r["brouillon"]["mode"] == "sur_mesure" and r["brouillon"]["etape"] == "taille"

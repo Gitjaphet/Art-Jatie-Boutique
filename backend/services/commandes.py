@@ -17,8 +17,8 @@ from models.models import Order, Product
 FRAIS_LIVRAISON = {
     "tana": 0,          # expédition par coopérative, frais réglés à la coopérative
     "nosybe_ville": 0,
-    "darsalam": 5000,
-    "dzamanjar": 7000,
+    "darsalam": 8000,   # Darsalam, Ambatoloaka, Madirokely (même tarif)
+    "dzamanjar": 10000,
     "nosybe_autre": 0,  # sur devis, confirmé par l'équipe
     "hors_nosybe": 0,   # coopérative choisie par la cliente
     "a_confirmer": 0,   # « Commander sur mesure » : livraison convenue ensuite avec l'équipe
@@ -27,7 +27,7 @@ FRAIS_LIVRAISON = {
 LIBELLES_ZONE = {
     "tana": "Antananarivo (coopérative)",
     "nosybe_ville": "Nosy Be — En ville",
-    "darsalam": "Nosy Be — Darsalam",
+    "darsalam": "Nosy Be — Darsalam, Ambatoloaka, Madirokely",
     "dzamanjar": "Nosy Be — Dzamanjar",
     "nosybe_autre": "Autre zone Nosy Be (sur devis)",
     "hors_nosybe": "Hors Nosy Be (coopérative)",
