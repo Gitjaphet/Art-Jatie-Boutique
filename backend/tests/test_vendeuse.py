@@ -73,3 +73,16 @@ def test_chaque_bouton_est_compris_par_le_lecteur():
                    "Moins cher", "Robes", "Sacs", "Hell-Ville", "Ambatoloaka", "Dzamanjar"]:
         assert lire(bouton).compris(), f"Le bouton « {bouton} » coûterait un appel au modèle"
     assert lire("Moins de 60 000 Ar").montant == 59999
+
+
+def test_rien_d_exact_coup_de_coeur_proche_et_sur_mesure_dans_la_couleur():
+    r = repondre("recherche", {"types": ["Robe"], "couleurs": ["Rouge"]}, CATALOGUE)
+    assert r.texte.startswith("Je n'ai pas de robes en rouge pour le moment")
+    assert "en faire une sur mesure en rouge" in r.texte
+    assert "« Robe Sirène » (rose et orange)" in r.texte and "dernière pièce" in r.texte
+    assert r.question == {"type": "commander", "produit_id": 17} and r.suggestions[0] == "Oui, je la veux"
+
+
+def test_francais_sans_nos_dans_les_absences():
+    r = repondre("recherche", {"types": ["Sac"], "couleurs": ["Noir"]}, CATALOGUE)
+    assert "Je n'ai pas de sacs en noir" in r.texte and "en faire un sur mesure en noir" in r.texte

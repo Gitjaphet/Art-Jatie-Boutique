@@ -40,9 +40,9 @@ def _pluriel(type_article: str) -> str:
     return "chapeaux" if type_article == "Chapeau" else type_article.lower() + "s"
 
 
-def _demande(fiche: dict) -> str:
+def _demande(fiche: dict, nos: bool = True) -> str:
     types = " ou ".join(_pluriel(t) for t in fiche.get("types") or []) or "modèles"
-    texte = f"nos {types}"
+    texte = f"nos {types}" if nos else types
     if fiche.get("couleurs"):
         texte += " en " + " ou ".join(c.lower() for c in fiche["couleurs"])
     if fiche.get("tailles"):
@@ -50,6 +50,16 @@ def _demande(fiche: dict) -> str:
     if fiche.get("budget_max"):
         texte += f", jusqu'à {ar(fiche['budget_max'])}"
     return texte
+
+
+def _un(fiche: dict, p: dict | None = None) -> str:
+    """« une » pour une robe, « un » pour un sac : d'après le modèle, sinon le type demandé."""
+    type_article = (p or {}).get("type_article") or next(iter(fiche.get("types") or []), "")
+    return "une" if type_article in FEMININS else "un"
+
+
+def _en_couleur(fiche: dict) -> str:
+    return " en " + " ou ".join(c.lower() for c in fiche["couleurs"]) if fiche.get("couleurs") else ""
 
 
 def _disponibilite(p: dict) -> str:
@@ -83,9 +93,9 @@ def _total(p: dict, zone: str | None) -> str:
     return f" Livrée chez vous : {ar(p['prix_ar'] + frais)} au total."
 
 
-def _proposer(p: dict, fiche: dict, intro: str, autres: list[dict]) -> Reponse:
+def _proposer(p: dict, fiche: dict, intro: str, autres: list[dict], nuance: str = "") -> Reponse:
     pr = _pronom(p)
-    texte = (f"{intro}\n\nMon coup de cœur : « {p['nom']} » à {ar(p['prix_ar'])}, {_disponibilite(p)}."
+    texte = (f"{intro}\n\nMon coup de cœur : « {p['nom']} »{nuance} à {ar(p['prix_ar'])}, {_disponibilite(p)}."
              f"{_total(p, fiche.get('zone'))} Je vous {pr} réserve ?")
     suggestions = [f"Oui, je {pr} veux"]
     if any((a.get("prix_ar") or 0) < p["prix_ar"] for a in autres):
@@ -103,23 +113,26 @@ def _recherche(fiche: dict, produits: list[dict], intro: str | None = None) -> R
         rep.produits = r.exacts[:MAX_CARTES]
         return rep
     if r.proches:
+        # Rien d'exact : on le dit, on propose le sur mesure dans la couleur voulue ET un coup de cœur parmi les plus proches
         p = r.proches[0]
-        texte = (f"Je n'ai pas exactement {d} pour le moment. Voici les modèles les plus proches 👇 "
-                 f"Chacun peut aussi être réalisé sur mesure dans votre couleur et votre taille, en {DELAI_FABRICATION}. "
-                 f"Je vous en prépare un ?")
-        return Reponse(texte, r.proches[:MAX_CARTES], ["Sur mesure", "Voir toute la boutique"],
-                       {"type": "sur_mesure", "produit_id": p["id"]})
+        couleurs_p = " et ".join(c.lower() for c in (p.get("familles") or [])[:2])
+        intro = (f"Je n'ai pas de {_demande(fiche, nos=False)} pour le moment. Je peux vous en faire {_un(fiche, p)} "
+                 f"sur mesure{_en_couleur(fiche)} (en {DELAI_FABRICATION}), ou voici les modèles les plus proches 👇")
+        rep = _proposer(p, fiche, intro, r.proches, nuance=f" ({couleurs_p})" if couleurs_p else "")
+        rep.produits = r.proches[:MAX_CARTES]
+        return rep
     # Rien dans les critères : le plus accessible du même type, budget ignoré, avec son vrai prix
     sans_budget = filtrer(produits, {**fiche, "budget_max": None, "exclus": []})
     accessibles = sorted(sans_budget.exacts + sans_budget.proches, key=lambda x: x.get("prix_ar") or 0)
     if fiche.get("budget_max") and accessibles:
         p = accessibles[0]
-        texte = (f"Je n'ai pas {d} en ce moment. Le modèle le plus accessible est « {p['nom']} » "
+        texte = (f"Je n'ai pas de {_demande(fiche, nos=False)} en ce moment. Le modèle le plus accessible est « {p['nom']} » "
                  f"à {ar(p['prix_ar'])}, {_disponibilite(p)}. Et tous nos modèles peuvent être faits sur mesure, "
                  f"avec un acompte de {int(TAUX_ACOMPTE_SUR_MESURE * 100)} % à la commande.")
         return Reponse(texte, [p], ["Sur mesure", "Voir toute la boutique"],
                        {"type": "commander", "produit_id": p["id"]})
-    texte = (f"Je n'ai pas {d} en ce moment 😔 Bonne nouvelle : nous pouvons vous la créer sur mesure, "
+    texte = (f"Je n'ai pas de {_demande(fiche, nos=False)} en ce moment 😔 Bonne nouvelle : "
+             f"nous pouvons vous en créer {_un(fiche)} sur mesure{_en_couleur(fiche)}, "
              f"en {DELAI_FABRICATION}. Je vous montre nos modèles pour vous inspirer ?")
     return Reponse(texte, [], ["Voir toute la boutique", "Sur mesure"], {"type": "montrer", "produit_id": None})
 
