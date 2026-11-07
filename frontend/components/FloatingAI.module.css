@@ -1082,3 +1082,27 @@
     display: none; /* téléphone : on glisse du doigt */
   }
 }
+
+/* ── Liens vers les pages du site (réponses FAQ) ── */
+.liensPages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.lienPage {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #f3c9d6;
+  border-radius: 999px;
+  background: #fff;
+  color: #c2185b;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.lienPage:hover {
+  background: #fbf1f4;
+}

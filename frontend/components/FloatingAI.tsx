@@ -6,7 +6,7 @@ import styles from "./FloatingAI.module.css";
 import { chatWithJatie } from "@/lib/api";
 import { CONTACT, DELAI_FABRICATION, DELAI_TRAITEMENT } from "@/lib/contact";
 import {
-  ChevronLeft, ChevronRight, Clock, CreditCard, Images, MapPin, Maximize2, MessageCircle, Minimize2, Palette, Phone, Plus, Ruler,
+  ArrowRight, ChevronLeft, ChevronRight, Clock, CreditCard, Images, MapPin, Maximize2, MessageCircle, Minimize2, Palette, Phone, Plus, Ruler,
   Scissors, Send, Shirt, ShoppingBag, Sparkles, Sun, Truck, User, X, type LucideIcon,
 } from "lucide-react";
 
@@ -22,7 +22,13 @@ type Produit = {
   disponibilite: string;
 };
 
-type Message = { from: "bot" | "user"; text: string; produits?: Produit[]; suggestions?: string[] };
+type Message = {
+  from: "bot" | "user";
+  text: string;
+  produits?: Produit[];
+  suggestions?: string[];
+  liens?: { titre: string; url: string }[]; // pages du site d'où vient une réponse FAQ
+};
 // Commande en cours, résumée par le serveur (chiffres du serveur, jamais recalculés ici)
 type Resume = {
   produit: string;
@@ -516,6 +522,7 @@ export default function FloatingAI() {
         text: result.response,
         produits: result.produits ?? [],
         suggestions: result.suggestions ?? [],
+        liens: result.liens ?? [],
       }]);
       setHistoriqueCommande(result.historique_commande ?? null);
       setFiche(result.fiche ?? null);
@@ -619,6 +626,15 @@ export default function FloatingAI() {
                   </div>
                 )}
                 {/* Réponses rapides : seulement sous le dernier message de Jatie */}
+                {!!m.liens?.length && (
+                  <div className={styles.liensPages}>
+                    {m.liens.map((l) => (
+                      <Link key={l.url} href={l.url} className={styles.lienPage}>
+                        <ArrowRight size={14} strokeWidth={2} /> Voir : {l.titre}
+                      </Link>
+                    ))}
+                  </div>
+                )}
                 {i === messages.length - 1 && !isLoading && !!m.suggestions?.length && (
                   <div className={styles.suggestions}>
                     {m.suggestions.map(s => (
