@@ -14,7 +14,7 @@ def llm5_faq(token_log: list, message: str, passages: list[dict], history: list 
         return FALLBACK_SANS_INFO  # rien de pertinent sur le site : aucun appel IA, 0 token
 
     extraits = "\n\n---\n\n".join(p["contenu"] for p in passages)
-    messages = [{"role": "system", "content": FAQ.format(extraits=extraits)}]
+    messages = [{"role": "system", "content": FAQ.format(whatsapp=WHATSAPP, extraits=extraits)}]
     for m in (history or [])[-4:]:
         role = m.get("role", "")
         contenu = (m.get("content") or "").strip()
@@ -23,7 +23,7 @@ def llm5_faq(token_log: list, message: str, passages: list[dict], history: list 
     messages.append({"role": "user", "content": message})
 
     try:
-        res = appeler_llm("faq", messages, max_tokens=500, token_log=token_log, temperature=0.2)
+        res = appeler_llm("faq", messages, max_tokens=500, token_log=token_log, temperature=0)
         return res["contenu"]
     except ModeleIndisponible:
         return _FALLBACK_PANNE

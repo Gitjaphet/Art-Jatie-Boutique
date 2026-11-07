@@ -629,9 +629,9 @@ export default function FloatingAI() {
                 {!!m.liens?.length && (
                   <div className={styles.liensPages}>
                     {m.liens.map((l) => (
-                      <Link key={l.url} href={l.url} className={styles.lienPage}>
+                      <a key={l.url} href={l.url} target="_blank" rel="noopener noreferrer" className={styles.lienPage}>
                         <ArrowRight size={14} strokeWidth={2} /> Voir : {l.titre}
-                      </Link>
+                      </a>
                     ))}
                   </div>
                 )}
