@@ -184,6 +184,13 @@ def _recherche(fiche: dict, produits: list[dict], intro: str | None = None) -> R
     return Reponse(texte, [], ["Voir toute la boutique", "Sur mesure"], {"type": "montrer", "produit_id": None})
 
 
+def politesse(fiche: dict) -> str:
+    """La formule d'accueil, une seule source : la langue de la cliente, et « Bonsoir » si elle l'a dit."""
+    if fiche.get("langue") == "mg":
+        return "Salama ! 😊"
+    return "Bonsoir ! 😊" if fiche.get("salut") == "bonsoir" else "Bonjour ! 😊"
+
+
 def repondre(action: str, fiche: dict, produits: list[dict], produit_id: int | None = None) -> Reponse:
     """Réponse pour une action décidée par la fiche (sauf « oui » à une commande : le parcours de commande s'en charge)."""
     par_id = {p["id"]: p for p in produits}
@@ -222,7 +229,7 @@ def repondre(action: str, fiche: dict, produits: list[dict], produit_id: int | N
                        [], ["Voir toute la boutique", "Sur mesure"])
 
     if action == "salutation":
-        bonjour = "Salama ! 😊" if fiche.get("langue") == "mg" else "Bonjour ! 😊"
+        bonjour = politesse(fiche)
         types = [t for t in ("Robe", "Maillot", "Ensemble", "Sac") if any(p.get("type_article") == t for p in produits)]
         return Reponse(f"{bonjour} Je suis Jatie, la conseillère d'Art Jatie. Que cherchez-vous aujourd'hui ?",
                        [], [_pluriel(t).capitalize() for t in types] + ["Sur mesure"])

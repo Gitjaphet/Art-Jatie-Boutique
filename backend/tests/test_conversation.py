@@ -64,3 +64,37 @@ def test_clic_sur_une_zone_donne_le_total_du_coup_de_coeur():
     assert r["action"] == "livraison" and "68 000 Ar au total" in r["texte"]  # Sirène 60 000 + 8 000
     r = tour_guide("et des sacs ?", r["fiche"], CATALOGUE)
     assert "Dites-moi où" not in r["texte"] and "38 000 Ar au total" in r["texte"]  # zone connue
+
+
+# --- Salutation dans le même message qu'une demande (F5) ---
+_ACCUEIL = [
+    {"id": 1, "nom": "Robe Rouge Soleil", "type_article": "Robe", "prix_ar": 50000, "familles": ["Rouge"],
+     "stock": 1, "sur_commande": True, "tailles": "S,M", "images": []},
+    {"id": 2, "nom": "Sac Rouge Plage", "type_article": "Sac", "prix_ar": 30000, "familles": ["Rouge"],
+     "stock": 2, "sur_commande": True, "tailles": "", "images": []},
+]
+
+
+def test_bonjour_et_recherche_dans_le_meme_message():
+    from ai.recherche.conversation import tour_guide
+    r = tour_guide("bonjour, vous avez des robes rouges ?", None, produits=_ACCUEIL)
+    assert r["action"] == "recherche" and r["texte"].startswith("Bonjour ! 😊 ")
+    assert r["texte"].count("Bonjour") == 1 and r["produits"]
+
+
+def test_bonsoir_seul_repond_bonsoir():
+    from ai.recherche.conversation import tour_guide
+    r = tour_guide("bonsoir", None, produits=_ACCUEIL)
+    assert r["action"] == "salutation" and r["texte"].startswith("Bonsoir ! 😊 Je suis Jatie")
+
+
+def test_salama_et_recherche_en_malgache():
+    from ai.recherche.conversation import tour_guide
+    r = tour_guide("salama, misy kitapo mena ve ?", None, produits=_ACCUEIL)
+    assert r["texte"].startswith("Salama ! 😊 ")
+
+
+def test_pas_de_bonjour_si_la_cliente_ne_salue_pas():
+    from ai.recherche.conversation import tour_guide
+    r = tour_guide("vous avez des robes rouges ?", None, produits=_ACCUEIL)
+    assert not r["texte"].startswith(("Bonjour", "Bonsoir", "Salama"))
