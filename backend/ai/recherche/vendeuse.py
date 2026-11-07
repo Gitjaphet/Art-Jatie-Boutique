@@ -137,7 +137,10 @@ def _proposer(p: dict, fiche: dict, intro: str, autres: list[dict], nuance: str 
         suggestions.append(f"Moins de {ar(p['prix_ar'])}")
     if not fiche.get("zone") and not fiche.get("zone_demandee"):
         # Une seule fois par conversation : le prix livré lève une hésitation fréquente avant l'achat
-        texte += " Dites-moi où vous livrer, je vous donne le prix livré chez vous."
+        # Une seule question, avec un choix : la zone (prix livré) ou la réservation directe
+        conclusion = _conclure(p)
+        texte = (texte.removesuffix(f" {conclusion}")
+                 + f" Dites-moi où vous livrer pour connaître le prix livré, ou {conclusion[0].lower()}{conclusion[1:]}")
         return Reponse(texte, [], suggestions + BOUTONS_ZONES, {"type": "commander", "produit_id": p["id"]},
                        fiche_maj={"zone_demandee": True})
     suggestions.append("Sur mesure")

@@ -163,7 +163,7 @@ def test_livraison_d_une_piece_en_stock():
 
 def test_zone_demandee_au_premier_coup_de_coeur():
     r = repondre("recherche", {"types": ["Sac"]}, CATALOGUE)
-    assert r.texte.endswith("Dites-moi où vous livrer, je vous donne le prix livré chez vous.")
+    assert r.texte.endswith("Dites-moi où vous livrer pour connaître le prix livré, ou je vous le réserve ?")
     assert r.suggestions[-3:] == ["Hell-Ville", "Ambatoloaka", "Dzamanjar"] and r.fiche_maj == {"zone_demandee": True}
 
 
