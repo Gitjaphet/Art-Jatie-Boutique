@@ -101,10 +101,11 @@ def mettre_a_jour(fiche: dict | None, lecture: Lecture, montres: dict | None = N
 
     # 5. Critères de recherche
     change = False
-    if lecture.types and lecture.types != f["types"]:
-        f.update(types=lecture.types, couleurs=[], tailles=[], exclus=[], genre=None)  # nouvelle recherche
-        if f.get("budget_objection"):  # le plafond venait d'une autre pièce
-            f.update(budget_max=None, budget_objection=False)
+    if lecture.types:  # citer un type, même déjà cherché, c'est vouloir voir des modèles (0 token)
+        if lecture.types != f["types"]:
+            f.update(types=lecture.types, couleurs=[], tailles=[], exclus=[], genre=None)  # nouvelle recherche
+            if f.get("budget_objection"):  # le plafond venait d'une autre pièce
+                f.update(budget_max=None, budget_objection=False)
         change = True
     if lecture.couleurs:
         f["couleurs"], change = lecture.couleurs, True
