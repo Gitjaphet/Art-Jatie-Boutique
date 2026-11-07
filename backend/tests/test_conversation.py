@@ -47,3 +47,11 @@ def test_lecture_comprise_et_recherche_forcee():
     assert r["action"] == "recherche" and r["produits"][0]["id"] == 16
     r = tour_guide("un truc joli", None, CATALOGUE, lecture=lecture_comprise({}, "un truc joli"), forcer="recherche")
     assert r["action"] == "recherche" and r["produits"]  # même vague : une vraie proposition
+
+
+def test_couleurs_deduites_par_le_modele_ignorees():
+    from ai.recherche.conversation import lecture_comprise
+    l = lecture_comprise({"types": ["Robe"], "couleurs": ["Bleu", "Blanc"]}, "un truc sympa pour la plage")
+    assert l.types == ["Robe"] and l.couleurs == []
+    l = lecture_comprise({"types": ["Robe"], "couleurs": ["Bleu"]}, "un truc rose pour la plage")
+    assert l.couleurs == ["Rose"]  # la couleur écrite, lue par le lecteur

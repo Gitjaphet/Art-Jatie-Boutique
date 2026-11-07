@@ -17,8 +17,7 @@ def lecture_comprise(compris: dict, message: str) -> Lecture:
     """Critères trouvés par le modèle, mis dans une lecture : la fiche et la vendeuse les traitent comme les autres."""
     lecture = lire(message)
     lecture.types = compris.get("types") or lecture.types
-    lecture.couleurs = compris.get("couleurs") or lecture.couleurs
-    lecture.tailles = compris.get("tailles") or lecture.tailles
+    # Couleurs et tailles : celles lues dans le message par le lecteur, jamais déduites par le modèle
     lecture.montant = compris.get("budget_max") or lecture.montant
     if compris.get("moins_cher"):
         lecture.tri = "prix_asc"

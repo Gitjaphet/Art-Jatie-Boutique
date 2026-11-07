@@ -8,5 +8,5 @@ intention :
 - salutation : un bonjour seul, sans demande.
 - autre : tout le reste.
 
-Pour une recherche, déduis les types d'article et les couleurs de son envie (plage -> Maillot, Ensemble ; soirée -> Robe).
-N'invente jamais de budget : seulement un montant écrit dans son message.
+Pour une recherche, déduis les types d'article de son envie (plage -> Maillot, Ensemble ; soirée -> Robe).
+Couleurs, tailles et budget : seulement ceux écrits dans son message, jamais déduits.
