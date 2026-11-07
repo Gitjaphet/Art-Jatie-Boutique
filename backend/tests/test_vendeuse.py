@@ -86,3 +86,30 @@ def test_rien_d_exact_coup_de_coeur_proche_et_sur_mesure_dans_la_couleur():
 def test_francais_sans_nos_dans_les_absences():
     r = repondre("recherche", {"types": ["Sac"], "couleurs": ["Noir"]}, CATALOGUE)
     assert "Je n'ai pas de sacs en noir" in r.texte and "en faire un sur mesure en noir" in r.texte
+
+
+def test_rien_dans_le_budget_conclut_et_ouvre_toute_la_boutique():
+    r = repondre("recherche", {"types": ["Robe"], "budget_max": 20000}, CATALOGUE)
+    assert r.texte.endswith("On lance sa réalisation pour vous ?")  # pièce à fabriquer
+    assert r.suggestions == ["Oui, je la veux", "Autres articles jusqu'à 20 000 Ar", "Sur mesure"]
+
+
+def test_autres_articles_toute_la_boutique_par_prix():
+    from ai.recherche.fiche import mettre_a_jour
+    from ai.recherche.lecteur import lire
+    fiche = {"types": ["Robe"], "couleurs": ["Rouge"], "tailles": ["M"], "budget_max": 30000, "tri": "prix_asc"}
+    f, d = mettre_a_jour(fiche, lire("Autres articles jusqu'à 30 000 Ar"))
+    assert d.action == "recherche" and f["types"] == [] and f["budget_max"] == 30000
+    r = repondre("recherche", f, CATALOGUE)
+    assert [p["id"] for p in r.produits] == [27, 16]  # par prix : 25 000 puis 30 000, le stock ne passe pas devant
+
+
+def test_piece_sans_stock_dit_clairement_qu_elle_est_a_fabriquer():
+    r = repondre("recherche", {"types": ["Robe"], "budget_max": 20000}, CATALOGUE)
+    assert ("pas disponible en stock actuellement, mais nous pouvons la réaliser pour vous en 7 à 14 jours"
+            in r.texte)
+
+
+def test_piece_en_stock_se_reserve():
+    r = repondre("recherche", {"types": ["Sac"]}, CATALOGUE)
+    assert r.texte.endswith("Je vous le réserve ?")

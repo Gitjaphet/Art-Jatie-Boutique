@@ -39,11 +39,16 @@ def _ordre(p: dict) -> tuple:
     return (0 if (p.get("stock") or 0) > 0 else 1, p.get("prix_ar") or 0, p.get("id") or 0)
 
 
+def _ordre_prix(p: dict) -> tuple:
+    return (p.get("prix_ar") or 0, p.get("id") or 0)
+
+
 def filtrer(produits: list[dict], fiche: dict) -> Resultat:
     types, couleurs, tailles = fiche.get("types") or [], fiche.get("couleurs") or [], fiche.get("tailles") or []
     budget, exclus = fiche.get("budget_max"), set(fiche.get("exclus") or [])
     # Une taille adulte demandée : les articles enfant sont hors sujet
     sans_enfant = bool(set(tailles) & TAILLES_ADULTES)
+    ordre = _ordre_prix if fiche.get("tri") == "prix_asc" else _ordre  # « le moins cher » : le prix d'abord
 
     base = [
         p for p in produits
@@ -61,8 +66,8 @@ def filtrer(produits: list[dict], fiche: dict) -> Resultat:
     def bonne_couleur(p: dict) -> bool:
         return not couleurs or any(f in (p.get("familles") or []) for f in couleurs)
 
-    exacts = sorted((p for p in base if bonne_couleur(p) and bonne_taille(p)), key=_ordre)
+    exacts = sorted((p for p in base if bonne_couleur(p) and bonne_taille(p)), key=ordre)
     # Proches : une autre couleur se rattrape (sur mesure), une autre taille moins -> sa taille d'abord
     proches = sorted((p for p in base if not (bonne_couleur(p) and bonne_taille(p))),
-                     key=lambda p: (0 if bonne_taille(p) else 1, *_ordre(p)))
+                     key=lambda p: (0 if bonne_taille(p) else 1, *ordre(p)))
     return Resultat(exacts, proches)

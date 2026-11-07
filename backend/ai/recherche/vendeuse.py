@@ -68,7 +68,13 @@ def _disponibilite(p: dict) -> str:
         return "en stock — c'est la dernière pièce"
     if stock > 1:
         return "en stock"
-    return f"réalisée pour vous en {DELAI_FABRICATION}"
+    return (f"pas disponible en stock actuellement, mais nous pouvons {_pronom(p)} réaliser "
+            f"pour vous en {DELAI_FABRICATION}")
+
+
+def _conclure(p: dict) -> str:
+    """On réserve une pièce en stock ; on lance la réalisation d'une pièce à fabriquer."""
+    return f"Je vous {_pronom(p)} réserve ?" if (p.get("stock") or 0) > 0 else "On lance sa réalisation pour vous ?"
 
 
 def _frais(zone: str) -> int | None:
@@ -96,7 +102,7 @@ def _total(p: dict, zone: str | None) -> str:
 def _proposer(p: dict, fiche: dict, intro: str, autres: list[dict], nuance: str = "") -> Reponse:
     pr = _pronom(p)
     texte = (f"{intro}\n\nMon coup de cœur : « {p['nom']} »{nuance} à {ar(p['prix_ar'])}, {_disponibilite(p)}."
-             f"{_total(p, fiche.get('zone'))} Je vous {pr} réserve ?")
+             f"{_total(p, fiche.get('zone'))} {_conclure(p)}")
     suggestions = [f"Oui, je {pr} veux"]
     if any((a.get("prix_ar") or 0) < p["prix_ar"] for a in autres):
         suggestions.append(f"Moins de {ar(p['prix_ar'])}")
@@ -128,8 +134,12 @@ def _recherche(fiche: dict, produits: list[dict], intro: str | None = None) -> R
         p = accessibles[0]
         texte = (f"Je n'ai pas de {_demande(fiche, nos=False)} en ce moment. Le modèle le plus accessible est « {p['nom']} » "
                  f"à {ar(p['prix_ar'])}, {_disponibilite(p)}. Et tous nos modèles peuvent être faits sur mesure, "
-                 f"avec un acompte de {int(TAUX_ACOMPTE_SUR_MESURE * 100)} % à la commande.")
-        return Reponse(texte, [p], ["Sur mesure", "Voir toute la boutique"],
+                 f"avec un acompte de {int(TAUX_ACOMPTE_SUR_MESURE * 100)} % à la commande. "
+                 f"{_conclure(p)}")
+        suggestions = [f"Oui, je {_pronom(p)} veux"]
+        if fiche.get("types") or fiche.get("couleurs") or fiche.get("tailles"):  # toute la boutique, même budget
+            suggestions.append(f"Autres articles jusqu'à {ar(fiche['budget_max'])}")
+        return Reponse(texte, [p], suggestions + ["Sur mesure"],
                        {"type": "commander", "produit_id": p["id"]})
     texte = (f"Je n'ai pas de {_demande(fiche, nos=False)} en ce moment 😔 Bonne nouvelle : "
              f"nous pouvons vous en créer {_un(fiche)} sur mesure{_en_couleur(fiche)}, "

@@ -17,6 +17,7 @@ _MOTS_LIVRAISON = {"livrer", "livrez", "livraison", "livre", "livrent", "frais",
 _MOTS_REMISE = {"remise", "reduction", "promo", "rabais", "solde", "gerant", "instructions"}
 _MOTS_MOINS_CHER = ("moins cher", "pas cher", "moins chere", "le moins", "petit prix", "pas trop cher")
 _TOUT_VOIR = ("toute la boutique", "tout voir", "tous les modeles", "tous vos modeles", "tout le catalogue")
+_AUTRES_ARTICLES = ("autres articles", "autre chose", "autres modeles", "autre article", "autres choses")
 _REPONSE_COURTE = 5  # mots maximum pour lire un oui/non comme une réponse
 
 # 30000 | 30 000 | 30.000 | 30k ; ignore « 50 % », « 2 ans », « 6 mois »
@@ -41,12 +42,13 @@ class Lecture:
     salutation: bool = False
     sur_mesure: bool = False
     tout_voir: bool = False
+    autres_articles: bool = False
 
     def compris(self) -> bool:
         """Vrai si le code a reconnu au moins une intention ou un critère."""
         return any([self.types, self.couleurs, self.tailles, self.montant, self.tri, self.trop_cher,
                     self.reponse, self.zone, self.livraison, self.question_prix, self.demande_remise,
-                    self.salutation, self.sur_mesure, self.tout_voir])
+                    self.salutation, self.sur_mesure, self.tout_voir, self.autres_articles])
 
 
 def _montant(texte: str) -> int | None:
@@ -98,4 +100,5 @@ def lire(message: str) -> Lecture:
         salutation=bool(m) and m[0] in SALUTATIONS,
         sur_mesure=" sur mesure " in texte,
         tout_voir=any(f" {e} " in texte for e in _TOUT_VOIR),
+        autres_articles=any(f" {e} " in texte for e in _AUTRES_ARTICLES),
     )

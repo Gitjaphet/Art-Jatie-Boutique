@@ -85,6 +85,13 @@ def mettre_a_jour(fiche: dict | None, lecture: Lecture, montres: dict | None = N
         f.update(types=[], couleurs=[], tailles=[], budget_max=None, tri=None, exclus=[])
         return f, Decision("recherche")
 
+    # « Autres articles jusqu'à 30 000 Ar » : toute la boutique, dans le budget
+    if lecture.autres_articles:
+        f.update(types=[], couleurs=[], tailles=[], exclus=[])
+        if lecture.montant:
+            _abaisser_budget(f, lecture.montant)
+        return f, Decision("recherche")
+
     # 5. Critères de recherche
     change = False
     if lecture.types and lecture.types != f["types"]:
