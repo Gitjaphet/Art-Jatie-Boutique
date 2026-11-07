@@ -301,3 +301,12 @@ def test_resume_vide_apres_la_commande(session, product):
     r = _suivre(session, _ouvrir(session, _produit(session, product).id), "S", "Rose", "Lalao", "0341234567")
     r = _suivre(session, r, r["suggestions"][0], OUI)
     assert r["commande"] is not None and r["resume"] is None
+
+
+def test_pas_d_etape_taille_pour_un_sac():
+    from ai.commande.parcours import _etapes
+    from models.models import Product
+    sac = Product(name="Sac Corail", type_article="Sac", sizes="Unique", colors="Rose", price_ar=20000)
+    robe = Product(name="Robe", type_article="Robe", sizes="S,M", colors="Rose", price_ar=40000)
+    assert _etapes(sac, {"mode": "sur_mesure"})[0] == "couleur"
+    assert _etapes(robe, {"mode": "sur_mesure"})[0] == "taille"

@@ -7,6 +7,7 @@ la rareté n'est annoncée que si le stock vaut 1, aucune remise n'est inventée
 from dataclasses import dataclass, field
 
 from ai.recherche.filtres import filtrer
+from services.catalogue import TYPES_FEMININS
 from services.commandes import (
     DELAI_FABRICATION, DELAI_TRAITEMENT, FRAIS_LIVRAISON, LIBELLES_ZONE, TAUX_ACOMPTE_SUR_MESURE,
 )
@@ -15,7 +16,7 @@ MAX_CARTES = 5
 DELAI_LIVRAISON_NOSY_BE = "dans la demi-journée"
 ZONES_NOSY_BE = {"nosybe_ville", "darsalam", "dzamanjar", "nosybe_autre"}
 ZONE_OFFERTE = "nosybe_ville"
-FEMININS = {"Robe", "Jupe", "Pochette"}
+FEMININS = TYPES_FEMININS
 
 _INTROS = ("Voici {d} 😊", "J'ai sélectionné pour vous {d} ✨", "Regardez {d} 👇")
 

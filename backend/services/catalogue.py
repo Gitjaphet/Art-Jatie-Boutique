@@ -44,6 +44,8 @@ RACINES_TYPE: dict[str, tuple[str, ...]] = {
 }
 ACCESSOIRE = "Accessoire"
 TYPES_ARTICLE = (*RACINES_TYPE, ACCESSOIRE)
+TYPES_FEMININS = {"Robe", "Jupe", "Pochette"}       # « la robe », « le sac » : accords des phrases
+TYPES_SANS_TAILLE = {"Sac", "Pochette", ACCESSOIRE}  # pas d'étape taille à la commande
 
 
 def mots(texte: str) -> list[str]:

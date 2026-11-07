@@ -20,6 +20,7 @@ from sqlmodel import Session
 
 from ai.utils.texte import normaliser
 from models.models import Product
+from services.catalogue import TYPES_FEMININS, TYPES_SANS_TAILLE
 from services.commandes import (
     DELAI_FABRICATION, DELAI_TRAITEMENT, FRAIS_LIVRAISON, LIBELLES_ZONE, TAUX_ACOMPTE_SUR_MESURE,
     Ligne, calculer, creer_commande, liste, normaliser_whatsapp,
@@ -27,7 +28,7 @@ from services.commandes import (
 
 ZONES_CHAT = ["nosybe_ville", "darsalam", "dzamanjar", "nosybe_autre", "tana", "hors_nosybe"]
 OUI, MODIFIER, ANNULER = "Oui, je confirme", "Modifier", "Annuler"
-EN_STOCK, SUR_MESURE = "Celle-ci, en stock", "Sur mesure, même style"
+EN_STOCK, SUR_MESURE = "La pièce en stock", "Sur mesure, même style"
 MENSURATIONS = "Mes mensurations"
 TAILLES_SUR_MESURE = ["XS", "S", "M", "L", "XL"]
 PALETTE_SUR_MESURE = ["Beige", "Blanc", "Noir", "Rose", "Rouge", "Bleu", "Marron", "Kaki", "Multicolore"]  # filtres boutique
@@ -126,6 +127,14 @@ def _en_stock(p: Product) -> bool:
     return (p.stock_quantity or 0) > 0
 
 
+def _sans_taille(p: Product) -> bool:
+    return p.type_article in TYPES_SANS_TAILLE  # sac, pochette… : pas de question de taille
+
+
+def _e(p: Product) -> str:
+    return "e" if p.type_article in TYPES_FEMININS else ""  # « réalisée » (robe) / « réalisé » (sac)
+
+
 def _sur_mesure(b: dict) -> bool:
     return b.get("mode") == "sur_mesure"
 
@@ -138,9 +147,10 @@ def _options(p: Product, b: dict, quoi: str) -> list:
 
 
 def _etapes(p: Product, b: dict) -> list:
+    taille = [] if _sans_taille(p) else ["taille"]
     if _sur_mesure(b):
-        return ["taille", "couleur", "nom", "whatsapp", "zone", "recap"]
-    etapes = ["taille"] if len(liste(p.sizes)) > 1 else []      # un seul choix : sélectionné d'office
+        return taille + ["couleur", "nom", "whatsapp", "zone", "recap"]
+    etapes = taille if len(liste(p.sizes)) > 1 else []      # un seul choix : sélectionné d'office
     etapes += ["couleur"] if len(liste(p.colors)) > 1 else []
     return etapes + ["nom", "whatsapp", "zone", "recap"]
 
@@ -187,10 +197,13 @@ def _recap(session: Session, p: Product, b: dict) -> dict:
 
 
 def _question(session: Session, p: Product, b: dict) -> dict:
+    if b.get("etape") == "taille" and _sans_taille(p):  # garde-fou unique : jamais de taille pour un sac
+        b["etape"] = _prochaine(b, _etapes(p, b))
     e = b["etape"]
     if e == "mode":
-        return _reponse("La voulez-vous telle qu'elle est, ou sur mesure dans le même style "
-                        "(autre taille, autre couleur) ?", [EN_STOCK, SUR_MESURE], b)
+        variantes = "autre couleur" if _sans_taille(p) else "autre taille, autre couleur"
+        return _reponse(f"Préférez-vous la pièce en stock, ou une version sur mesure dans le même style "
+                        f"({variantes}) ?", [EN_STOCK, SUR_MESURE], b)
     if e == "taille":
         if _sur_mesure(b):
             if b.get("attente_mensurations"):
@@ -334,9 +347,9 @@ def _demarrer(session: Session, product_id: int) -> dict:
         return q
     b["mode"], b["etape"] = "sur_mesure", "taille"
     q = _question(session, p, b)
-    q["texte"] = (f"{entete} n'est plus en stock, mais nous la fabriquons pour vous sur commande, dans le même "
-                  f"style : {DELAI_FABRICATION} après l'avance de {AVANCE} %. Le prix peut varier selon la taille "
-                  "et les couleurs.\n" + q["texte"])
+    selon = "les couleurs" if _sans_taille(p) else "la taille et les couleurs"
+    q["texte"] = (f"{entete} est réalisé{_e(p)} sur commande, dans le même style : {DELAI_FABRICATION} "
+                  f"après l'avance de {AVANCE} %. Le prix peut varier selon {selon}.\n" + q["texte"])
     return q
 
 
