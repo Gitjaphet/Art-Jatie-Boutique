@@ -9,17 +9,32 @@ import logging
 
 from ai.recherche.fiche import mettre_a_jour
 from ai.recherche.filtres import charger_produits
-from ai.recherche.lecteur import lire
+from ai.recherche.lecteur import Lecture, lire
 from ai.recherche.vendeuse import repondre
 
 
-def tour_guide(message: str, fiche: dict | None, produits: list[dict] | None = None) -> dict | None:
+def lecture_comprise(compris: dict, message: str) -> Lecture:
+    """Critères trouvés par le modèle, mis dans une lecture : la fiche et la vendeuse les traitent comme les autres."""
+    lecture = lire(message)
+    lecture.types = compris.get("types") or lecture.types
+    lecture.couleurs = compris.get("couleurs") or lecture.couleurs
+    lecture.tailles = compris.get("tailles") or lecture.tailles
+    lecture.montant = compris.get("budget_max") or lecture.montant
+    if compris.get("moins_cher"):
+        lecture.tri = "prix_asc"
+    return lecture
+
+
+def tour_guide(message: str, fiche: dict | None, produits: list[dict] | None = None,
+               lecture: Lecture | None = None, forcer: str | None = None) -> dict | None:
     try:
         produits = charger_produits() if produits is None else produits
         par_id = {p["id"]: p for p in produits}
         montres = {i: par_id[i] for i in (fiche or {}).get("montres") or [] if i in par_id}
 
-        f, decision = mettre_a_jour(fiche, lire(message), montres)
+        f, decision = mettre_a_jour(fiche, lecture or lire(message), montres)
+        if decision.action is None and forcer:  # intention donnée par le modèle (« un truc joli » -> recherche)
+            decision.action = forcer
         f["tour"] = (f.get("tour") or 0) + 1
 
         if decision.action is None:

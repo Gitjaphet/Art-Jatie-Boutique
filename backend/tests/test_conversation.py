@@ -38,3 +38,12 @@ def test_incompris_rend_la_main_au_modele():
 
 def test_erreur_rend_none():
     assert tour_guide("bonjour", None, [{"pas_d_id": True}]) is None
+
+
+def test_lecture_comprise_et_recherche_forcee():
+    from ai.recherche.conversation import lecture_comprise
+    r = tour_guide("un truc pour la plage", None, CATALOGUE,
+                   lecture=lecture_comprise({"types": ["Sac"]}, "un truc pour la plage"), forcer="recherche")
+    assert r["action"] == "recherche" and r["produits"][0]["id"] == 16
+    r = tour_guide("un truc joli", None, CATALOGUE, lecture=lecture_comprise({}, "un truc joli"), forcer="recherche")
+    assert r["action"] == "recherche" and r["produits"]  # même vague : une vraie proposition

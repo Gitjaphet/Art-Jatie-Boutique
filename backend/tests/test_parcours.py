@@ -144,7 +144,7 @@ def test_orchestrateur_bouton_commander_sans_classification(session, product, mo
     def classifieur_interdit(*a, **k):
         raise AssertionError("le classifieur ne doit pas être appelé pendant une commande")
     monkeypatch.setattr(orch, "engine", session.get_bind())
-    monkeypatch.setattr(orch, "llm1_classifier", classifieur_interdit)
+    monkeypatch.setattr(orch, "comprendre", classifieur_interdit)
     _produit(session, product)
 
     r = orch.run_multi_agent("", commander=product.id)

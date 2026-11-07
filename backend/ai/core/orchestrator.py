@@ -6,70 +6,18 @@ import time
 
 from ai.core.token_logger import log_summary
 from ai.core.llm import masquer_donnees_perso
-from ai.agents.classifier import llm1_classifier
-from ai.agents.router import llm2_router
-from ai.data.cartes import construire_cartes, texte_cartes
-from ai.recherche.conversation import tour_guide
+from ai.agents.comprendre import comprendre
+from ai.data.cartes import construire_cartes
+from ai.recherche.conversation import lecture_comprise, tour_guide
 from ai.agents.extracteur_commande import extraire_champs
 from ai.commande.parcours import demarrer, repondre
 from ai.agents.faq import llm5_faq
 from ai.knowledge.recherche import chercher_passages
-from ai.data.products import get_products, recherche_semantique
+from ai.data.products import recherche_semantique
 from ai.data.stats import get_stats
 from ai.data.stats_texte import formater_stats
 from sqlmodel import Session
 from database import engine
-
-
-def execute_tool(tool_name: str, tool_args: dict) -> list | dict:
-    t0 = time.time()
-
-    if tool_name == "rechercher_produit":
-        requete_libre = tool_args.get("requete_libre", "")
-
-        if requete_libre:
-            result = recherche_semantique(requete_libre)
-        else:
-            result = get_products(
-                produit=tool_args.get("produit", ""),
-                couleur=tool_args.get("couleur", ""),
-                categorie=tool_args.get("categorie", ""),
-                genre=tool_args.get("genre", ""),
-                prix_min=tool_args.get("prix_min", 0),
-                prix_max=tool_args.get("prix_max", 0),
-                sort=tool_args.get("sort", ""),
-                limit=tool_args.get("limit", 0),
-            )
-            if not result and tool_args.get("produit"):
-                result = recherche_semantique(tool_args["produit"])
-
-        # Logique alternative si tout est en rupture
-        if isinstance(result, list) and len(result) > 0:
-            tout_en_rupture = all(p.get("stock", 0) == 0 and not p.get("sur_commande") for p in result)
-            if tout_en_rupture:
-                terme = requete_libre or tool_args.get("produit") or tool_args.get("categorie") or "chic"
-                alternatives = recherche_semantique(f"Alternative similaire à {terme}", top_k=3)
-                alts_en_stock = [
-                    p for p in alternatives
-                    if p.get("stock", 0) > 0 and p["id"] not in [r["id"] for r in result]
-                ]
-                if alts_en_stock:
-                    result = {
-                        "demande_initiale": result,
-                        "alternatives_en_stock": alts_en_stock,
-                    }
-
-    elif tool_name == "statistiques":
-        result = get_stats(
-            operation=tool_args.get("operation", "count"),
-            filtre_categorie=tool_args.get("filtre_categorie", ""),
-            filtre_genre=tool_args.get("filtre_genre", ""),
-        )
-    else:
-        result = {"erreur": f"Tool inconnu : {tool_name}"}
-
-    logging.info(f"[TOOL] {tool_name} exécuté en {time.time() - t0:.2f}s")
-    return result
 
 
 def run_multi_agent(
@@ -107,10 +55,17 @@ def run_multi_agent(
     elif guide and guide.get("action"):
         intent = f"guide:{guide['action']}"
     else:
-        # LLM 1 — Classifier
-        classifier_result = llm1_classifier(token_log, message_masque, history=history_masque)
-        intent = classifier_result.get("intent", "indisponible")
+        # Message incompris par le code : UN appel à réponses fermées (remplace classifieur + routeur)
+        compris = comprendre(token_log, message_masque, history=history_masque)
+        intent = compris["intention"] if compris else "indisponible"
         historique_commande = None  # ancien format de brouillon (sans étape) : ignoré
+        if intent in ("recherche", "salutation"):  # critères du modèle -> fiche -> vendeuse
+            guide = tour_guide(message, fiche, lecture=lecture_comprise(compris, message), forcer=intent)
+            if guide:
+                fiche = guide["fiche"]
+                intent = f"guide:{guide['action']}"
+            else:
+                intent = "indisponible"
     logging.info(f"[ORCHESTRATOR] Intent : {intent}")
 
     reponse = ""
@@ -127,27 +82,16 @@ def run_multi_agent(
     elif intent == "salutation":
         reponse = "Bonjour ! 💕 Je suis Jatie, votre assistante Art-Jatie ✨ Comment puis-je vous aider aujourd'hui ?"
 
-    # ── Recherche / Stats ─────────────────────────────────────────────
-    elif intent in ["recherche", "stats"]:
-        router_result = llm2_router(token_log, message_masque, history=history_masque)
+    # ── Statistiques : opération choisie par « comprendre », phrase écrite par le code ──
+    elif intent == "stats":
+        args = {"operation": compris.get("operation") or "count", "filtre_categorie": compris.get("categorie") or ""}
+        reponse = formater_stats(args, get_stats(operation=args["operation"], filtre_categorie=args["filtre_categorie"]))
 
-        if router_result:
-            tool_name = router_result["tool_name"]
-            tool_args = router_result["tool_args"]
-            logging.info(f"[ORCHESTRATOR] Tool : {tool_name} | Args : {tool_args}")
-
-            donnees = execute_tool(tool_name, tool_args)
-            logging.info(f"[ORCHESTRATOR] Données : {str(donnees)[:200]}")
-
-            if tool_name == "statistiques":
-                reponse = formater_stats(tool_args, donnees)
-            else:
-                alternatives = isinstance(donnees, dict) and "alternatives_en_stock" in donnees
-                liste = donnees["alternatives_en_stock"] if alternatives else (donnees if isinstance(donnees, list) else [])
-                produits = construire_cartes(liste)
-                reponse = texte_cartes(produits, alternatives)
-        else:
-            reponse = "Je suis désolée, je rencontre un petit problème pour effectuer cette recherche. Réessayez dans un instant 💕"
+    # ── Hors sujet : on le dit gentiment et on relance (pas de « souci technique ») ──
+    elif intent == "autre":
+        reponse = ("Je n'ai pas bien compris 😊 Je peux vous montrer nos créations au crochet, "
+                   "ou vous en faire une sur mesure. Que cherchez-vous ?")
+        suggestions = ["Robes", "Maillots", "Sacs", "Sur mesure"]
 
     # ── Commande : parcours guidé par le code (ai/commande/parcours.py) ───
     elif intent == "commande":

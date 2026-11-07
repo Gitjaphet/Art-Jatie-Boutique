@@ -31,14 +31,3 @@ def construire_cartes(produits: list[dict]) -> list[dict]:
             "disponibilite": dispo,
         })
     return cartes
-
-
-def texte_cartes(cartes: list[dict], alternatives: bool = False) -> str:
-    n = len(cartes)
-    if n == 0:
-        return ("Je n'ai pas trouvé de modèle correspondant dans notre boutique pour le moment. "
-                "Nos créations au crochet (tenues, maillots, sacs, accessoires) peuvent aussi être réalisées sur mesure : "
-                "dites-moi ce qui vous ferait plaisir, ou envoyez-moi une photo 💕")
-    if alternatives:
-        return "Ce modèle n'est plus disponible 😔 Voici des pièces proches qui pourraient vous plaire :"
-    return "Voici le modèle qui pourrait vous plaire 😊" if n == 1 else f"Voici {n} modèles qui pourraient vous plaire 😊"

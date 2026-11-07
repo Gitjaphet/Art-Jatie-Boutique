@@ -153,35 +153,38 @@ def test_stats_aucun_produit(ai_engine):
 # ── Tests orchestrateur avec mocks LLM ────────────────────────────────────
 
 def test_orchestrateur_salutation():
-    with patch("ai.agents.classifier.llm1_classifier", return_value={"intent": "salutation"}):
-        with patch("ai.core.orchestrator.llm1_classifier", return_value={"intent": "salutation"}):
-            from ai.core.orchestrator import run_multi_agent
-            result = run_multi_agent("Bonjour !")
-    assert result["intent"] == "salutation"
+    with patch("ai.recherche.conversation.charger_produits", return_value=[]):
+        from ai.core.orchestrator import run_multi_agent
+        result = run_multi_agent("Bonjour !")
+    assert result["intent"] == "guide:salutation"
     assert "Jatie" in result["response"]
+    assert result["token_summary"]["total_tokens"] == 0  # compris par le code
 
 
 def test_orchestrateur_faq():
-    passages = [{"url": "/livraison", "titre": "Livraison & Retours", "contenu": "Jabala : gratuite", "score": 0.8}]
-    with patch("ai.core.orchestrator.llm1_classifier", return_value={"intent": "faq"}):
-        with patch("ai.core.orchestrator.chercher_passages", return_value=passages):
-            with patch("ai.core.orchestrator.llm5_faq", return_value="Livraison gratuite à Jabala."):
-                from ai.core.orchestrator import run_multi_agent
-                result = run_multi_agent("Quels sont vos délais de livraison ?")
+    passages = [{"url": "/formation", "titre": "Formation", "contenu": "Cours de crochet", "score": 0.8}]
+    with patch("ai.recherche.conversation.charger_produits", return_value=[]):
+        with patch("ai.core.orchestrator.comprendre", return_value={"intention": "faq"}):
+            with patch("ai.core.orchestrator.chercher_passages", return_value=passages):
+                with patch("ai.core.orchestrator.llm5_faq", return_value="Oui, nous proposons des cours."):
+                    from ai.core.orchestrator import run_multi_agent
+                    result = run_multi_agent("Vous proposez des formations au crochet ?")
     assert result["intent"] == "faq"
-    assert result["response"] == "Livraison gratuite à Jabala."
-    assert result["liens"] == [{"titre": "Livraison & Retours", "url": "/livraison"}]
+    assert result["response"] == "Oui, nous proposons des cours."
+    assert result["liens"] == [{"titre": "Formation", "url": "/formation"}]
 
 
-def test_orchestrateur_recherche(ai_engine):
-    produits_mock = [{"id": 1, "nom": "Sac Raphia", "slug": "sac-raphia", "prix_ar": 45000,
-                      "stock": 3, "sur_commande": False, "image": "https://test.com/sac.jpg"}]
-    with patch("ai.core.orchestrator.llm1_classifier", return_value={"intent": "recherche"}):
-        with patch("ai.core.orchestrator.llm2_router", return_value={"tool_name": "rechercher_produit", "tool_args": {"requete_libre": "sac"}}):
-            with patch("ai.core.orchestrator.recherche_semantique", return_value=produits_mock):
-                from ai.core.orchestrator import run_multi_agent
-                result = run_multi_agent("je cherche un sac")
-    assert result["intent"] == "recherche"
+def test_orchestrateur_recherche_par_comprendre(ai_engine):
+    produits = [{"id": 1, "nom": "Sac Raphia", "slug": "sac-raphia", "prix_ar": 45000, "stock": 3,
+                 "sur_commande": False, "image": "https://test.com/sac.jpg", "images": [],
+                 "type_article": "Sac", "familles": ["Beige"], "tailles": "", "genre": "Femme"}]
+    compris = {"intention": "recherche", "types": ["Sac"], "couleurs": [], "tailles": [],
+               "budget_max": None, "moins_cher": False}
+    with patch("ai.recherche.conversation.charger_produits", return_value=produits):
+        with patch("ai.core.orchestrator.comprendre", return_value=compris):
+            from ai.core.orchestrator import run_multi_agent
+            result = run_multi_agent("un truc pour ranger mes affaires")
+    assert result["intent"] == "guide:recherche"
     carte = result["produits"][0]
     assert carte["url"] == "/produit/sac-raphia"
     assert carte["prix_eur"] == 10  # 45000 / 4500
@@ -239,11 +242,6 @@ def test_cartes_sur_commande_et_limite():
     cartes = construire_cartes(produits)
     assert len(cartes) == MAX_CARTES
     assert cartes[0]["disponibilite"] == "Sur commande"
-
-
-def test_texte_cartes_aucun_resultat_propose_sur_mesure():
-    from ai.data.cartes import texte_cartes
-    assert "sur mesure" in texte_cartes([])
 
 
 # ── Tests indexeur du site (RAG FAQ) ───────────────────────────────────────

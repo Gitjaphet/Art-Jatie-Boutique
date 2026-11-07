@@ -1,9 +1,0 @@
-Classify the user message into exactly ONE word from this list:
-- "recherche" : User is looking for a product, recommendations, styles, or a generic item.
-- "commande"  : User explicitly wants to BUY/CHECKOUT a specific item, OR confirms a custom order ("oui", "oui sur mesure", "je confirme", "d'accord", "ok commande", "creation sur mesure").
-- "stats"     : User asks how many items, stock quantities, cheapest/most expensive item, or price averages.
-- "faq"       : User asks about the shop itself: delivery, shipping, returns, payment, crochet training/courses (formation), size guide, custom-order delays, the shop's story, address, location or contact.
-- "salutation": Simple greetings with no specific request.
-
-If ambiguous, prefer "recherche".
-Reply with ONLY the single word. No punctuation, no explanation.
