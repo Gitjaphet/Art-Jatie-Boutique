@@ -24,7 +24,7 @@ def test_coup_de_coeur_en_stock_derniere_piece_et_question():
 
 def test_masculin_et_pas_de_fausse_rarete():
     r = repondre("recherche", {"types": ["Sac"]}, CATALOGUE)
-    assert "Je vous le réserve" in r.texte and "dernière pièce" not in r.texte  # stock 2
+    assert "ou je vous le réserve ?" in r.texte and "dernière pièce" not in r.texte  # masculin, stock 2
 
 
 def test_total_avec_livraison_quand_la_zone_est_connue():
