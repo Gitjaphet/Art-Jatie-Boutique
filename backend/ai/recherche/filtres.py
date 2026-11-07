@@ -12,12 +12,13 @@ from database import engine
 from models.models import Product
 
 SUR_MESURE = "SUR MESURE"
+TAILLES_ADULTES = {"XS", "S", "M", "L", "XL", "XXL"}
 
 
 @dataclass
 class Resultat:
     exacts: list[dict] = field(default_factory=list)   # type, budget, couleur ET taille
-    proches: list[dict] = field(default_factory=list)  # même type et budget, autre couleur ou taille
+    proches: list[dict] = field(default_factory=list)  # même type et budget ; dans sa taille d'abord
 
 
 def charger_produits() -> list[dict]:
@@ -41,6 +42,8 @@ def _ordre(p: dict) -> tuple:
 def filtrer(produits: list[dict], fiche: dict) -> Resultat:
     types, couleurs, tailles = fiche.get("types") or [], fiche.get("couleurs") or [], fiche.get("tailles") or []
     budget, exclus = fiche.get("budget_max"), set(fiche.get("exclus") or [])
+    # Une taille adulte demandée : les articles enfant sont hors sujet
+    sans_enfant = bool(set(tailles) & TAILLES_ADULTES)
 
     base = [
         p for p in produits
@@ -48,14 +51,18 @@ def filtrer(produits: list[dict], fiche: dict) -> Resultat:
         and p["id"] not in exclus
         and (not types or p.get("type_article") in types)
         and (not budget or (p.get("prix_ar") or 0) <= budget)
+        and not (sans_enfant and p.get("genre") == "Enfant")
     ]
 
-    def exact(p: dict) -> bool:
-        bonne_couleur = not couleurs or any(f in (p.get("familles") or []) for f in couleurs)
+    def bonne_taille(p: dict) -> bool:
         t = _tailles(p)
-        bonne_taille = not tailles or bool(t & set(tailles)) or SUR_MESURE in t
-        return bonne_couleur and bonne_taille
+        return not tailles or bool(t & set(tailles)) or SUR_MESURE in t
 
-    exacts = sorted((p for p in base if exact(p)), key=_ordre)
-    proches = sorted((p for p in base if not exact(p)), key=_ordre)
+    def bonne_couleur(p: dict) -> bool:
+        return not couleurs or any(f in (p.get("familles") or []) for f in couleurs)
+
+    exacts = sorted((p for p in base if bonne_couleur(p) and bonne_taille(p)), key=_ordre)
+    # Proches : une autre couleur se rattrape (sur mesure), une autre taille moins -> sa taille d'abord
+    proches = sorted((p for p in base if not (bonne_couleur(p) and bonne_taille(p))),
+                     key=lambda p: (0 if bonne_taille(p) else 1, *_ordre(p)))
     return Resultat(exacts, proches)
