@@ -65,3 +65,17 @@ def test_livraison_avant_la_recherche_meme_avec_une_couleur():
     f, d = mettre_a_jour(f, lire("vs livrez a ambatoloaka ? c combien pour la fuchsia"), MONTRES)
     assert d.action == "livraison" and d.produit_id == 19
     assert f["couleurs"] == ["Rouge"] and f["zone"] == "darsalam"  # « fuchsia » désignait le modèle
+
+
+def test_plafond_d_objection_s_efface_au_changement_de_type():
+    f, _ = mettre_a_jour(nouvelle_fiche(), lire("des robes svp"))
+    f, _ = mettre_a_jour(f, lire("la robe sirene a 60000 c trop cher pour moi"), MONTRES)
+    assert f["budget_max"] == 59999
+    f, _ = mettre_a_jour(f, lire("salama, misy kitapo mena ve ianareo ?"))
+    assert f["types"] == ["Sac"] and f["budget_max"] is None
+
+
+def test_budget_annonce_suit_la_cliente():
+    f, _ = mettre_a_jour(nouvelle_fiche(), lire("des robes, jai que 30000 ar"))
+    f, _ = mettre_a_jour(f, lire("et des sacs ?"))
+    assert f["types"] == ["Sac"] and f["budget_max"] == 30000

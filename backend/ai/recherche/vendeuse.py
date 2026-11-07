@@ -112,7 +112,7 @@ def _phrase_livraison(zone: str, p: dict | None = None) -> str:
 def _total(p: dict, zone: str | None) -> str:
     if not zone or (frais := _frais(zone)) is None:
         return ""
-    return f" Livrée chez vous : {ar(p['prix_ar'] + frais)} au total."
+    return f" Livraison comprise : {ar(p['prix_ar'] + frais)} au total."
 
 
 def _tout_de_suite(p: dict, autres: list[dict]) -> str:

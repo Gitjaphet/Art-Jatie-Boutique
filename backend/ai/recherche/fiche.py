@@ -79,6 +79,7 @@ def mettre_a_jour(fiche: dict | None, lecture: Lecture, montres: dict | None = N
             f["genre"] = montres[cite]["genre"]
         if reference:
             _abaisser_budget(f, reference - 1)
+            f["budget_objection"] = f["budget_max"] == reference - 1  # plafond déduit, pas annoncé
         f["tri"] = "prix_asc"
         return f, Decision("objection", cite)
 
@@ -102,6 +103,8 @@ def mettre_a_jour(fiche: dict | None, lecture: Lecture, montres: dict | None = N
     change = False
     if lecture.types and lecture.types != f["types"]:
         f.update(types=lecture.types, couleurs=[], tailles=[], exclus=[], genre=None)  # nouvelle recherche
+        if f.get("budget_objection"):  # le plafond venait d'une autre pièce
+            f.update(budget_max=None, budget_objection=False)
         change = True
     if lecture.couleurs:
         f["couleurs"], change = lecture.couleurs, True
@@ -109,6 +112,7 @@ def mettre_a_jour(fiche: dict | None, lecture: Lecture, montres: dict | None = N
         f["tailles"], change = lecture.tailles, True
     if lecture.montant:
         _abaisser_budget(f, lecture.montant)
+        f["budget_objection"] = False  # annoncé : il suit la cliente
         change = True
     if lecture.tri:
         f["tri"], change = lecture.tri, True
