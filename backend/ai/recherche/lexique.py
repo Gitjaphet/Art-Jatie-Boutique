@@ -19,7 +19,8 @@ DIALECTE = {
     "ts": "tsy", "tss": "tsisy", "mbol": "mbola", "tsar": "tsara", "afak": "afaka", "sar": "sary",
     "zegny": "izany", "zengy": "izany", "zeu": "izany", "bk": "baka", "ingi": "iny",
     "rah": "zavatra", "driaby": "jiaby", "amaizanw": "omeo", "afa": "hafa", "volagna": "teneno",
-    "angano": "hanao",
+    "angano": "hanao", "mangefa": "mandoa", "ambila": "avelao", "ro": "ireo",
+    "ndrk": "ndreky", "krh": "karaha",
 }
 
 # Types d'article dans la bouche des clientes (mot exact ou pluriel)

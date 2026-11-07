@@ -47,6 +47,7 @@ def test_dialecte_deplie_en_malgache_standard():
     from ai.recherche.lexique import mots_message
     assert mots_message("zah te angano formation") == ["zaho", "te", "hanao", "formation"]
     assert mots_message("tss rah ay") == ["tsisy", "zavatra", "ay"]
+    assert mots_message("ambila fa zah mangefa") == ["avelao", "fa", "zaho", "mandoa"]
 
 
 def test_dialecte_reconnu_comme_malgache():
