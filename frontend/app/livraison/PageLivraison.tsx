@@ -287,7 +287,7 @@ export default function PageLivraison() {
           </h1>
           <p className={s.heroSub}>
             Chaque création Art Jatie est préparée avec soin depuis notre
-            atelier de Seganinga, Nosy Be. Voici tout ce que vous devez savoir
+            atelier de Senganinga, Nosy Be. Voici tout ce que vous devez savoir
             sur l&rsquo;expédition et notre politique de retours.
           </p>
         </div>
@@ -340,7 +340,7 @@ export default function PageLivraison() {
               Zones de <em>livraison</em>
             </h2>
             <p className={s.sectionLead}>
-              Nous livrons depuis notre atelier de Seganinga vers toute
+              Nous livrons depuis notre atelier de Senganinga vers toute
               Madagascar et au-delà. Les délais sont estimatifs et peuvent
               varier selon la coopérative choisie.
             </p>
@@ -416,7 +416,7 @@ export default function PageLivraison() {
                 {
                   icon: <IconPackage size={14} />,
                   title: "Préparation à l'atelier",
-                  desc: "Chaque pièce est soigneusement emballée dans notre atelier de Seganinga. Comptez 1 à 2 jours ouvrés.",
+                  desc: "Chaque pièce est soigneusement emballée dans notre atelier de Senganinga. Comptez 1 à 2 jours ouvrés.",
                   final: false,
                 },
                 {
@@ -513,7 +513,7 @@ export default function PageLivraison() {
             <div className={s.contactMeta}>
               <div className={s.contactMetaRow}>
                 <IconMapPin size={13} />
-                <span>Seganinga, Nosy Be, Madagascar</span>
+                <span>Senganinga, Nosy Be, Madagascar</span>
               </div>
               <div className={s.contactMetaRow}>
                 <IconPhone size={13} />

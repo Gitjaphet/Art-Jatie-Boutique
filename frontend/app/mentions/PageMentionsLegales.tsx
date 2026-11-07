@@ -115,7 +115,7 @@ type InfoRow = { label: string; value: React.ReactNode };
 const editorInfo: InfoRow[] = [
   { label: "Nom commercial", value: "Art Jatie" },
   { label: "Responsable", value: "Noeline (Art Jatie)" },
-  { label: "Adresse", value: "Seganinga, Nosy Be, Madagascar" },
+  { label: "Adresse", value: "Senganinga, Nosy Be, Madagascar" },
   { label: "Téléphone", value: "+261 34 30 513 60" },
   { label: "WhatsApp", value: CONTACT.whatsapp },
   { label: "Email", value: <a href={`mailto:${CONTACT.email}`} className={s.infoLink}>{CONTACT.email}</a> },
@@ -393,7 +393,7 @@ export default function PageMentionsLegales() {
             <div className={s.contactMeta}>
               <div className={s.contactMetaRow}>
                 <IconMapPin size={13} />
-                <span>Seganinga, Nosy Be, Madagascar</span>
+                <span>Senganinga, Nosy Be, Madagascar</span>
               </div>
               <div className={s.contactMetaRow}>
                 <IconPhone size={13} />

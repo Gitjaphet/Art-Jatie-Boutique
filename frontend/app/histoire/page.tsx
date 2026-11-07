@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "L'Histoire d'Art Jatie | Crochet Artisanal Nosy Be",
     description:
-      "Chaque maille raconte une histoire. L'univers d'Art Jatie, atelier de crochet à Seganinga, Nosy Be — fondé par BEVAO Noeline Jennita.",
+      "Chaque maille raconte une histoire. L'univers d'Art Jatie, atelier de crochet à Senganinga, Nosy Be — fondé par BEVAO Noeline Jennita.",
     url: "https://www.artjatie.com/histoire",
     siteName: "Art Jatie Boutique",
     images: [

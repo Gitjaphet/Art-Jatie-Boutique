@@ -33,7 +33,7 @@ const jsonLd = {
   priceRange: "Ar 15 000 – Ar 150 000",
   address: {
     "@type": "PostalAddress",
-    streetAddress: "Seganinga",
+    streetAddress: "Senganinga",
     addressLocality: "Nosy Be",
     postalCode: "207",
     addressCountry: "MG",

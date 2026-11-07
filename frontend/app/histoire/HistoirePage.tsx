@@ -157,7 +157,7 @@ export default function HistoirePage() {
               de travail manuel, tissé à la main avec des fils soigneusement sélectionnés.
             </p>
             <p className={styles.paragraph}>
-              En 2025, l'atelier a posé ses valises à Seganinga, Nosy Be, pour se rapprocher
+              En 2025, l'atelier a posé ses valises à Senganinga, Nosy Be, pour se rapprocher
               d'une clientèle internationale et s'épanouir dans l'écrin naturel de l'île aux
               parfums. Aujourd'hui, Art Jatie habille des femmes, des hommes et des enfants
               à travers toute Madagascar et à l'international — portant haut les couleurs

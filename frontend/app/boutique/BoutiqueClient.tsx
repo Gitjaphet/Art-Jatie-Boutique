@@ -247,7 +247,7 @@ export default function BoutiqueClient({
               <p>
                 Les créations affichées ici sont disponibles immédiatement, en
                 quantité limitée : robes de plage, ensembles et pochettes au
-                crochet, tous faits main dans notre atelier de Seganinga, à
+                crochet, tous faits main dans notre atelier de Senganinga, à
                 Nosy Be. Vous ne trouvez pas votre modèle, votre taille ou votre
                 couleur ? Découvrez nos créations{" "}
                 <Link href="/commande">sur commande</Link>.

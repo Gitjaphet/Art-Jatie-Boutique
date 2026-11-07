@@ -419,7 +419,7 @@ export default function PageConfidentialite() {
             <ul className={s.bulletList}>
               <li>Email : <a href={`mailto:${CONTACT.email}`} className={s.textLink}>{CONTACT.email}</a></li>
               <li>WhatsApp : <a href={CONTACT.whatsappLien} target="_blank" rel="noopener noreferrer" className={s.textLink}>{CONTACT.whatsapp}</a></li>
-              <li>Adresse : Seganinga, Nosy Be, Madagascar</li>
+              <li>Adresse : Senganinga, Nosy Be, Madagascar</li>
             </ul>
           </section>
 
@@ -491,7 +491,7 @@ export default function PageConfidentialite() {
             <div className={s.contactMeta}>
               <div className={s.contactMetaRow}>
                 <IconMapPin size={13} />
-                <span>Seganinga, Nosy Be, Madagascar</span>
+                <span>Senganinga, Nosy Be, Madagascar</span>
               </div>
               <div className={s.contactMetaRow}>
                 <IconPhone size={13} />

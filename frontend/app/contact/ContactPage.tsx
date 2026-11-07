@@ -217,7 +217,7 @@ export default function ContactPage() {
               <div className={styles.contactInfo}>
                 <span className={styles.contactLabel}>Adresse</span>
                 <span className={styles.contactValue}>
-                  Seganinga, Nosy Be
+                  Senganinga, Nosy Be
                   <br />
                   Madagascar
                 </span>
@@ -493,7 +493,7 @@ export default function ContactPage() {
           <p className={styles.mapEyebrow}>Notre localisation</p>
           <h3 className={styles.mapTitle}>Nosy Be, Madagascar</h3>
           <p className={styles.mapAddress}>
-            Seganinga, Nosy Be
+            Senganinga, Nosy Be
             <br />
             Madagascar
             <br />

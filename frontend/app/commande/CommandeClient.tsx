@@ -222,7 +222,7 @@ export default function CommandeClient({
               <h2>Crochet fait main sur commande, à Nosy Be</h2>
               <p>
                 Chez Art Jatie, chaque pièce est crochetée à la main dans notre
-                atelier de Seganinga, à Nosy Be. Bikinis et maillots, tenues de
+                atelier de Senganinga, à Nosy Be. Bikinis et maillots, tenues de
                 plage, sacs au crochet, nappes de table et déco pour la maison :
                 choisissez un modèle, votre taille et vos couleurs, et nous le
                 fabriquons pour vous.
