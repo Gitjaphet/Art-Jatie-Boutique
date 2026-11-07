@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import FormationPage from "./FormationPage";
 import {
+  FIN_PROMO_TEXTE,
+  HORAIRE_EN_LIGNE,
+  PRIX_EN_LIGNE,
   PRIX_FORMATION_COMPLETE,
   PRIX_MODULE,
   PRIX_SEANCE,
@@ -109,7 +112,7 @@ function getCourseJsonLd() {
           priceCurrency: "MGA",
           availability: "https://schema.org/InStock",
           description:
-            "Formation complète : 2 mois à 3 séances par semaine, ou 1 mois à 5 séances par semaine. Paiement en 2 fois possible : 40 000 Ar à l'inscription puis 40 000 Ar une semaine après le début des cours.",
+            `Formation complète : 2 mois à 3 séances par semaine, ou 1 mois à 5 séances par semaine. Paiement en 2 fois possible : ${formatAr(PRIX_FORMATION_COMPLETE / 2)} à l'inscription puis ${formatAr(PRIX_FORMATION_COMPLETE / 2)} une semaine après le début des cours.`,
         },
       },
       {
@@ -123,7 +126,7 @@ function getCourseJsonLd() {
           priceCurrency: "MGA",
           availability: "https://schema.org/InStock",
           description: promo
-            ? `Tarif promotionnel par module jusqu'au 6 novembre 2026, puis ${PRIX_MODULE} Ar.`
+            ? `Tarif promotionnel par module jusqu'au ${FIN_PROMO_TEXTE}, puis ${PRIX_MODULE} Ar.`
             : "Tarif par module réalisé.",
         },
       },
@@ -138,6 +141,18 @@ function getCourseJsonLd() {
           priceCurrency: "MGA",
           availability: "https://schema.org/InStock",
           description: "Tarif à la séance, sans engagement.",
+        },
+      },
+      {
+        "@type": "CourseInstance",
+        name: "Formation en ligne",
+        courseMode: "Online",
+        offers: {
+          "@type": "Offer",
+          price: String(PRIX_EN_LIGNE),
+          priceCurrency: "MGA",
+          availability: "https://schema.org/InStock",
+          description: `Cours en direct par WhatsApp vidéo, de ${HORAIRE_EN_LIGNE}. Paiement en 2 fois possible.`,
         },
       },
     ],

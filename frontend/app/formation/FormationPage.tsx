@@ -4,10 +4,13 @@ import Link from "next/link";
 import Reveal from "@/components/Reveal";
 import styles from "./FormationPage.module.css";
 import {
-  DEBUT_SESSION,
+  FIN_PROMO_TEXTE,
+  HORAIRE_EN_LIGNE,
+  HORAIRES_SUR_PLACE,
+  JOURNEE_CONTINUE,
+  PRIX_EN_LIGNE,
   PRIX_FORMATION_COMPLETE,
   PRIX_MODULE,
-  PRIX_MODULE_PROMO,
   PRIX_SEANCE,
   formatAr,
   prixModule,
@@ -81,10 +84,10 @@ function getFormules(now: Date): Formule[] {
       meta: [
         "2 mois · 3 séances / semaine",
         "ou 1 mois · 5 séances / semaine",
-        ...(promo ? [`Session du ${DEBUT_SESSION}`] : []),
+        "Inscription à tout moment",
       ],
       paiement:
-        "Payable en 2 fois : 40 000 Ar à l'inscription, puis 40 000 Ar une semaine après le début des cours.",
+        `Payable en 2 fois : ${formatAr(PRIX_FORMATION_COMPLETE / 2)} à l'inscription, puis ${formatAr(PRIX_FORMATION_COMPLETE / 2)} une semaine après le début des cours.`,
       piecesLabel: "Vous apprendrez à confectionner :",
       pieces: [
         "Shorts & pantalons",
@@ -103,7 +106,7 @@ function getFormules(now: Date): Formule[] {
       unite: "/ module",
       meta: ["Sans engagement", "Vous choisissez le modèle"],
       paiement: promo
-        ? `Tarif promo pour toute inscription avant le ${DEBUT_SESSION}, puis ${formatAr(PRIX_MODULE)} le module.`
+        ? `Tarif promo pour toute inscription jusqu'au ${FIN_PROMO_TEXTE}, puis ${formatAr(PRIX_MODULE)} le module.`
         : null,
       piecesLabel: "Exemples de modules :",
       pieces: ["Un short", "Un sac", "Un top ou un bikini"],
@@ -121,6 +124,18 @@ function getFormules(now: Date): Formule[] {
       pieces: ["Venir quand vous êtes disponible", "Avancer à votre rythme"],
       accent: false,
       badge: null,
+    },
+    {
+      nom: "En ligne",
+      tagline: "Les cours en direct, depuis chez vous",
+      prix: formatAr(PRIX_EN_LIGNE),
+      unite: "au total",
+      meta: [`${HORAIRE_EN_LIGNE} · WhatsApp vidéo`, "Inscription à tout moment"],
+      paiement: `Payable en 2 fois : ${formatAr(PRIX_EN_LIGNE / 2)} + ${formatAr(PRIX_EN_LIGNE / 2)}.`,
+      piecesLabel: "Idéal pour :",
+      pieces: ["Apprendre où que vous soyez", "Suivre les cours à la pause de midi"],
+      accent: false,
+      badge: "À distance",
     },
   ];
 }
@@ -249,21 +264,21 @@ function getFaq(now: Date) {
       q: "Faut-il déjà savoir crocheter pour s'inscrire ?",
       r: "Non. La formation est ouverte aux débutantes complètes : nous commençons par le point de base et la tenue du fil avant d'aborder le granny square.",
     },
-    ...(promo
-      ? [
-          {
-            q: "Quand commence la prochaine session ?",
-            r: `La prochaine session démarre le ${DEBUT_SESSION}. Inscrivez-vous avant cette date pour profiter du module au choix à ${formatAr(PRIX_MODULE_PROMO)} au lieu de ${formatAr(PRIX_MODULE)}.`,
-          },
-        ]
-      : []),
+    {
+      q: "Quand commence la prochaine session ?",
+      r: "Vous pouvez commencer à tout moment : contactez-nous par WhatsApp ou Messenger pour choisir votre créneau.",
+    },
     {
       q: "Combien de temps dure la formation complète ?",
       r: "Deux rythmes au choix : 2 mois à raison de 3 séances par semaine, ou 1 mois en intensif à raison de 5 séances par semaine. Dans les deux cas, vous allez du point de base jusqu'à la confection autonome de vos pièces.",
     },
     {
+      q: "Quels sont les horaires ?",
+      r: `Sur place : ${HORAIRES_SUR_PLACE}. Journée continue possible : ${JOURNEE_CONTINUE}. En ligne : ${HORAIRE_EN_LIGNE}, par WhatsApp vidéo.`,
+    },
+    {
       q: "Puis-je payer en plusieurs fois ?",
-      r: `Oui, pour la formation complète (${formatAr(PRIX_FORMATION_COMPLETE)}) : 40 000 Ar à l'inscription, puis 40 000 Ar une semaine après le début des cours.`,
+      r: `Oui. Formation complète (${formatAr(PRIX_FORMATION_COMPLETE)}) : ${formatAr(PRIX_FORMATION_COMPLETE / 2)} à l'inscription, puis ${formatAr(PRIX_FORMATION_COMPLETE / 2)} une semaine après le début des cours. Formation en ligne (${formatAr(PRIX_EN_LIGNE)}) : ${formatAr(PRIX_EN_LIGNE / 2)} + ${formatAr(PRIX_EN_LIGNE / 2)}.`,
     },
     {
       q: "Quelle est la différence entre le module au choix et le paiement par séance ?",
@@ -280,6 +295,14 @@ function getFaq(now: Date) {
     {
       q: "Puis-je choisir le modèle que je veux réaliser ?",
       r: "Oui. Au fil de la formation, vous choisissez parmi shorts, pantalons, robes, jupes, tops, bikinis, soutiens-gorge, jupes et robes de plage, ou sacs.",
+    },
+    {
+      q: "La formation existe-t-elle en ligne ?",
+      r: `Oui : ${formatAr(PRIX_EN_LIGNE)}, payable en 2 fois, en direct par WhatsApp vidéo de ${HORAIRE_EN_LIGNE}.`,
+    },
+    {
+      q: "Y a-t-il un certificat ?",
+      r: "Pas de certificat pour le moment, mais mieux : une garantie de résultat. Nous ne vous laissons pas partir tant que vous n'avez pas terminé au moins un modèle. Et Art Jatie peut acheter et vendre vos créations : ce que vous apprenez peut vous rapporter.",
     },
   ];
 }
