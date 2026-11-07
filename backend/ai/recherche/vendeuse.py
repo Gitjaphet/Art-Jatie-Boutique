@@ -17,7 +17,7 @@ ZONES_NOSY_BE = {"nosybe_ville", "darsalam", "dzamanjar", "nosybe_autre"}
 ZONE_OFFERTE = "nosybe_ville"
 FEMININS = {"Robe", "Jupe", "Pochette"}
 
-_INTROS = ("Voici {d} 😊", "J'ai sélectionné {d} pour vous ✨", "Regardez {d} 👇")
+_INTROS = ("Voici {d} 😊", "J'ai sélectionné pour vous {d} ✨", "Regardez {d} 👇")
 
 
 @dataclass
@@ -46,9 +46,9 @@ def _demande(fiche: dict, nos: bool = True) -> str:
     if fiche.get("couleurs"):
         texte += " en " + " ou ".join(c.lower() for c in fiche["couleurs"])
     if fiche.get("tailles"):
-        texte += ", taille " + "/".join(fiche["tailles"])
+        texte += " en taille " + " ou ".join(fiche["tailles"])
     if fiche.get("budget_max"):
-        texte += f", jusqu'à {ar(fiche['budget_max'])}"
+        texte += f" à {ar(fiche['budget_max'])} maximum"
     return texte
 
 
@@ -99,10 +99,20 @@ def _total(p: dict, zone: str | None) -> str:
     return f" Livrée chez vous : {ar(p['prix_ar'] + frais)} au total."
 
 
+def _tout_de_suite(p: dict, autres: list[dict]) -> str:
+    """Coup de cœur à fabriquer : on signale une autre pièce montrée, disponible tout de suite."""
+    if (p.get("stock") or 0) > 0:
+        return ""
+    a = next((x for x in autres if x["id"] != p["id"] and (x.get("stock") or 0) > 0), None)
+    if not a:
+        return ""
+    return f" Pour l'avoir tout de suite : « {a['nom']} » à {ar(a['prix_ar'])} est {_disponibilite(a)}."
+
+
 def _proposer(p: dict, fiche: dict, intro: str, autres: list[dict], nuance: str = "") -> Reponse:
     pr = _pronom(p)
     texte = (f"{intro}\n\nMon coup de cœur : « {p['nom']} »{nuance} à {ar(p['prix_ar'])}, {_disponibilite(p)}."
-             f"{_total(p, fiche.get('zone'))} {_conclure(p)}")
+             f"{_total(p, fiche.get('zone'))}{_tout_de_suite(p, autres)} {_conclure(p)}")
     suggestions = [f"Oui, je {pr} veux"]
     if any((a.get("prix_ar") or 0) < p["prix_ar"] for a in autres):
         suggestions.append(f"Moins de {ar(p['prix_ar'])}")

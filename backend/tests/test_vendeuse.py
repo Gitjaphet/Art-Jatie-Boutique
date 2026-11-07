@@ -113,3 +113,16 @@ def test_piece_sans_stock_dit_clairement_qu_elle_est_a_fabriquer():
 def test_piece_en_stock_se_reserve():
     r = repondre("recherche", {"types": ["Sac"]}, CATALOGUE)
     assert r.texte.endswith("Je vous le réserve ?")
+
+
+def test_coup_de_coeur_a_fabriquer_signale_la_piece_en_stock():
+    fiche = {"budget_max": 30000, "tri": "prix_asc"}
+    r = repondre("recherche", fiche, CATALOGUE)
+    assert "nos modèles à 30 000 Ar maximum" in r.texte
+    assert "« Robe & Chapeau »" in r.texte  # le moins cher reste le coup de cœur
+    assert "Pour l'avoir tout de suite : « Sac Corail » à 30 000 Ar est en stock." in r.texte
+
+
+def test_pas_de_mention_tout_de_suite_si_le_coup_de_coeur_est_en_stock():
+    r = repondre("recherche", {"types": ["Sac"]}, CATALOGUE)
+    assert "tout de suite" not in r.texte
