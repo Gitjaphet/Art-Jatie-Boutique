@@ -137,6 +137,7 @@ export async function chatWithJatie(
   historiqueCommande: Record<string, any> | null = null,
   history: { role: string; content: string }[] = [],
   commander: number | null = null, // id produit : bouton « Commander » d'une carte
+  fiche: Record<string, any> | null = null, // mémoire de la recherche, renvoyée telle quelle
 ){
   const res = await fetch(`${API_URL}/agent/chat`, {
     method: "POST",
@@ -146,6 +147,7 @@ export async function chatWithJatie(
       history,
       historique_commande: historiqueCommande,
       commander,
+      fiche,
     }),
   });
   if (!res.ok) throw new Error("Erreur agent IA");

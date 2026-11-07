@@ -9,6 +9,7 @@ from ai.core.llm import masquer_donnees_perso
 from ai.agents.classifier import llm1_classifier
 from ai.agents.router import llm2_router
 from ai.data.cartes import construire_cartes, texte_cartes
+from ai.recherche.conversation import tour_guide
 from ai.agents.extracteur_commande import extraire_champs
 from ai.commande.parcours import demarrer, repondre
 from ai.agents.faq import llm5_faq
@@ -76,6 +77,7 @@ def run_multi_agent(
     history: list = None,
     historique_commande: dict = None,
     commander: int = None,
+    fiche: dict = None,
 ) -> dict:
     token_log = []
     t_total = time.time()
@@ -92,8 +94,18 @@ def run_multi_agent(
     # Commande en cours (brouillon du parcours guidé) ou bouton « Commander » : pas de classification,
     # Jatie ne change pas de sujet tant que la commande n'est pas confirmée ou annulée.
     commande_en_cours = bool(commander) or bool((historique_commande or {}).get("etape"))
+    guide = None
+    if not commande_en_cours:
+        # Lecteur + fiche + vendeuse : la plupart des messages sont traités ici, sans appel au modèle
+        guide = tour_guide(message, fiche)
+        if guide:
+            fiche = guide["fiche"]
+            if guide.get("commander"):  # « oui » à « Je vous la réserve ? » : la commande démarre
+                commander, commande_en_cours = guide["commander"], True
     if commande_en_cours:
         intent = "commande"
+    elif guide and guide.get("action"):
+        intent = f"guide:{guide['action']}"
     else:
         # LLM 1 — Classifier
         classifier_result = llm1_classifier(token_log, message_masque, history=history_masque)
@@ -108,7 +120,11 @@ def run_multi_agent(
     commande_resume = None
 
     # ── Salutation ────────────────────────────────────────────────────
-    if intent == "salutation":
+    if intent.startswith("guide:"):
+        reponse, suggestions = guide["texte"], guide["suggestions"]
+        produits = construire_cartes(guide["produits"])
+
+    elif intent == "salutation":
         reponse = "Bonjour ! 💕 Je suis Jatie, votre assistante Art-Jatie ✨ Comment puis-je vous aider aujourd'hui ?"
 
     # ── Recherche / Stats ─────────────────────────────────────────────
@@ -177,6 +193,7 @@ def run_multi_agent(
         "intent": intent,
         "token_summary": summary,
         "historique_commande": historique_commande,
+        "fiche": fiche,
         "produits": produits,
         "liens": liens,
         "suggestions": suggestions,

@@ -277,6 +277,7 @@ export default function FloatingAI() {
   const bodyRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [historiqueCommande, setHistoriqueCommande] = useState<Record<string, unknown> | null>(null);
+  const [fiche, setFiche] = useState<Record<string, any> | null>(null); // mémoire de la recherche
   // Fenêtre agrandie (ordinateur uniquement), mémorisée dans le navigateur quand c'est possible
   const [resume, setResume] = useState<Resume | null>(null);
   const [agrandi, setAgrandi] = useState(false);
@@ -388,7 +389,7 @@ export default function FloatingAI() {
           ? `${m.text}\n[Produits proposés : ${m.produits.map(p => p.nom).join(" ; ")}]`
           : m.text,
       }));
-      const result = await chatWithJatie(userText, clientId, "web", historiqueCommande, formattedHistory, commander);
+      const result = await chatWithJatie(userText, clientId, "web", historiqueCommande, formattedHistory, commander, fiche);
       setMessages(prev => [...prev, {
         from: "bot",
         text: result.response,
@@ -396,6 +397,7 @@ export default function FloatingAI() {
         suggestions: result.suggestions ?? [],
       }]);
       setHistoriqueCommande(result.historique_commande ?? null);
+      setFiche(result.fiche ?? null);
       setResume(result.commande_resume ?? null);
     } catch {
       setMessages(prev => [...prev, { from: "bot", text: "Désolée, problème technique 😅" }]);
@@ -408,6 +410,7 @@ export default function FloatingAI() {
     if (isLoading) return;
     setMessages([ACCUEIL]);
     setHistoriqueCommande(null);
+    setFiche(null);
     setResume(null);
     setInput("");
   };

@@ -17,6 +17,7 @@ class ChatRequest(BaseModel):
     message: str
     historique_commande: Optional[Dict[str, Any]] = None   # brouillon du parcours guidé
     commander: Optional[int] = None                         # id produit : bouton « Commander » d'une carte
+    fiche: Optional[Dict[str, Any]] = None                  # mémoire de la recherche (ai/recherche/fiche.py)
     history: Optional[list] = None
 
 
@@ -32,12 +33,14 @@ async def chat(body: ChatRequest):
             message=body.message,
             historique_commande=body.historique_commande,
             commander=body.commander,
+            fiche=body.fiche,
             history=body.history or [],
         )
         logging.info(f"[ROUTER] Total : {time.time() - t0:.2f}s")
         return {
             "response":             resultat.get("response", "Erreur de génération."),
             "intent":               resultat.get("intent"),
+            "fiche":                resultat.get("fiche"),
             "historique_commande":  resultat.get("historique_commande"),
             "produits":             resultat.get("produits", []),
             "liens":                resultat.get("liens", []),
