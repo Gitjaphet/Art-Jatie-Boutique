@@ -3,6 +3,7 @@
 from ai.data import stats
 
 MAX_CARTES = 5
+MAX_PHOTOS = 8  # galerie de la carte dans le chat
 
 
 def construire_cartes(produits: list[dict]) -> list[dict]:
@@ -25,6 +26,7 @@ def construire_cartes(produits: list[dict]) -> list[dict]:
             "prix_eur": round(p["prix_ar"] / taux) if taux else None,
             "ancien_prix_ar": p.get("ancien_prix_ar"),
             "image": p.get("image") or "",
+            "images": (p.get("images") or ([p["image"]] if p.get("image") else []))[:MAX_PHOTOS],
             "url": f"/produit/{p['slug']}" if p.get("slug") else "",
             "disponibilite": dispo,
         })

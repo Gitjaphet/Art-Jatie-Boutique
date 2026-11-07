@@ -1,12 +1,13 @@
 "use client";
-import { useState, useRef, useEffect, type ReactNode } from "react";
+import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import styles from "./FloatingAI.module.css";
 import { chatWithJatie } from "@/lib/api";
 import { CONTACT, DELAI_FABRICATION, DELAI_TRAITEMENT } from "@/lib/contact";
 import {
-  Clock, CreditCard, MapPin, Maximize2, MessageCircle, Minimize2, Palette, Phone, Plus, Ruler,
+  ChevronLeft, ChevronRight, Clock, CreditCard, Images, MapPin, Maximize2, MessageCircle, Minimize2, Palette, Phone, Plus, Ruler,
   Scissors, Send, Shirt, ShoppingBag, Sparkles, Sun, Truck, User, X, type LucideIcon,
 } from "lucide-react";
 
@@ -17,6 +18,7 @@ type Produit = {
   prix_eur: number | null;
   ancien_prix_ar?: number | null;
   image: string;
+  images?: string[]; // toutes les photos (galerie)
   url: string;
   disponibilite: string;
 };
@@ -89,6 +91,106 @@ function TexteBot({ texte }: { texte: string }) {
   return <div className={styles.botText}>{blocs}</div>;
 }
 
+// Galerie plein écran façon WhatsApp : photo, compteur, flèches (ordinateur), glissement (téléphone), miniatures
+function Galerie({
+  p,
+  photos,
+  depart,
+  epuise,
+  onFermer,
+  onCommander,
+}: {
+  p: Produit;
+  photos: string[];
+  depart: number;
+  epuise: boolean;
+  onFermer: () => void;
+  onCommander: (p: Produit) => void;
+}) {
+  const [i, setI] = useState(depart);
+  const debutX = useRef<number | null>(null);
+  const n = photos.length;
+  const aller = useCallback((pas: number) => setI((x) => (x + pas + n) % n), [n]);
+
+  useEffect(() => {
+    // Phase de capture : Échap ferme la galerie sans réduire le chat
+    const clavier = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopImmediatePropagation();
+        onFermer();
+      } else if (e.key === "ArrowRight") aller(1);
+      else if (e.key === "ArrowLeft") aller(-1);
+    };
+    window.addEventListener("keydown", clavier, true);
+    return () => window.removeEventListener("keydown", clavier, true);
+  }, [aller, onFermer]);
+
+  return createPortal(
+    <div
+      className={styles.galerie}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Photos — ${p.nom}`}
+      onClick={(e) => { if (e.target === e.currentTarget) onFermer(); }}
+    >
+      <button type="button" className={styles.galerieFermer} onClick={onFermer} aria-label="Fermer la galerie">
+        <X size={22} />
+      </button>
+      <div
+        className={styles.galerieScene}
+        onTouchStart={(e) => { debutX.current = e.touches[0].clientX; }}
+        onTouchEnd={(e) => {
+          if (debutX.current === null) return;
+          const dx = e.changedTouches[0].clientX - debutX.current;
+          if (Math.abs(dx) > 40) aller(dx < 0 ? 1 : -1);
+          debutX.current = null;
+        }}
+      >
+        {n > 1 && (
+          <button type="button" className={`${styles.galerieFleche} ${styles.galeriePrec}`} onClick={() => aller(-1)} aria-label="Photo précédente">
+            <ChevronLeft size={26} />
+          </button>
+        )}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={photos[i]} alt={`${p.nom} — photo ${i + 1} sur ${n}`} className={styles.galerieImg} />
+        {n > 1 && (
+          <button type="button" className={`${styles.galerieFleche} ${styles.galerieSuiv}`} onClick={() => aller(1)} aria-label="Photo suivante">
+            <ChevronRight size={26} />
+          </button>
+        )}
+      </div>
+      <div className={styles.galerieBas}>
+        <span className={styles.galerieCompteur}>{i + 1} / {n}</span>
+        {n > 1 && (
+          <div className={styles.galerieMiniatures}>
+            {photos.map((u, k) => (
+              <button
+                key={`${u}-${k}`}
+                type="button"
+                className={`${styles.galerieMini} ${k === i ? styles.galerieMiniActive : ""}`}
+                onClick={() => setI(k)}
+                aria-label={`Photo ${k + 1}`}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={u} alt="" loading="lazy" />
+              </button>
+            ))}
+          </div>
+        )}
+        <div className={styles.galerieInfo}>
+          <span>{p.nom} · {formatAr(p.prix_ar)}</span>
+          {!epuise && (
+            <button type="button" className={styles.galerieCommander} onClick={() => { onFermer(); onCommander(p); }}>
+              Commander
+            </button>
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
 function CarteProduit({
   p,
   onOuvrir,
@@ -98,28 +200,44 @@ function CarteProduit({
   onOuvrir: () => void;
   onCommander: (p: Produit) => void;
 }) {
-  const contenu = (
-    <>
-      {p.image ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={p.image} alt={p.nom} className={styles.produitImg} loading="lazy" />
-      ) : (
-        <div className={styles.produitImg} />
-      )}
-      <div className={styles.produitInfo}>
-        <span className={styles.produitNom}>{p.nom}</span>
-        <span className={styles.produitPrix}>
-          {formatAr(p.prix_ar)}
-          {p.prix_eur !== null && <span className={styles.produitEur}>≈ {p.prix_eur} €</span>}
-        </span>
-        <span className={styles.produitDispo}>{p.disponibilite}</span>
-      </div>
-    </>
-  );
+  const [galerie, setGalerie] = useState<number | null>(null);
+  const photos = p.images?.length ? p.images : p.image ? [p.image] : [];
+  const plusieurs = photos.length > 1;
   const epuise = p.disponibilite.startsWith("Épuisé");
-  // Bloc = lien vers la fiche + bouton séparé (jamais de bouton dans un lien)
+  const photo = p.image ? (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={p.image} alt={p.nom} className={styles.produitImg} loading="lazy" />
+  ) : (
+    <div className={styles.produitImg} />
+  );
+  const infos = (
+    <div className={styles.produitInfo}>
+      <span className={styles.produitNom}>{p.nom}</span>
+      <span className={styles.produitPrix}>
+        {formatAr(p.prix_ar)}
+        {p.prix_eur !== null && <span className={styles.produitEur}>≈ {p.prix_eur} €</span>}
+      </span>
+      <span className={styles.produitDispo}>{p.disponibilite}</span>
+    </div>
+  );
+  // Plusieurs photos : la photo ouvre la galerie, le texte mène à la fiche (jamais de bouton dans un lien)
+  const contenu = plusieurs ? infos : <>{photo}{infos}</>;
   return (
     <div className={styles.produitCard}>
+      {plusieurs && (
+        <button
+          type="button"
+          className={styles.produitPhoto}
+          onClick={() => setGalerie(0)}
+          aria-label={`Voir les photos (${photos.length}) — ${p.nom}`}
+          title={`Voir les photos (${photos.length})`}
+        >
+          {photo}
+          <span className={styles.produitBadge} aria-hidden>
+            <Images size={13} strokeWidth={2} /> {photos.length}
+          </span>
+        </button>
+      )}
       {p.url ? (
         <Link href={p.url} className={styles.produitLien} onClick={onOuvrir}>{contenu}</Link>
       ) : (
@@ -133,6 +251,10 @@ function CarteProduit({
       >
         {epuise ? "Épuisé" : "Commander"}
       </button>
+      {galerie !== null && (
+        <Galerie p={p} photos={photos} depart={galerie} epuise={epuise}
+                 onFermer={() => setGalerie(null)} onCommander={onCommander} />
+      )}
     </div>
   );
 }

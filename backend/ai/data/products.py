@@ -33,6 +33,7 @@ def _produit_dict(p: Product) -> dict:
         "sur_commande": p.on_order,
         "description": p.description or "",
         "image": p.image or "",
+        "images": [u.strip() for u in (p.images or "").split(",") if u.strip()],
     }
 
 
