@@ -21,7 +21,7 @@ class Decision:
 
 def nouvelle_fiche() -> dict:
     return {"types": [], "couleurs": [], "tailles": [], "budget_max": None, "tri": None,
-            "exclus": [], "montres": [], "question": None, "zone": None, "langue": "fr"}
+            "exclus": [], "montres": [], "question": None, "zone": None, "langue": "fr", "genre": None}
 
 
 def produit_cite(mots: list[str], montres: dict) -> int | None:
@@ -75,6 +75,8 @@ def mettre_a_jour(fiche: dict | None, lecture: Lecture, montres: dict | None = N
         reference = lecture.montant or prix_cite
         if cite and cite not in f["exclus"]:
             f["exclus"].append(cite)
+        if cite and (montres or {}).get(cite, {}).get("genre"):  # même public que la pièce refusée
+            f["genre"] = montres[cite]["genre"]
         if reference:
             _abaisser_budget(f, reference - 1)
         f["tri"] = "prix_asc"
@@ -82,12 +84,12 @@ def mettre_a_jour(fiche: dict | None, lecture: Lecture, montres: dict | None = N
 
     # 4. « Voir toute la boutique » : on repart de zéro, la zone et la langue suivent la cliente
     if lecture.tout_voir:
-        f.update(types=[], couleurs=[], tailles=[], budget_max=None, tri=None, exclus=[])
+        f.update(types=[], couleurs=[], tailles=[], budget_max=None, tri=None, exclus=[], genre=None)
         return f, Decision("recherche")
 
     # « Autres articles jusqu'à 30 000 Ar » : toute la boutique, dans le budget
     if lecture.autres_articles:
-        f.update(types=[], couleurs=[], tailles=[], exclus=[])
+        f.update(types=[], couleurs=[], tailles=[], exclus=[], genre=None)
         if lecture.montant:
             _abaisser_budget(f, lecture.montant)
         return f, Decision("recherche")
@@ -95,7 +97,7 @@ def mettre_a_jour(fiche: dict | None, lecture: Lecture, montres: dict | None = N
     # 5. Critères de recherche
     change = False
     if lecture.types and lecture.types != f["types"]:
-        f.update(types=lecture.types, couleurs=[], tailles=[], exclus=[])  # nouvelle recherche
+        f.update(types=lecture.types, couleurs=[], tailles=[], exclus=[], genre=None)  # nouvelle recherche
         change = True
     if lecture.couleurs:
         f["couleurs"], change = lecture.couleurs, True

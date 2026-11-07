@@ -46,6 +46,7 @@ def _ordre_prix(p: dict) -> tuple:
 def filtrer(produits: list[dict], fiche: dict) -> Resultat:
     types, couleurs, tailles = fiche.get("types") or [], fiche.get("couleurs") or [], fiche.get("tailles") or []
     budget, exclus = fiche.get("budget_max"), set(fiche.get("exclus") or [])
+    genre = fiche.get("genre")
     # Une taille adulte demandée : les articles enfant sont hors sujet
     sans_enfant = bool(set(tailles) & TAILLES_ADULTES)
     ordre = _ordre_prix if fiche.get("tri") == "prix_asc" else _ordre  # « le moins cher » : le prix d'abord
@@ -57,6 +58,7 @@ def filtrer(produits: list[dict], fiche: dict) -> Resultat:
         and (not types or p.get("type_article") in types)
         and (not budget or (p.get("prix_ar") or 0) <= budget)
         and not (sans_enfant and p.get("genre") == "Enfant")
+        and (not genre or p.get("genre") == genre)
     ]
 
     def bonne_taille(p: dict) -> bool:

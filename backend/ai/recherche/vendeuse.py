@@ -32,6 +32,15 @@ def ar(montant: int) -> str:
     return f"{montant:,}".replace(",", " ") + " Ar"
 
 
+def _plafond(budget: int) -> str:
+    """59 999 (sous un prix refusé) -> « à moins de 60 000 Ar » ; 30 000 -> « à 30 000 Ar maximum »."""
+    return f"à moins de {ar(budget + 1)}" if budget % 1000 == 999 else f"à {ar(budget)} maximum"
+
+
+def _bouton_autres(budget: int) -> str:
+    return f"Autres articles à moins de {ar(budget + 1)}" if budget % 1000 == 999 else f"Autres articles jusqu'à {ar(budget)}"
+
+
 def _pronom(p: dict) -> str:
     return "la" if p.get("type_article") in FEMININS else "le"
 
@@ -48,7 +57,7 @@ def _demande(fiche: dict, nos: bool = True) -> str:
     if fiche.get("tailles"):
         texte += " en taille " + " ou ".join(fiche["tailles"])
     if fiche.get("budget_max"):
-        texte += f" à {ar(fiche['budget_max'])} maximum"
+        texte += f" {_plafond(fiche['budget_max'])}"
     return texte
 
 
@@ -148,7 +157,7 @@ def _recherche(fiche: dict, produits: list[dict], intro: str | None = None) -> R
                  f"{_conclure(p)}")
         suggestions = [f"Oui, je {_pronom(p)} veux"]
         if fiche.get("types") or fiche.get("couleurs") or fiche.get("tailles"):  # toute la boutique, même budget
-            suggestions.append(f"Autres articles jusqu'à {ar(fiche['budget_max'])}")
+            suggestions.append(_bouton_autres(fiche["budget_max"]))
         return Reponse(texte, [p], suggestions + ["Sur mesure"],
                        {"type": "commander", "produit_id": p["id"]})
     texte = (f"Je n'ai pas de {_demande(fiche, nos=False)} en ce moment 😔 Bonne nouvelle : "
@@ -166,8 +175,8 @@ def repondre(action: str, fiche: dict, produits: list[dict], produit_id: int | N
         return _recherche(fiche, produits)
 
     if action == "objection":
-        rep = _recherche(fiche, produits, intro="Je comprends tout à fait 😊 Dans votre budget, voici ce que je vous conseille :")
-        if not rep.produits or rep.question and rep.question["type"] != "commander":
+        rep = _recherche(fiche, produits, intro=f"Je comprends tout à fait 😊 Voici {_demande(fiche)} :")
+        if not rep.texte.startswith("Je comprends"):  # une objection commence toujours par de l'écoute
             rep.texte = "Je comprends tout à fait 😊 " + rep.texte
         return rep
 

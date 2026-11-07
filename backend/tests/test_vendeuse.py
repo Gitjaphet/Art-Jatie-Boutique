@@ -126,3 +126,24 @@ def test_coup_de_coeur_a_fabriquer_signale_la_piece_en_stock():
 def test_pas_de_mention_tout_de_suite_si_le_coup_de_coeur_est_en_stock():
     r = repondre("recherche", {"types": ["Sac"]}, CATALOGUE)
     assert "tout de suite" not in r.texte
+
+
+def test_objection_ecoute_meme_public_et_plafond_lisible():
+    from ai.recherche.conversation import tour_guide
+    catalogue = [
+        {**CATALOGUE[0], "genre": "Femme"},                                   # Sirène 60 000, en stock
+        {**CATALOGUE[1], "genre": "Femme"},                                   # Fuchsia 40 000
+        {**CATALOGUE[2], "genre": "Enfant", "tailles": "1 - 3 ans"},           # Robe & Chapeau 25 000
+    ]
+    r = tour_guide("bjr vs avez des robe ?", None, catalogue)
+    r = tour_guide("la robe sirene a 60000 c trop cher pour moi", r["fiche"], catalogue)
+    assert r["texte"].startswith("Je comprends tout à fait")
+    assert "à moins de 60 000 Ar" in r["texte"] and "59 999" not in r["texte"]
+    assert [p["id"] for p in r["produits"]] == [19]  # la robe enfant n'est plus proposée
+
+
+def test_bouton_autres_articles_lisible():
+    r = repondre("recherche", {"types": ["Robe"], "budget_max": 19999}, CATALOGUE)
+    assert "Autres articles à moins de 20 000 Ar" in r.suggestions
+    r = repondre("recherche", {"types": ["Robe"], "budget_max": 20000}, CATALOGUE)
+    assert "Autres articles jusqu'à 20 000 Ar" in r.suggestions
