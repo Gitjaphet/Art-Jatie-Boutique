@@ -40,3 +40,17 @@ def test_couleurs_citees(message, couleurs):
 ])
 def test_langue(message, attendue):
     assert langue(mots_message(message)) == attendue
+
+
+# --- Malgache du Nord écrit en abrégé (validé par Art Jatie) ---
+def test_dialecte_deplie_en_malgache_standard():
+    from ai.recherche.lexique import mots_message
+    assert mots_message("zah te angano formation") == ["zaho", "te", "hanao", "formation"]
+    assert mots_message("tss rah ay") == ["tsisy", "zavatra", "ay"]
+
+
+def test_dialecte_reconnu_comme_malgache():
+    from ai.recherche.lexique import langue, mots_message
+    for message in ("zah te angano formation", "afak amaizanw sar zah azafady belle",
+                    "zegny ma zeu", "aleko driaby belle", "firy ny sarany ?"):
+        assert langue(mots_message(message)) == "mg", message

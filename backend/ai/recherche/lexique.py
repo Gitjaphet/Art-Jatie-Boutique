@@ -13,6 +13,15 @@ SMS = {
     "svp": "s il vous plait", "tjr": "toujours", "bcp": "beaucoup", "mrc": "merci", "mci": "merci",
 }
 
+# Malgache du Nord (Nosy Be) écrit en abrégé -> malgache standard. Uniquement des mots validés par Art Jatie.
+DIALECTE = {
+    "zah": "zaho", "za": "zaho", "anw": "anao", "iz": "izy", "izi": "izy",
+    "ts": "tsy", "tss": "tsisy", "mbol": "mbola", "tsar": "tsara", "afak": "afaka", "sar": "sary",
+    "zegny": "izany", "zengy": "izany", "zeu": "izany", "bk": "baka", "ingi": "iny",
+    "rah": "zavatra", "driaby": "jiaby", "amaizanw": "omeo", "afa": "hafa", "volagna": "teneno",
+    "angano": "hanao",
+}
+
 # Types d'article dans la bouche des clientes (mot exact ou pluriel)
 EXPRESSIONS_TYPE = {"akanjo milomano": "Maillot", "maillot de bain": "Maillot"}
 MOTS_TYPE = {
@@ -38,7 +47,7 @@ COULEURS_MALGACHE = {
 OUI = {"oui", "ouais", "ok", "okay", "daccord", "yes", "eny", "ie", "volontiers", "parfait"}
 NON = {"non", "tsia", "aoka", "nan", "no"}
 SALUTATIONS = {"bonjour", "bonsoir", "salut", "coucou", "hello", "salama", "manao", "akory"}
-QUESTION_PRIX = {"combien", "prix", "tarif", "ohatrinona", "firy"}
+QUESTION_PRIX = {"combien", "prix", "tarif", "ohatrinona", "firy", "vidiny", "sarany"}
 EXPRESSIONS_TROP_CHER = ("trop cher", "lafo loatra", "un peu cher", "c est cher", "cest cher")
 
 # Mots qui signalent une cliente qui écrit en malgache
@@ -46,6 +55,7 @@ MARQUEURS_MALGACHE = {
     "salama", "misy", "ve", "ianareo", "ohatrinona", "firy", "manao", "ahoana", "akory",
     "eny", "tsia", "aoka", "lafo", "loatra", "azafady", "misaotra", "mba", "ho",
     *COULEURS_MALGACHE, "akanjo", "kitapo", "satroka", "milomano",
+    *DIALECTE, *DIALECTE.values(), "aleko", "vidiny", "sarany",
 }
 
 
@@ -53,7 +63,7 @@ def mots_message(texte: str) -> list[str]:
     """Minuscules, sans accents, SMS déplié : « Bjr, vs avez des robe rouge ? » -> [bonjour, vous, avez, ...]."""
     resultat = []
     for m in mots(texte):
-        resultat.extend(SMS.get(m, m).split())
+        resultat.extend((SMS.get(m) or DIALECTE.get(m, m)).split())
     return resultat
 
 
