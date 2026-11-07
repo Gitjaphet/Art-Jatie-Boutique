@@ -82,6 +82,10 @@ def mettre_a_jour(fiche: dict | None, lecture: Lecture, montres: dict | None = N
         f["tri"] = "prix_asc"
         return f, Decision("objection", cite)
 
+    # Question de livraison explicite (« vous livrez… ? ») : on y répond, même si le modèle est cité par sa couleur
+    if lecture.livraison:
+        return f, Decision("livraison", cite)
+
     # 4. « Voir toute la boutique » : on repart de zéro, la zone et la langue suivent la cliente
     if lecture.tout_voir:
         f.update(types=[], couleurs=[], tailles=[], budget_max=None, tri=None, exclus=[], genre=None)

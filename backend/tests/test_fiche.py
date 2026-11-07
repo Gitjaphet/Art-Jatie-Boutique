@@ -58,3 +58,10 @@ def test_oui_sans_question_n_est_pas_une_reponse():
 def test_incompris_laisse_la_main_au_modele():
     _, d = mettre_a_jour(nouvelle_fiche(), lire("hmm je sais pas trop"))
     assert d.action is None
+
+
+def test_livraison_avant_la_recherche_meme_avec_une_couleur():
+    f = {**nouvelle_fiche(), "types": ["Robe"], "couleurs": ["Rouge"]}
+    f, d = mettre_a_jour(f, lire("vs livrez a ambatoloaka ? c combien pour la fuchsia"), MONTRES)
+    assert d.action == "livraison" and d.produit_id == 19
+    assert f["couleurs"] == ["Rouge"] and f["zone"] == "darsalam"  # « fuchsia » désignait le modèle

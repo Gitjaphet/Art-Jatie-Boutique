@@ -147,3 +147,15 @@ def test_bouton_autres_articles_lisible():
     assert "Autres articles à moins de 20 000 Ar" in r.suggestions
     r = repondre("recherche", {"types": ["Robe"], "budget_max": 20000}, CATALOGUE)
     assert "Autres articles jusqu'à 20 000 Ar" in r.suggestions
+
+
+def test_livraison_d_un_modele_a_fabriquer():
+    r = repondre("livraison", {"zone": "darsalam"}, CATALOGUE, produit_id=19)  # Fuchsia, sans stock
+    assert "« Robe Fuchsia » est réalisée pour vous en 7 à 14 jours, puis livrée dans la demi-journée" in r.texte
+    assert "48 000 Ar au total" in r.texte and r.texte.endswith("On lance sa réalisation pour vous ?")
+
+
+def test_livraison_d_une_piece_en_stock():
+    r = repondre("livraison", {"zone": "darsalam"}, CATALOGUE, produit_id=16)  # Sac, 2 en stock
+    assert "Une pièce en stock est préparée sous 24 à 48 h, puis livrée dans la demi-journée" in r.texte
+    assert r.texte.endswith("Je vous le réserve ?")

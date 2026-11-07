@@ -94,12 +94,19 @@ def _frais(zone: str) -> int | None:
     return 0 if zone == ZONE_OFFERTE else None
 
 
-def _phrase_livraison(zone: str) -> str:
+def _phrase_livraison(zone: str, p: dict | None = None) -> str:
+    """Tarif réel de la zone + délai : celui d'une pièce en stock, ou celui du modèle cité s'il est à fabriquer."""
     frais = _frais(zone)
     tarif = "offerte" if frais == 0 else ar(frais) if frais else "sur devis (l'équipe vous confirme le tarif)"
-    delai = (f"préparée sous {DELAI_TRAITEMENT}, puis livrée {DELAI_LIVRAISON_NOSY_BE}" if zone in ZONES_NOSY_BE
-             else f"préparée sous {DELAI_TRAITEMENT}, délai d'acheminement confirmé par l'équipe")
-    return f"Livraison {LIBELLES_ZONE.get(zone, zone)} : {tarif}. Une pièce en stock est {delai}."
+    a_fabriquer = bool(p) and not (p.get("stock") or 0)
+    e = "" if a_fabriquer and p.get("type_article") not in FEMININS else "e"  # « la robe … livrée », « le sac … livré »
+    arrivee = (f"puis livré{e} {DELAI_LIVRAISON_NOSY_BE}" if zone in ZONES_NOSY_BE
+               else f"puis acheminé{e} (délai confirmé par l'équipe)")
+    if a_fabriquer:
+        quand = f"« {p['nom']} » est réalisé{e} pour vous en {DELAI_FABRICATION}, {arrivee}"
+    else:
+        quand = f"Une pièce en stock est préparée sous {DELAI_TRAITEMENT}, {arrivee}"
+    return f"Livraison {LIBELLES_ZONE.get(zone, zone)} : {tarif}. {quand}."
 
 
 def _total(p: dict, zone: str | None) -> str:
@@ -192,9 +199,9 @@ def repondre(action: str, fiche: dict, produits: list[dict], produit_id: int | N
                      f"{ar(FRAIS_LIVRAISON['darsalam'])} · Dzamanjar : {ar(FRAIS_LIVRAISON['dzamanjar'])} · "
                      f"ailleurs : sur devis. Où souhaitez-vous être livrée ?")
             return Reponse(texte, [], ["Hell-Ville", "Ambatoloaka", "Dzamanjar"])
-        texte = _phrase_livraison(zone)
+        texte = _phrase_livraison(zone, cite)
         if cite:
-            texte += f"{_total(cite, zone)} Je vous {_pronom(cite)} prépare ?"
+            texte += f"{_total(cite, zone)} {_conclure(cite)}"
             return Reponse(texte, [cite], [f"Oui, je {_pronom(cite)} veux", "Voir toute la boutique"],
                            {"type": "commander", "produit_id": cite["id"]})
         return Reponse(texte + " Que puis-je vous montrer ?", [], ["Robes", "Maillots", "Sacs"])
