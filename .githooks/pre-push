@@ -1,0 +1,41 @@
+#!/bin/sh
+# Garde-fou avant chaque push : bloque si les tests backend échouent,
+# et si le build frontend échoue quand des fichiers frontend/ sont poussés.
+# Activé par : git config core.hooksPath .githooks
+racine=$(git rev-parse --show-toplevel)
+zero=0000000000000000000000000000000000000000
+frontend=0
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ "$local_sha" = "$zero" ] && continue                      # suppression de branche : rien à vérifier
+  if [ "$remote_sha" = "$zero" ]; then
+    base=$(git merge-base "$local_sha" origin/main 2>/dev/null)
+  else
+    base=$remote_sha
+  fi
+  if [ -z "$base" ] || git diff --name-only "$base" "$local_sha" | grep -q '^frontend/'; then
+    frontend=1
+  fi
+done
+
+echo "▶ pre-push : tests backend…"
+sortie=$(cd "$racine/backend" && DATABASE_URL=sqlite:// .venv/bin/python -m pytest -q -p no:cacheprovider 2>&1)
+code=$?
+echo "$sortie" | grep -E "FAILED|passed|failed"
+if [ $code -ne 0 ]; then
+  echo "✗ Tests en échec : push bloqué. Corrige, puis relance git push."
+  exit 1
+fi
+
+if [ $frontend -eq 1 ]; then
+  echo "▶ pre-push : build frontend…"
+  sortie=$(cd "$racine/frontend" && npm run build 2>&1)
+  code=$?
+  echo "$sortie" | grep -E "Compiled|Type error|\./" | head -20
+  if [ $code -ne 0 ]; then
+    echo "✗ Build frontend en échec : push bloqué."
+    exit 1
+  fi
+fi
+
+echo "✓ pre-push : tout est vert, on pousse."
