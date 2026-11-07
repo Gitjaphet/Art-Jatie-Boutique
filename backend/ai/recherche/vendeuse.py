@@ -16,6 +16,7 @@ MAX_CARTES = 5
 DELAI_LIVRAISON_NOSY_BE = "dans la demi-journée"
 ZONES_NOSY_BE = {"nosybe_ville", "darsalam", "dzamanjar", "nosybe_autre"}
 ZONE_OFFERTE = "nosybe_ville"
+BOUTONS_ZONES = ["Hell-Ville", "Ambatoloaka", "Dzamanjar"]  # compris par le lecteur
 FEMININS = TYPES_FEMININS
 
 _INTROS = ("Voici {d} 😊", "J'ai sélectionné pour vous {d} ✨", "Regardez {d} 👇")
@@ -27,6 +28,7 @@ class Reponse:
     produits: list[dict] = field(default_factory=list)   # cartes à afficher (dans l'ordre)
     suggestions: list[str] = field(default_factory=list)  # boutons, tous compris par le lecteur
     question: dict | None = None                          # dernière question posée (enregistrée dans la fiche)
+    fiche_maj: dict = field(default_factory=dict)         # notes à garder dans la fiche (ex. zone demandée)
 
 
 def ar(montant: int) -> str:
@@ -133,6 +135,11 @@ def _proposer(p: dict, fiche: dict, intro: str, autres: list[dict], nuance: str 
     suggestions = [f"Oui, je {pr} veux"]
     if any((a.get("prix_ar") or 0) < p["prix_ar"] for a in autres):
         suggestions.append(f"Moins de {ar(p['prix_ar'])}")
+    if not fiche.get("zone") and not fiche.get("zone_demandee"):
+        # Une seule fois par conversation : le prix livré lève une hésitation fréquente avant l'achat
+        texte += " Dites-moi où vous livrer, je vous donne le prix livré chez vous."
+        return Reponse(texte, [], suggestions + BOUTONS_ZONES, {"type": "commander", "produit_id": p["id"]},
+                       fiche_maj={"zone_demandee": True})
     suggestions.append("Sur mesure")
     return Reponse(texte, [], suggestions, {"type": "commander", "produit_id": p["id"]})
 

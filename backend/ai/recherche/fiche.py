@@ -85,7 +85,7 @@ def mettre_a_jour(fiche: dict | None, lecture: Lecture, montres: dict | None = N
 
     # Question de livraison explicite (« vous livrez… ? ») : on y répond, même si le modèle est cité par sa couleur
     if lecture.livraison:
-        return f, Decision("livraison", cite)
+        return f, Decision("livraison", cite or (f.get("question") or {}).get("produit_id"))
 
     # 4. « Voir toute la boutique » : on repart de zéro, la zone et la langue suivent la cliente
     if lecture.tout_voir:
@@ -123,7 +123,7 @@ def mettre_a_jour(fiche: dict | None, lecture: Lecture, montres: dict | None = N
 
     # 6. Livraison (zone citée ou question sur la livraison)
     if lecture.livraison or lecture.zone:
-        return f, Decision("livraison", cite)
+        return f, Decision("livraison", cite or (f.get("question") or {}).get("produit_id"))
 
     # 7. Simple bonjour
     if lecture.salutation:

@@ -15,7 +15,7 @@ CATALOGUE = [
 
 
 def test_coup_de_coeur_en_stock_derniere_piece_et_question():
-    r = repondre("recherche", {"types": ["Robe"], "couleurs": ["Rose"]}, CATALOGUE)
+    r = repondre("recherche", {"types": ["Robe"], "couleurs": ["Rose"], "zone_demandee": True}, CATALOGUE)
     assert "nos robes en rose" in r.texte and "« Robe Sirène »" in r.texte and "dernière pièce" in r.texte
     assert r.question == {"type": "commander", "produit_id": 17}
     assert r.suggestions == ["Oui, je la veux", "Moins de 60 000 Ar", "Sur mesure"]
@@ -111,7 +111,7 @@ def test_piece_sans_stock_dit_clairement_qu_elle_est_a_fabriquer():
 
 
 def test_piece_en_stock_se_reserve():
-    r = repondre("recherche", {"types": ["Sac"]}, CATALOGUE)
+    r = repondre("recherche", {"types": ["Sac"], "zone_demandee": True}, CATALOGUE)
     assert r.texte.endswith("Je vous le réserve ?")
 
 
@@ -159,3 +159,16 @@ def test_livraison_d_une_piece_en_stock():
     r = repondre("livraison", {"zone": "darsalam"}, CATALOGUE, produit_id=16)  # Sac, 2 en stock
     assert "Une pièce en stock est préparée sous 24 à 48 h, puis livrée dans la demi-journée" in r.texte
     assert r.texte.endswith("Je vous le réserve ?")
+
+
+def test_zone_demandee_au_premier_coup_de_coeur():
+    r = repondre("recherche", {"types": ["Sac"]}, CATALOGUE)
+    assert r.texte.endswith("Dites-moi où vous livrer, je vous donne le prix livré chez vous.")
+    assert r.suggestions[-3:] == ["Hell-Ville", "Ambatoloaka", "Dzamanjar"] and r.fiche_maj == {"zone_demandee": True}
+
+
+def test_zone_pas_redemandee():
+    r = repondre("recherche", {"types": ["Sac"], "zone_demandee": True}, CATALOGUE)
+    assert "Dites-moi où" not in r.texte and "Sur mesure" in r.suggestions
+    r = repondre("recherche", {"types": ["Sac"], "zone": "darsalam"}, CATALOGUE)
+    assert "Dites-moi où" not in r.texte and "38 000 Ar au total" in r.texte  # zone connue : total direct

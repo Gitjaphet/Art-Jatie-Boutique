@@ -55,3 +55,12 @@ def test_couleurs_deduites_par_le_modele_ignorees():
     assert l.types == ["Robe"] and l.couleurs == []
     l = lecture_comprise({"types": ["Robe"], "couleurs": ["Bleu"]}, "un truc rose pour la plage")
     assert l.couleurs == ["Rose"]  # la couleur écrite, lue par le lecteur
+
+
+def test_clic_sur_une_zone_donne_le_total_du_coup_de_coeur():
+    r = tour_guide("bjr vs avez des robe rouge ?", None, CATALOGUE)
+    assert "Ambatoloaka" in r["suggestions"] and r["fiche"]["zone_demandee"]
+    r = tour_guide("Ambatoloaka", r["fiche"], CATALOGUE)
+    assert r["action"] == "livraison" and "68 000 Ar au total" in r["texte"]  # Sirène 60 000 + 8 000
+    r = tour_guide("et des sacs ?", r["fiche"], CATALOGUE)
+    assert "Dites-moi où" not in r["texte"] and "38 000 Ar au total" in r["texte"]  # zone connue

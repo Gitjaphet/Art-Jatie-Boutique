@@ -43,6 +43,7 @@ def tour_guide(message: str, fiche: dict | None, produits: list[dict] | None = N
 
         rep = repondre(decision.action, f, produits, decision.produit_id)
         f["question"] = rep.question
+        f.update(rep.fiche_maj)
         if rep.produits:  # sinon on garde les modèles déjà montrés (« la sirène » reste reconnue)
             f["montres"] = [p["id"] for p in rep.produits]
         logging.info(f"[GUIDE] {decision.action} | {len(rep.produits)} carte(s) | 0 token")
