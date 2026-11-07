@@ -98,3 +98,27 @@ def test_pas_de_bonjour_si_la_cliente_ne_salue_pas():
     from ai.recherche.conversation import tour_guide
     r = tour_guide("vous avez des robes rouges ?", None, produits=_ACCUEIL)
     assert not r["texte"].startswith(("Bonjour", "Bonsoir", "Salama"))
+
+
+# --- Le coup de cœur varie quand la cliente redemande (F8) ---
+_DEUX_SACS = [
+    {"id": 10, "nom": "Sac Corail", "type_article": "Sac", "prix_ar": 20000, "familles": ["Rose"],
+     "stock": 1, "sur_commande": True, "tailles": "", "images": []},
+    {"id": 11, "nom": "Sac Vert", "type_article": "Sac", "prix_ar": 20000, "familles": ["Vert"],
+     "stock": 1, "sur_commande": True, "tailles": "", "images": []},
+]
+
+
+def test_coup_de_coeur_varie_puis_revient_au_premier():
+    from ai.recherche.conversation import tour_guide
+    r1 = tour_guide("vous avez des sacs ?", None, produits=_DEUX_SACS)
+    premier = r1["fiche"]["coups_de_coeur"][0]
+    assert "Mon coup de cœur" in r1["texte"] and r1["produits"][0]["id"] == premier
+
+    r2 = tour_guide("vous avez des sacs ?", r1["fiche"], produits=_DEUX_SACS)
+    second = r2["produits"][0]["id"]
+    assert second != premier and "Autre coup de cœur" in r2["texte"]
+    assert r2["fiche"]["coups_de_coeur"] == [premier, second]
+
+    r3 = tour_guide("vous avez des sacs ?", r2["fiche"], produits=_DEUX_SACS)  # tous vus : on recommence
+    assert r3["produits"][0]["id"] == premier and "Mon coup de cœur" in r3["texte"]

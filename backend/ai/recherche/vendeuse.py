@@ -128,9 +128,30 @@ def _tout_de_suite(p: dict, autres: list[dict]) -> str:
     return f" Pour l'avoir tout de suite : « {a['nom']} » à {ar(a['prix_ar'])} est {_disponibilite(a)}."
 
 
-def _proposer(p: dict, fiche: dict, intro: str, autres: list[dict], nuance: str = "") -> Reponse:
+def _choisir(candidats: list[dict], fiche: dict) -> tuple[dict, bool]:
+    """Le coup de cœur du tour : le premier modèle pas encore mis en avant (une vendeuse ne répète pas la même pièce).
+
+    Rend (modèle, relance) ; relance = un autre modèle de cette sélection a déjà été proposé.
+    Tous déjà vus : on repart du premier."""
+    deja = fiche.get("coups_de_coeur") or []
+    neufs = [c for c in candidats if c["id"] not in deja]
+    if not neufs:
+        return candidats[0], False
+    return neufs[0], any(c["id"] in deja for c in candidats)
+
+
+def _cartes(p: dict, liste: list[dict]) -> list[dict]:
+    """Le coup de cœur toujours en première carte, puis les autres dans l'ordre."""
+    return [p] + [x for x in liste if x["id"] != p["id"]][:MAX_CARTES - 1]
+
+
+def _proposer(p: dict, fiche: dict, intro: str, autres: list[dict], nuance: str = "",
+              relance: bool = False) -> Reponse:
     pr = _pronom(p)
-    texte = (f"{intro}\n\nMon coup de cœur : « {p['nom']} »{nuance} à {ar(p['prix_ar'])}, {_disponibilite(p)}."
+    accroche = "Autre coup de cœur" if relance else "Mon coup de cœur"
+    deja = fiche.get("coups_de_coeur") or []
+    vus = {"coups_de_coeur": deja + [p["id"]] if p["id"] not in deja else [p["id"]]}  # tous vus : on recommence
+    texte = (f"{intro}\n\n{accroche} : « {p['nom']} »{nuance} à {ar(p['prix_ar'])}, {_disponibilite(p)}."
              f"{_total(p, fiche.get('zone'))}{_tout_de_suite(p, autres)} {_conclure(p)}")
     suggestions = [f"Oui, je {pr} veux"]
     if any((a.get("prix_ar") or 0) < p["prix_ar"] for a in autres):
@@ -142,9 +163,9 @@ def _proposer(p: dict, fiche: dict, intro: str, autres: list[dict], nuance: str 
         texte = (texte.removesuffix(f" {conclusion}")
                  + f" Dites-moi où vous livrer pour connaître le prix livré, ou {conclusion[0].lower()}{conclusion[1:]}")
         return Reponse(texte, [], suggestions + BOUTONS_ZONES, {"type": "commander", "produit_id": p["id"]},
-                       fiche_maj={"zone_demandee": True})
+                       fiche_maj={"zone_demandee": True, **vus})
     suggestions.append("Sur mesure")
-    return Reponse(texte, [], suggestions, {"type": "commander", "produit_id": p["id"]})
+    return Reponse(texte, [], suggestions, {"type": "commander", "produit_id": p["id"]}, fiche_maj=vus)
 
 
 def _recherche(fiche: dict, produits: list[dict], intro: str | None = None) -> Reponse:
@@ -152,17 +173,20 @@ def _recherche(fiche: dict, produits: list[dict], intro: str | None = None) -> R
     d = _demande(fiche)
     tour = fiche.get("tour") or 0
     if r.exacts:
-        rep = _proposer(r.exacts[0], fiche, intro or _INTROS[tour % len(_INTROS)].format(d=d), r.exacts + r.proches)
-        rep.produits = r.exacts[:MAX_CARTES]
+        p, relance = _choisir(r.exacts, fiche)
+        rep = _proposer(p, fiche, intro or _INTROS[tour % len(_INTROS)].format(d=d), r.exacts + r.proches,
+                        relance=relance)
+        rep.produits = _cartes(p, r.exacts)
         return rep
     if r.proches:
         # Rien d'exact : on le dit, on propose le sur mesure dans la couleur voulue ET un coup de cœur parmi les plus proches
-        p = r.proches[0]
+        p, relance = _choisir(r.proches, fiche)
         couleurs_p = " et ".join(c.lower() for c in (p.get("familles") or [])[:2])
         intro = (f"Je n'ai pas de {_demande(fiche, nos=False)} pour le moment. Je peux vous en faire {_un(fiche, p)} "
                  f"sur mesure{_en_couleur(fiche)} (en {DELAI_FABRICATION}), ou voici les modèles les plus proches 👇")
-        rep = _proposer(p, fiche, intro, r.proches, nuance=f" ({couleurs_p})" if couleurs_p else "")
-        rep.produits = r.proches[:MAX_CARTES]
+        rep = _proposer(p, fiche, intro, r.proches, nuance=f" ({couleurs_p})" if couleurs_p else "",
+                        relance=relance)
+        rep.produits = _cartes(p, r.proches)
         return rep
     # Rien dans les critères : le plus accessible du même type, budget ignoré, avec son vrai prix
     sans_budget = filtrer(produits, {**fiche, "budget_max": None, "exclus": []})

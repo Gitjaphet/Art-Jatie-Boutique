@@ -21,7 +21,7 @@ class Decision:
 
 def nouvelle_fiche() -> dict:
     return {"types": [], "couleurs": [], "tailles": [], "budget_max": None, "tri": None,
-            "exclus": [], "montres": [], "question": None, "zone": None, "langue": "fr", "genre": None}
+            "exclus": [], "montres": [], "question": None, "zone": None, "langue": "fr", "genre": None, "coups_de_coeur": []}
 
 
 def produit_cite(mots: list[str], montres: dict) -> int | None:
