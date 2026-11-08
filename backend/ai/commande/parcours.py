@@ -47,6 +47,11 @@ _AVANT_NOM = {"anarana", "anarako", "anarn", "anarany", "izaho", "zaho", "zah", 
               "je", "mappelle", "appelle", "mon", "nom", "est", "cest", "moi"}
 _POLITESSE = {"azafady", "azafad", "azafdy", "azfd", "azafd", "azfdy", "svp", "stp", "merci", "misaotra",
               "belle", "ramose"}
+# « ka ilay anarana tiko soloina », « je veux changer le numéro » : la cliente revient sur une réponse
+_VERBES_CHANGER = ("soloina", "soloy", "ovaina", "ovay", "hanova", "changer", "modifier", "corriger")
+_MOTS_CHAMP = {"nom": {"anarana", "anarako", "nom"}, "whatsapp": {"laharana", "numero", "whatsapp"},
+               "zone": {"toerana", "livraison", "adiresy", "adresse"}, "couleur": {"loko", "couleur"},
+               "taille": {"taille", "habe"}}
 
 # Lieux reconnus sans modèle (texte normalisé : minuscules, sans accents) → zone de livraison.
 _REGIONS = ["majunga", "mahajanga", "diego", "diego suarez", "antsiranana", "tamatave", "toamasina",
@@ -98,6 +103,15 @@ def _nettoyer_nom(texte: str) -> str:
     while mots and (cle(mots[0]) in _AVANT_NOM or (cle(mots[0]).startswith("anar") and len(cle(mots[0])) <= 7)):
         mots.pop(0)
     return " ".join(m for m in mots if m)
+
+
+
+def _champ_a_modifier(message: str):
+    """L'étape que la cliente veut refaire (0 token), sinon None."""
+    mots = set(_mots(message))
+    if not any(m.startswith(v) for m in mots for v in _VERBES_CHANGER):
+        return None
+    return next((etape for etape, cles in _MOTS_CHAMP.items() if mots & cles), None)
 
 
 def _est_oui(message: str) -> bool:
@@ -284,8 +298,10 @@ def _valider(p: Product, b: dict, message: str):
             return dire("e_nom", _L(b))
         b["client_name"] = nom
     elif e == "whatsapp":
+        # Le numéro seul, même entouré de texte (« mon numéro c'est le 034 12 345 67 ») : 0 token
+        trouve = re.search(r"\+?\d[\d .\-]{6,}\d", message or "")
         try:
-            b["client_whatsapp"] = normaliser_whatsapp(message)
+            b["client_whatsapp"] = normaliser_whatsapp(trouve.group() if trouve else message)
         except HTTPException as exc:  # en français : le détail du service ; en malgache : la phrase validée
             return dire("e_whatsapp", "mg") if _L(b) == "mg" else _detail(exc)
     elif e == "zone":
@@ -303,24 +319,28 @@ def _valider(p: Product, b: dict, message: str):
 
 
 # ── Texte libre (brique 2b) : valeurs extraites, vérifiées comme une réponse tapée ──
-def _completer(p: Product, b: dict, etapes: list, champs: dict, message: str) -> bool:
+def _completer(p: Product, b: dict, etapes: list, champs: dict, message: str, corrections: list | None = None) -> bool:
     """Applique les valeurs extraites par le modèle ; chacune doit figurer dans le message et passer _valider.
-    Ne remplace jamais une réponse déjà donnée, sauf celle de l'étape en cours."""
+    Une réponse déjà donnée n'est corrigée que par une valeur écrite dans ce message (anti-invention)."""
     acceptes = 0
     for champ, valeur in (champs or {}).items():
         etape = _ETAPE_CHAMP.get(champ)
-        if etape not in etapes or (b.get(champ) and etape != b["etape"]):
+        if etape not in etapes:
             continue
+        deja = b.get(champ)
         if not _present(champ, str(valeur), message):
             continue  # valeur absente du message : inventée par le modèle, refusée
         if etape == "zone" and valeur in ZONES_CHAT:
-            b["zone"] = valeur
-            acceptes += 1
-            continue
-        essai = {**b, "etape": etape}
-        if _valider(p, essai, str(valeur)) is None:
-            b[champ] = essai[champ]
-            acceptes += 1
+            nouveau = valeur
+        else:
+            essai = {**b, "etape": etape}
+            if _valider(p, essai, str(valeur)) is not None:
+                continue
+            nouveau = essai[champ]
+        if deja and nouveau != deja and etape != b["etape"] and corrections is not None:
+            corrections.append(_libelle_zone(nouveau) if champ == "zone" else nouveau)
+        b[champ] = nouveau
+        acceptes += 1
     return acceptes > 0
 
 
@@ -411,6 +431,12 @@ def _repondre(session: Session, brouillon: dict, message: str, extraire=None) ->
 
     etapes = _etapes(p, b)
     champs = {k: v for k, v in _CHAMPS.items() if v in etapes}
+    cible = _champ_a_modifier(message)  # « ka ilay anarana tiko soloina » : retour direct à cette question
+    if cible and cible in etapes and cible != b["etape"]:
+        if b["etape"] in ("recap", "modifier"):
+            b["retour_recap"] = True
+        b["etape"] = cible
+        return _question(session, p, b)
 
     if b["etape"] == "recap":
         zone = _lieu(message)  # « tsy en ville fa Darsalam » : la cliente corrige la livraison
@@ -422,6 +448,14 @@ def _repondre(session: Session, brouillon: dict, message: str, extraire=None) ->
         if _choisir(message, [MODIFIER]):
             b["etape"] = "modifier"
             return _reponse(dire("modifier", _L(b)), list(champs), b)
+        if extraire:  # hors des règles : le modèle comprend (« fa i Kalo »), le code vérifie
+            corrections = []
+            trouves = extraire(message, _options(p, b, "taille"), _options(p, b, "couleur"),
+                               {z: LIBELLES_ZONE[z] for z in ZONES_CHAT})
+            if _completer(p, b, etapes, trouves, message, corrections) and corrections:
+                q = _recap(session, p, b)
+                q["texte"] = dire("corrige", _L(b), valeur=", ".join(corrections)) + "\n" + q["texte"]
+                return q
         return _reponse(dire("confirmer", _L(b)), [OUI, MODIFIER, ANNULER], b)
 
     if b["etape"] == "modifier":
@@ -436,13 +470,19 @@ def _repondre(session: Session, brouillon: dict, message: str, extraire=None) ->
         return _question(session, p, b)
 
     erreur = _valider(p, b, message)
-    if erreur and extraire:
+    # Un numéro tapé (6 chiffres ou plus) : la règle suffit, le modèle n'est pas appelé
+    tentative_numero = b["etape"] == "whatsapp" and len(re.sub(r"\D", "", message)) >= 6
+    if erreur and extraire and not tentative_numero:
         zones = {z: LIBELLES_ZONE[z] for z in ZONES_CHAT}
         trouves = extraire(message, _options(p, b, "taille"), _options(p, b, "couleur"), zones)
-        if _completer(p, b, etapes, trouves, message):
+        corrections = []
+        if _completer(p, b, etapes, trouves, message, corrections):
             b.pop("retour_recap", None)
             b["etape"] = _prochaine(b, etapes)
-            return _question(session, p, b)
+            q = _question(session, p, b)
+            if corrections:
+                q["texte"] = dire("corrige", _L(b), valeur=", ".join(corrections)) + "\n" + q["texte"]
+            return q
     if erreur:
         suggestions = _question(session, p, b)["suggestions"]
         if not _sur_mesure(b) and b["etape"] in ("taille", "couleur"):

@@ -142,6 +142,7 @@ TEXTES = {
     "recap_au_nom": {"fr": "- Au nom de {nom}, WhatsApp {wa}", "mg": "- Amin'ny anaran'i {nom}, WhatsApp {wa}"},
     "e_whatsapp": {"fr": "Numéro WhatsApp invalide.",
                    "mg": "Tsy mety ilay numero omenao io fa omeo ahy ny numero misy whatsapp nao"},
+    "corrige": {"fr": "C'est noté, je corrige : {valeur} 😊", "mg": "Eny, voaova : {valeur} 😊"},
     "incompris": {
         "fr": "Je n'ai pas bien compris 😊 Je peux vous montrer nos créations au crochet, ou vous en faire une "
               "sur mesure. Que cherchez-vous ?",

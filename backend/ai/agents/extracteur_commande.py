@@ -16,7 +16,8 @@ _CONSIGNE = ("Tu extrais des informations de commande d'un message de cliente. "
 def extraire_champs(message: str, tailles: list, couleurs: list, zones: dict, token_log: list = None) -> dict:
     """{champ: valeur} pour les informations trouvées, {} si rien ou en cas de panne."""
     proprietes = {
-        "client_name": {"type": "string", "description": "Nom ou prénom de la personne qui commande"},
+        "client_name": {"type": "string", "description": "Nom ou prénom de la personne qui commande ; "
+                        "si elle se corrige (« pas X mais Y », « tsy X fa Y »), le NOUVEAU nom (Y)"},
         "client_whatsapp": {"type": "string", "description": "Numéro de téléphone WhatsApp, tel qu'écrit"},
         "zone": {"type": "string", "enum": list(zones),
                  "description": "Zone de livraison : " + " ; ".join(f"{k} = {v}" for k, v in zones.items())},

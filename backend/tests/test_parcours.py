@@ -366,3 +366,33 @@ def test_numero_invalide_en_malgache(session, product):
     r = _suivre(session, demarrer(session, p.id, langue="mg"), EN_STOCK, "s", "rose", "Lalao Rabe", "tsy haiko")
     assert r["brouillon"]["etape"] == "whatsapp"
     assert r["texte"] == "Tsy mety ilay numero omenao io fa omeo ahy ny numero misy whatsapp nao"
+
+
+def _jamais(*a, **k):
+    raise AssertionError("le modèle ne doit pas être appelé")
+
+
+def test_demande_de_changer_un_champ_sans_modele(session, product):
+    from ai.commande.parcours import _champ_a_modifier
+    assert _champ_a_modifier("ka ilay anarana tiko soloina aloha") == "nom"
+    assert _champ_a_modifier("je veux changer le numéro") == "whatsapp"
+    assert _champ_a_modifier("Kalo") is None
+    p = _produit(session, product)
+    r = _suivre(session, _ouvrir(session, p.id), "s", "rose", "Lalao Rabe")
+    r = repondre(session, r["brouillon"], "ka ilay anarana tiko soloina aloha", extraire=_jamais)
+    assert r["brouillon"]["etape"] == "nom"
+
+
+def test_numero_tape_sans_appeler_le_modele(session, product):
+    p = _produit(session, product)
+    r = _suivre(session, _ouvrir(session, p.id), "s", "rose", "Lalao Rabe")
+    r = repondre(session, r["brouillon"], "0341234", extraire=_jamais)
+    assert r["brouillon"]["etape"] == "whatsapp"
+
+
+def test_correction_du_nom_comprise_par_le_modele(session, product):
+    p = _produit(session, product)
+    r = _suivre(session, _ouvrir(session, p.id), "s", "rose", "Zozeliko")
+    r = repondre(session, r["brouillon"], "tsy Zozeliko azfd fa i Kalo", extraire=_faux({"client_name": "Kalo"}))
+    assert r["brouillon"]["client_name"] == "Kalo" and r["brouillon"]["etape"] == "whatsapp"
+    assert r["texte"].startswith("C'est noté, je corrige : Kalo 😊")
