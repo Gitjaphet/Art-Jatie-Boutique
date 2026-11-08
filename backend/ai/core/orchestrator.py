@@ -108,7 +108,7 @@ def run_multi_agent(
             # (chaîne « commande » : Groq puis OpenRouter, sans entraînement sur les données).
             with Session(engine) as session:
                 if commander:
-                    r = demarrer(session, int(commander))
+                    r = demarrer(session, int(commander), langue=_langue_cliente(message, fiche))
                 else:
                     r = repondre(session, historique_commande, message,
                                  extraire=lambda m, ta, co, zo: extraire_champs(m, ta, co, zo, token_log=token_log))

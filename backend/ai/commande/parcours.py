@@ -18,6 +18,7 @@ import re
 from fastapi import HTTPException
 from sqlmodel import Session
 
+from ai.recherche.textes import dire, en_malgache
 from ai.utils.texte import normaliser
 from models.models import Product
 from services.catalogue import TYPES_FEMININS, TYPES_SANS_TAILLE
@@ -30,13 +31,16 @@ ZONES_CHAT = ["nosybe_ville", "darsalam", "dzamanjar", "nosybe_autre", "tana", "
 OUI, MODIFIER, ANNULER = "Oui, je confirme", "Modifier", "Annuler"
 EN_STOCK, SUR_MESURE = "La pièce en stock", "Sur mesure, même style"
 MENSURATIONS = "Mes mensurations"
+# Boutons affichés à une cliente qui écrit en malgache (validés par Art Jatie) ; relus en français à l'entrée
+BOUTONS_MG = {OUI: "Ok, confirmeko", MODIFIER: "Hanova", ANNULER: "Annuleko", EN_STOCK: "Ilay misy en stock",
+              MENSURATIONS: "Ny refiko"}
 TAILLES_SUR_MESURE = ["XS", "S", "M", "L", "XL"]
 PALETTE_SUR_MESURE = ["Beige", "Blanc", "Noir", "Rose", "Rouge", "Bleu", "Marron", "Kaki", "Multicolore"]  # filtres boutique
 AVANCE = int(TAUX_ACOMPTE_SUR_MESURE * 100)
 
 _DEBUT_OUI = {"oui", "ok", "okay", "yes", "eny", "daccord"}
 _NEGATIONS = {"non", "pas", "annule", "annuler", "attends", "attendez", "no"}
-_MOTS_ANNULER = {"annuler", "annule", "stop", "laisse tomber", "abandonner"}
+_MOTS_ANNULER = {"annuler", "annule", "stop", "laisse tomber", "abandonner", "annuleko"}
 _MOTS_ZONE_GENERIQUES = {"nosy", "zone", "devis", "frais", "sur"}
 
 # Lieux reconnus sans modèle (texte normalisé : minuscules, sans accents) → zone de livraison.
@@ -114,7 +118,14 @@ def _detail(exc: HTTPException) -> str:
 
 
 def _reponse(texte: str, suggestions=None, brouillon=None, commande=None) -> dict:
+    if suggestions and _L(brouillon) == "mg":  # boutons dans la langue de la cliente
+        suggestions = [BOUTONS_MG.get(s, s) for s in suggestions]
     return {"texte": texte, "suggestions": suggestions or [], "brouillon": brouillon, "commande": commande}
+
+
+def _L(b: dict | None) -> str:
+    """Langue de la commande, gardée dans le brouillon depuis le démarrage."""
+    return (b or {}).get("langue") or "fr"
 
 
 def _libelle_zone(zone: str) -> str:
@@ -192,7 +203,7 @@ def _recap(session: Session, p: Product, b: dict) -> dict:
             f"- **Total : {_fmt(calc['total'])}**",
             qui,
         ]
-    texte = "Voici le récapitulatif de votre commande :\n" + "\n".join(lignes) + "\n\nJe confirme ?"
+    texte = dire("recap_titre", _L(b)) + "\n" + "\n".join(lignes) + "\n\n" + dire("recap_question", _L(b))
     return _reponse(texte, [OUI, MODIFIER, ANNULER], b)
 
 
@@ -202,27 +213,24 @@ def _question(session: Session, p: Product, b: dict) -> dict:
     e = b["etape"]
     if e == "mode":
         variantes = "autre couleur" if _sans_taille(p) else "autre taille, autre couleur"
-        return _reponse(f"Préférez-vous la pièce en stock, ou une version sur mesure dans le même style "
-                        f"({variantes}) ?", [EN_STOCK, SUR_MESURE], b)
+        return _reponse(dire("q_mode", _L(b), variantes=variantes), [EN_STOCK, SUR_MESURE], b)
     if e == "taille":
         if _sur_mesure(b):
             if b.get("attente_mensurations"):
-                return _reponse("Indiquez vos mensurations (tour de poitrine, de taille, de hanches…) :", [], b)
-            return _reponse("Quelle taille souhaitez-vous ? Vous pouvez aussi me donner vos mensurations.",
+                return _reponse(dire("q_mensurations", _L(b)), [], b)
+            return _reponse(dire("q_taille_libre", _L(b)),
                             TAILLES_SUR_MESURE + [MENSURATIONS], b)
-        return _reponse(f"Quelle taille souhaitez-vous pour « {p.name} » ?", liste(p.sizes), b)
+        return _reponse(dire("q_taille", _L(b), nom=p.name), liste(p.sizes), b)
     if e == "couleur":
         if _sur_mesure(b):
-            return _reponse("Quelle(s) couleur(s) souhaitez-vous ? Choisissez dans notre palette "
-                            "ou écrivez votre envie (ex. rose et blanc).", PALETTE_SUR_MESURE, b)
-        return _reponse("Quelle couleur préférez-vous ?", liste(p.colors), b)
+            return _reponse(dire("q_couleur_libre", _L(b)), PALETTE_SUR_MESURE, b)
+        return _reponse(dire("q_couleur", _L(b)), liste(p.colors), b)
     if e == "nom":
-        return _reponse("À quel nom dois-je enregistrer la commande ?", [], b)
+        return _reponse(dire("q_nom", _L(b)), [], b)
     if e == "whatsapp":
-        return _reponse("Quel est votre numéro WhatsApp ? Notre équipe vous y contactera "
-                        "pour le paiement et la livraison.", [], b)
+        return _reponse(dire("q_whatsapp", _L(b)), [], b)
     if e == "zone":
-        return _reponse("Où souhaitez-vous être livré(e) ?", [_libelle_zone(z) for z in ZONES_CHAT], b)
+        return _reponse(dire("q_zone", _L(b)), [_libelle_zone(z) for z in ZONES_CHAT], b)
     return _recap(session, p, b)
 
 
@@ -251,13 +259,12 @@ def _valider(p: Product, b: dict, message: str):
         options = _options(p, b, e)
         choix = _choisir(texte, options)
         if not choix:
-            return (f"Cette pièce en stock existe en : {', '.join(options)}. "
-                    "Je peux aussi la faire fabriquer sur mesure, dans le même style.")
+            return dire("e_options", _L(b), options=", ".join(options))
         b[e] = choix
     elif e == "nom":
         nom = texte[:120]
         if len(nom) < 2 or len(nom.split()) > 4 or any(c.isdigit() for c in nom):
-            return "Pouvez-vous m'indiquer votre nom (sans chiffres) ?"
+            return dire("e_nom", _L(b))
         b["client_name"] = nom
     elif e == "whatsapp":
         try:
@@ -273,7 +280,7 @@ def _valider(p: Product, b: dict, message: str):
             candidats = [z for z in ZONES_CHAT if cle and cle in _cle(LIBELLES_ZONE[z])]
             zone = candidats[0] if len(candidats) == 1 else None
         if not zone:
-            return "Choisissez une zone de livraison dans la liste."
+            return dire("e_zone", _L(b))
         b["zone"] = zone
     return None
 
@@ -304,8 +311,7 @@ def _completer(p: Product, b: dict, etapes: list, champs: dict, message: str) ->
 def _creer(session: Session, p: Product, b: dict) -> dict:
     sur_mesure = _sur_mesure(b)
     if not sur_mesure and not _en_stock(p):
-        return _reponse("Cette pièce vient d'être vendue 😔 Je peux la faire fabriquer pour vous sur mesure, "
-                        "dans le même style.", [SUR_MESURE, ANNULER], {**b, "etape": "mode"})
+        return _reponse(dire("vendue", _L(b)), [SUR_MESURE, ANNULER], {**b, "etape": "mode"})
     note = (f"Sur mesure inspiré du modèle « {p.name} » — prix à confirmer avec la cliente. "
             "Commande passée via le chat Jatie." if sur_mesure else "Commande passée via le chat Jatie")
     try:
@@ -321,35 +327,34 @@ def _creer(session: Session, p: Product, b: dict) -> dict:
         return _reponse(f"Je n'ai pas pu enregistrer la commande : {_detail(exc)}", [MODIFIER, ANNULER],
                         {**b, "etape": "recap"})
     if sur_mesure:
-        texte = (f"Merci {order.client_name} ! Votre demande sur mesure n° {order.id} est enregistrée ✨\n"
-                 f"Notre équipe vous appelle au {order.client_whatsapp} pour confirmer le prix, "
-                 "les détails et l'avance.")
+        texte = dire("merci_sur_mesure", _L(b), nom=order.client_name, id=order.id, wa=order.client_whatsapp)
     else:
-        texte = (f"Merci {order.client_name} ! Votre commande n° {order.id} est enregistrée ✨\n"
-                 f"Total : **{_fmt(order.total_ar)}**. Notre équipe vous contacte sur WhatsApp "
-                 f"au {order.client_whatsapp} pour le paiement et la livraison.")
+        texte = dire("merci_stock", _L(b), nom=order.client_name, id=order.id, total=_fmt(order.total_ar),
+                     wa=order.client_whatsapp)
     return _reponse(texte, commande={"id": order.id, "total_ar": order.total_ar})
 
 
 # ── Points d'entrée ──────────────────────────────────────────────────────
-def _demarrer(session: Session, product_id: int) -> dict:
+def _demarrer(session: Session, product_id: int, langue: str = "fr") -> dict:
     """Bouton « Commander » d'une carte produit."""
     p = session.get(Product, product_id)
     if not p:
         return _reponse("Je ne retrouve pas ce modèle. Choisissez-le à nouveau dans la boutique ?")
     b = {"product_id": p.id, "mode": None, "taille": None, "couleur": None,
-         "client_name": None, "client_whatsapp": None, "zone": None}
+         "client_name": None, "client_whatsapp": None, "zone": None, "langue": langue}
     entete = f"Avec plaisir ! « {p.name} » ({_fmt(p.price_ar)})"
     if _en_stock(p):
         b["etape"] = "mode"
         q = _question(session, p, b)
-        q["texte"] = f"{entete} : pièce en stock, préparée sous {DELAI_TRAITEMENT}.\n" + q["texte"]
+        delai = en_malgache(DELAI_TRAITEMENT) if langue == "mg" else DELAI_TRAITEMENT
+        q["texte"] = dire("ouverture_stock", langue, entete=entete, delai=delai) + "\n" + q["texte"]
         return q
     b["mode"], b["etape"] = "sur_mesure", "taille"
     q = _question(session, p, b)
-    selon = "les couleurs" if _sans_taille(p) else "la taille et les couleurs"
-    q["texte"] = (f"{entete} est réalisé{_e(p)} sur commande, dans le même style : {DELAI_FABRICATION} "
-                  f"après l'avance de {AVANCE} %. Le prix peut varier selon {selon}.\n" + q["texte"])
+    selon = dire("selon_couleurs" if _sans_taille(p) else "selon_taille_couleurs", langue)
+    delai = en_malgache(DELAI_FABRICATION) if langue == "mg" else DELAI_FABRICATION
+    q["texte"] = dire("ouverture_fabrication", langue, entete=entete, e=_e(p), delai=delai, avance=AVANCE,
+                      selon=selon) + "\n" + q["texte"]
     return q
 
 
@@ -358,19 +363,20 @@ def _repondre(session: Session, brouillon: dict, message: str, extraire=None) ->
     extraire(message, tailles, couleurs, zones) -> dict : appelé seulement si la réponse
     n'est pas comprise directement (un bouton cliqué ne coûte aucun token)."""
     b = dict(brouillon or {})
+    # Bouton malgache cliqué : relu en français, la suite du parcours ne change pas
+    message = next((fr for fr, mg in BOUTONS_MG.items() if _cle(mg) == _cle(message)), message)
     p = session.get(Product, b.get("product_id") or 0)
     if not p or b.get("etape") not in _ETAPES_VALIDES:
         return _reponse("Reprenons depuis la boutique : cliquez sur « Commander » sous le modèle qui vous plaît.")
     if _choisir(message, [ANNULER]) or _cle(message) in _MOTS_ANNULER:
-        return _reponse("Commande annulée. Je reste à votre disposition si vous avez une question ✨")
+        return _reponse(dire("annulee", _L(b)))
 
     passer_sur_mesure = _choisir(message, [SUR_MESURE]) and not _sur_mesure(b) and b["etape"] in ("mode", "taille", "couleur")
     if passer_sur_mesure or (b["etape"] == "mode" and "mesure" in _cle(message)):
         b.update(mode="sur_mesure", taille=None, couleur=None, etape="taille")
         b.pop("retour_recap", None)
         q = _question(session, p, b)
-        q["texte"] = ("Parfait, faisons-la sur mesure ! Le prix peut varier selon la taille et les couleurs ; "
-                      "notre équipe vous le confirmera.\n" + q["texte"])
+        q["texte"] = dire("passer_sur_mesure", _L(b)) + "\n" + q["texte"]
         return q
 
     if b["etape"] == "mode":
@@ -382,7 +388,7 @@ def _repondre(session: Session, brouillon: dict, message: str, extraire=None) ->
                      couleur=couleurs[0] if len(couleurs) == 1 else None)
             b["etape"] = _prochaine(b, _etapes(p, b))
             return _question(session, p, b)
-        return _reponse("La pièce en stock, ou sur mesure dans le même style ?", [EN_STOCK, SUR_MESURE], b)
+        return _reponse(dire("q_mode_court", _L(b)), [EN_STOCK, SUR_MESURE], b)
 
     etapes = _etapes(p, b)
     champs = {k: v for k, v in _CHAMPS.items() if v in etapes}
@@ -392,13 +398,13 @@ def _repondre(session: Session, brouillon: dict, message: str, extraire=None) ->
             return _creer(session, p, b)
         if _choisir(message, [MODIFIER]):
             b["etape"] = "modifier"
-            return _reponse("Que souhaitez-vous modifier ?", list(champs), b)
-        return _reponse("Je confirme la commande ?", [OUI, MODIFIER, ANNULER], b)
+            return _reponse(dire("modifier", _L(b)), list(champs), b)
+        return _reponse(dire("confirmer", _L(b)), [OUI, MODIFIER, ANNULER], b)
 
     if b["etape"] == "modifier":
         choix = _choisir(message, list(champs))
         if not choix:
-            return _reponse("Que souhaitez-vous modifier ?", list(champs), b)
+            return _reponse(dire("modifier", _L(b)), list(champs), b)
         b["etape"], b["retour_recap"] = champs[choix], True
         return _question(session, p, b)
 
@@ -444,9 +450,9 @@ def _resume(session: Session, b: dict):
     }
 
 
-def demarrer(session: Session, product_id: int) -> dict:
+def demarrer(session: Session, product_id: int, langue: str = "fr") -> dict:
     """Point d'entrée : bouton « Commander » (+ résumé de la commande en cours)."""
-    r = _demarrer(session, product_id)
+    r = _demarrer(session, product_id, langue)
     r["resume"] = _resume(session, r["brouillon"])
     return r
 

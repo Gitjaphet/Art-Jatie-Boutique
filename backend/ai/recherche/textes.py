@@ -59,6 +59,76 @@ TEXTES = {
     "livraison_fabrication": {"fr": "« {nom} » est réalisé{e} pour vous en {delai}, {arrivee}",
                               "mg": "Amboarina ho anao ao anatin'ny {delai} « {nom} », {arrivee}"},
     "montrer_quoi": {"fr": " Que puis-je vous montrer ?", "mg": " Inona no tianao hasehoko anao ?"},
+    "q_mode": {
+        "fr": "Préférez-vous la pièce en stock, ou une version sur mesure dans le même style ({variantes}) ?",
+        "mg": "Tianao ve ilay pièce misy en stock, sa amboarina sur mesure mitovy endrika aminy ?",
+    },
+    "q_mode_court": {
+        "fr": "La pièce en stock, ou sur mesure dans le même style ?",
+        "mg": "Tianao ve ilay pièce misy en stock, sa amboarina sur mesure mitovy endrika aminy ?",
+    },
+    "q_mensurations": {"fr": "Indiquez vos mensurations (tour de poitrine, de taille, de hanches…) :",
+                       "mg": "Omeo ahy ny refinao (tratra, andilana, valahana…) :"},
+    "q_taille_libre": {"fr": "Quelle taille souhaitez-vous ? Vous pouvez aussi me donner vos mensurations.",
+                       "mg": "Taille firy no tianao ? Afaka omenao ahy koa ny refinao."},
+    "q_taille": {"fr": "Quelle taille souhaitez-vous pour « {nom} » ?", "mg": "Taille firy no tianao ho an'ny « {nom} » ?"},
+    "q_couleur_libre": {
+        "fr": "Quelle(s) couleur(s) souhaitez-vous ? Choisissez dans notre palette ou écrivez votre envie (ex. rose et blanc).",
+        "mg": "Loko inona no tianao ? Fidio ao amin'ny palette-nay na soraty izay tianao (ohatra : mavokely sy fotsy).",
+    },
+    "q_couleur": {"fr": "Quelle couleur préférez-vous ?", "mg": "Loko inona no tianao ?"},
+    "q_nom": {"fr": "À quel nom dois-je enregistrer la commande ?", "mg": "Amin'ny anaran'iza no hanoratako ny commande ?"},
+    "q_whatsapp": {
+        "fr": "Quel est votre numéro WhatsApp ? Notre équipe vous y contactera pour le paiement et la livraison.",
+        "mg": "Inona ny laharana WhatsApp-nao ? Hifandray aminao ao ny ekipa-nay ho an'ny paiement sy ny livraison.",
+    },
+    "q_zone": {"fr": "Où souhaitez-vous être livré(e) ?", "mg": "Aiza no tianao hanaterana azy ?"},
+    "e_options": {
+        "fr": "Cette pièce en stock existe en : {options}. Je peux aussi la faire fabriquer sur mesure, dans le même style.",
+        "mg": "Ity pièce misy en stock ity dia misy amin'ny : {options}. Afaka amboarinay sur mesure mitovy endrika koa izy.",
+    },
+    "e_nom": {"fr": "Pouvez-vous m'indiquer votre nom (sans chiffres) ?",
+              "mg": "Afaka omenao anaranao zahay azafady (tokony tsisy chiffre)"},
+    "e_zone": {"fr": "Choisissez une zone de livraison dans la liste.",
+               "mg": "Fidio amin'reo ary lay toerana hanaterana ilay izy."},
+    "vendue": {
+        "fr": "Cette pièce vient d'être vendue 😔 Je peux la faire fabriquer pour vous sur mesure, dans le même style.",
+        "mg": "Vao lafo ity pièce ity 😔 Afaka amboarinay ho anao sur mesure izy.",
+    },
+    "merci_sur_mesure": {
+        "fr": "Merci {nom} ! Votre demande sur mesure n° {id} est enregistrée ✨\nNotre équipe vous appelle au {wa} "
+              "pour confirmer le prix, les détails et l'avance.",
+        "mg": "Misaotra {nom} ! Voaray ny fangatahanao sur mesure laharana {id} ✨\nHiantso anao amin'ny {wa} "
+              "ny ekipanay miconfirmer ny vidiny, ny antsipiriany ary ny avance.",
+    },
+    "merci_stock": {
+        "fr": "Merci {nom} ! Votre commande n° {id} est enregistrée ✨\nTotal : **{total}**. Notre équipe vous contacte "
+              "sur WhatsApp au {wa} pour le paiement et la livraison.",
+        "mg": "Misaotra {nom} ! Voaray ny commande-nao laharana {id} ✨\nTotal : **{total}**. Hifandray aminao amin'ny "
+              "WhatsApp amin'ny {wa} ny ekipa-nay ho an'ny paiement sy ny livraison.",
+    },
+    "ouverture_stock": {"fr": "{entete} : pièce en stock, préparée sous {delai}.",
+                        "mg": "{entete} : misy en stock, omanina ao anatin'ny {delai}."},
+    "ouverture_fabrication": {
+        "fr": "{entete} est réalisé{e} sur commande, dans le même style : {delai} après l'avance de {avance} %. "
+              "Le prix peut varier selon {selon}.",
+        "mg": "{entete} dia amboarina rehefa misy commande, mitovy endrika : {delai} aorian'ny avance {avance} %. "
+              "Mety miova arakaraka {selon} ny vidiny.",
+    },
+    "selon_couleurs": {"fr": "les couleurs", "mg": "ny loko"},
+    "selon_taille_couleurs": {"fr": "la taille et les couleurs", "mg": "ny taille sy ny loko"},
+    "annulee": {"fr": "Commande annulée. Je reste à votre disposition si vous avez une question ✨",
+                "mg": "Nofoanana ny commande. Eto foana aho raha manana fanontaniana ianao ✨"},
+    "passer_sur_mesure": {
+        "fr": "Parfait, faisons-la sur mesure ! Le prix peut varier selon la taille et les couleurs ; "
+              "notre équipe vous le confirmera.",
+        "mg": "Tsara, amboarinay sur mesure izy ! Mety miova arakaraka ny taille sy ny loko ny vidiny ; "
+              "ny ekipanay no miconfirmer azy.",
+    },
+    "modifier": {"fr": "Que souhaitez-vous modifier ?", "mg": "Inona no tianao ovaina ?"},
+    "confirmer": {"fr": "Je confirme la commande ?", "mg": "Confirmeko ve ?"},
+    "recap_titre": {"fr": "Voici le récapitulatif de votre commande :", "mg": "Ireto ny famintinana ny commande-nao :"},
+    "recap_question": {"fr": "Je confirme ?", "mg": "Confirmeko ve ?"},
     "incompris": {
         "fr": "Je n'ai pas bien compris 😊 Je peux vous montrer nos créations au crochet, ou vous en faire une "
               "sur mesure. Que cherchez-vous ?",

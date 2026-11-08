@@ -310,3 +310,18 @@ def test_pas_d_etape_taille_pour_un_sac():
     robe = Product(name="Robe", type_article="Robe", sizes="S,M", colors="Rose", price_ar=40000)
     assert _etapes(sac, {"mode": "sur_mesure"})[0] == "couleur"
     assert _etapes(robe, {"mode": "sur_mesure"})[0] == "taille"
+
+
+# --- Parcours de commande en malgache (lot 4) ---
+def test_boutons_de_commande_en_malgache():
+    from ai.commande.parcours import ANNULER, MODIFIER, OUI, _reponse
+    assert _reponse("x", [OUI, MODIFIER, ANNULER], {"langue": "mg"})["suggestions"] == ["Ok, confirmeko", "Hanova", "Annuleko"]
+    assert _reponse("x", [OUI, MODIFIER, ANNULER], {"langue": "fr"})["suggestions"] == [OUI, MODIFIER, ANNULER]
+
+
+def test_phrases_de_commande_en_malgache():
+    from ai.recherche.textes import dire
+    assert dire("recap_question", "mg") == "Confirmeko ve ?"
+    assert dire("e_zone", "mg") == "Fidio amin'reo ary lay toerana hanaterana ilay izy."
+    assert dire("merci_stock", "mg", nom="Vanessa", id=12, total="28 000 Ar", wa="0340000000").startswith(
+        "Misaotra Vanessa ! Voaray ny commande-nao laharana 12 ✨")
