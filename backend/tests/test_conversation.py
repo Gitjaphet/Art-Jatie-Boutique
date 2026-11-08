@@ -153,3 +153,11 @@ def test_boutons_malgaches_compris_par_le_lecteur():
     from ai.recherche.lecteur import lire
     assert lire("Hijery ny boutique rehetra").tout_voir
     assert lire("Eny, tiako").reponse
+
+
+def test_salutations_du_nord_en_malgache_sans_modele():
+    from ai.recherche.conversation import tour_guide
+    for message in ("mbalatsar", "mbalatsara", "karakory", "krkr", "manahoana"):
+        r = tour_guide(message, None, produits=_DEUX_SACS)
+        assert r["action"] == "salutation", message
+        assert r["texte"].startswith("Salama ! 😊 Izaho no Jatie"), message

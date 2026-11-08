@@ -47,7 +47,10 @@ COULEURS_MALGACHE = {
 # Mots-clés utilisés par le lecteur (brique 2b)
 OUI = {"oui", "ouais", "ok", "okay", "daccord", "yes", "eny", "ie", "volontiers", "parfait"}
 NON = {"non", "tsia", "aoka", "nan", "no"}
-SALUTATIONS = {"bonjour", "bonsoir", "salut", "coucou", "hello", "salama", "manao", "akory"}
+# Salutations malgaches (standard et Nord) : reconnues comme salutation ET comme langue malgache
+SALUTATIONS_MG = {"salama", "manao", "akory", "manahoana", "mbolatsara", "mbalatsara", "mbalatsar",
+                  "karakory", "krkr"}
+SALUTATIONS = {"bonjour", "bonsoir", "salut", "coucou", "hello"} | SALUTATIONS_MG
 QUESTION_PRIX = {"combien", "prix", "tarif", "ohatrinona", "firy", "vidiny", "sarany"}
 EXPRESSIONS_TROP_CHER = ("trop cher", "lafo loatra", "un peu cher", "c est cher", "cest cher")
 
@@ -56,7 +59,7 @@ MARQUEURS_MALGACHE = {
     "salama", "misy", "ve", "ianareo", "ohatrinona", "firy", "manao", "ahoana", "akory",
     "eny", "tsia", "aoka", "lafo", "loatra", "azafady", "misaotra", "mba", "ho",
     *COULEURS_MALGACHE, "akanjo", "kitapo", "satroka", "milomano",
-    *DIALECTE, *DIALECTE.values(), "aleko", "vidiny", "sarany",
+    *DIALECTE, *DIALECTE.values(), "aleko", "vidiny", "sarany", *SALUTATIONS_MG,
 }
 
 
