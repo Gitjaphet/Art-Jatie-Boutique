@@ -183,3 +183,12 @@ def test_malgache_remise_et_refus():
     assert r.texte.startswith("Tsy afaka ovaiko ny vidiny 😊") and "Hijery ny boutique rehetra" in r.suggestions
     r = repondre("non", {"langue": "mg"}, _DEUX_SACS)
     assert r.texte.startswith("Tsy maninona 😊") and r.suggestions[0] == "Hijery ny boutique rehetra"
+
+
+def test_langue_du_message_incompris():
+    from ai.core.orchestrator import _langue_cliente
+    from ai.recherche.textes import dire
+    assert _langue_cliente("zah tsy mahay", None) == "mg"
+    assert _langue_cliente("blabla", {"langue": "mg"}) == "mg"
+    assert _langue_cliente("je veux un truc", None) == "fr"
+    assert dire("incompris", "mg").startswith("Miala tsiny, tsy azoko tsara 😊")

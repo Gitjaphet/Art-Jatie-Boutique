@@ -9,6 +9,8 @@ from ai.core.llm import masquer_donnees_perso
 from ai.agents.comprendre import comprendre
 from ai.data.cartes import construire_cartes
 from ai.recherche.conversation import lecture_comprise, tour_guide
+from ai.recherche.lexique import langue, mots_message
+from ai.recherche.textes import dire
 from ai.agents.extracteur_commande import extraire_champs
 from ai.commande.parcours import demarrer, repondre
 from ai.agents.faq import llm5_faq
@@ -18,6 +20,13 @@ from ai.data.stats import get_stats
 from ai.data.stats_texte import formater_stats
 from sqlmodel import Session
 from database import engine
+
+
+def _langue_cliente(message: str, fiche: dict | None) -> str:
+    """Malgache si la conversation l'est déjà, ou si ce message contient un mot malgache."""
+    if (fiche or {}).get("langue") == "mg":
+        return "mg"
+    return langue(mots_message(message))
 
 
 def run_multi_agent(
@@ -89,8 +98,7 @@ def run_multi_agent(
 
     # ── Hors sujet : on le dit gentiment et on relance (pas de « souci technique ») ──
     elif intent == "autre":
-        reponse = ("Je n'ai pas bien compris 😊 Je peux vous montrer nos créations au crochet, "
-                   "ou vous en faire une sur mesure. Que cherchez-vous ?")
+        reponse = dire("incompris", _langue_cliente(message, fiche))
         suggestions = ["Robes", "Maillots", "Sacs", "Sur mesure"]
 
     # ── Commande : parcours guidé par le code (ai/commande/parcours.py) ───

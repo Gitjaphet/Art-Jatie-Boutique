@@ -24,6 +24,12 @@ TEXTES = {
         "mg": "Tsy misy {d} aloha izao. Afaka amboarinay ho anao sur mesure{couleur} ianao (ao anatin'ny {delai}), "
               "na ireto ny modèle akaiky indrindra 👇",
     },
+    "incompris": {
+        "fr": "Je n'ai pas bien compris 😊 Je peux vous montrer nos créations au crochet, ou vous en faire une "
+              "sur mesure. Que cherchez-vous ?",
+        "mg": "Miala tsiny, tsy azoko tsara 😊 Afaka asehoko anao ny créations crochet-nay, na amboarinay ho "
+              "anao sur mesure. Inona no tadiavinao ?",
+    },
     "comprends": {"fr": "Je comprends tout à fait 😊", "mg": "Azoko tsara 😊"},
     "pas_de_souci": {
         "fr": "Pas de souci 😊 Je peux vous montrer d'autres modèles, ou vous en créer un sur mesure.",
