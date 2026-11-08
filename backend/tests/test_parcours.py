@@ -359,3 +359,10 @@ def test_correction_de_zone_au_recapitulatif(session, product):
 def test_prix_de_base_reste_en_francais():
     from ai.recherche.textes import dire
     assert dire("recap_prix_base", "mg", prix="20 000 Ar").startswith("- Prix de base : 20 000 Ar (mety miova")
+
+
+def test_numero_invalide_en_malgache(session, product):
+    p = _produit(session, product)
+    r = _suivre(session, demarrer(session, p.id, langue="mg"), EN_STOCK, "s", "rose", "Lalao Rabe", "tsy haiko")
+    assert r["brouillon"]["etape"] == "whatsapp"
+    assert r["texte"] == "Tsy mety ilay numero omenao io fa omeo ahy ny numero misy whatsapp nao"

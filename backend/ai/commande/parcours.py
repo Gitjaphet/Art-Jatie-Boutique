@@ -286,8 +286,8 @@ def _valider(p: Product, b: dict, message: str):
     elif e == "whatsapp":
         try:
             b["client_whatsapp"] = normaliser_whatsapp(message)
-        except HTTPException as exc:
-            return _detail(exc)
+        except HTTPException as exc:  # en français : le détail du service ; en malgache : la phrase validée
+            return dire("e_whatsapp", "mg") if _L(b) == "mg" else _detail(exc)
     elif e == "zone":
         par_libelle = {_libelle_zone(z): z for z in ZONES_CHAT}
         zone = par_libelle.get(_choisir(texte, list(par_libelle)))
