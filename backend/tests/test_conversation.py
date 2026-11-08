@@ -146,7 +146,7 @@ def test_malgache_piece_a_fabriquer():
     r = tour_guide("misy kitapo ve ?", None, produits=_SAC_A_FAIRE)
     assert ("tsy misy en stock aloha izao, fa afaka amboarinay ho anao ao anatin'ny 7 ka hatramin'ny 14 andro."
             in r["texte"])
-    assert r["texte"].endswith("sa amboarinay ho anao avy hatrany ?")
+    assert r["texte"].endswith("sa ve hoe direct amboarinay ho anao lay izy ?")
 
 
 def test_boutons_malgaches_compris_par_le_lecteur():

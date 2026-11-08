@@ -28,7 +28,7 @@ TEXTES = {
     "zone_ou_realiser": {
         "fr": "Dites-moi où vous livrer pour connaître le prix livré, ou on lance sa réalisation pour vous ?",
         "mg": "Lazao ahy hoe aiza no hanaterana azy dia omeko ny vidiny miaraka amin'ny livraison, "
-              "sa amboarinay ho anao avy hatrany ?",
+              "sa ve hoe direct amboarinay ho anao lay izy ?",
     },
     "bouton_oui": {"fr": "Oui, je {pr} veux", "mg": "Eny, tiako"},
     "bouton_tout_voir": {"fr": "Voir toute la boutique", "mg": "Hijery ny boutique rehetra"},
