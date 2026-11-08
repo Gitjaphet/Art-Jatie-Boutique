@@ -341,3 +341,16 @@ def test_recapitulatif_en_malgache():
     assert dire("recap_au_nom", "mg", nom="Vanessa", wa="034") == "- Amin'ny anaran'i Vanessa, WhatsApp 034"
     assert dire("recap_total_estime", "mg", total="30 000 Ar") == "- **Total tombanana : 30 000 Ar**"
     assert dire("recap_au_nom", "fr", nom="Vanessa", wa="034") == "- Au nom de Vanessa, WhatsApp 034"
+
+
+def test_nom_avec_anaran_et_azfd():
+    from ai.commande.parcours import _nettoyer_nom
+    assert _nettoyer_nom("@anaran Japhet Black") == "Japhet Black"
+    assert _nettoyer_nom("Anarisoa azfd") == "Anarisoa"
+
+
+def test_correction_de_zone_au_recapitulatif(session, product):
+    r = _suivre(session, _jusqu_a_la_zone(session, product), "Hell-Ville")
+    assert r["brouillon"]["etape"] == "recap" and r["brouillon"]["zone"] == "nosybe_ville"
+    r = _suivre(session, r, "azfd tsy en ville fa Darsalam kay")
+    assert r["brouillon"]["zone"] == "darsalam" and r["brouillon"]["etape"] == "recap"

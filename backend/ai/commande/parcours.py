@@ -45,7 +45,8 @@ _MOTS_ZONE_GENERIQUES = {"nosy", "zone", "devis", "frais", "sur"}
 # Autour d'un nom tapé : « @anarn Valeureux azafad », « je m'appelle Marie » -> le nom seul
 _AVANT_NOM = {"anarana", "anarako", "anarn", "anarany", "izaho", "zaho", "zah", "dia",
               "je", "mappelle", "appelle", "mon", "nom", "est", "cest", "moi"}
-_POLITESSE = {"azafady", "azafad", "azafdy", "svp", "stp", "merci", "misaotra", "belle", "ramose"}
+_POLITESSE = {"azafady", "azafad", "azafdy", "azfd", "azafd", "azfdy", "svp", "stp", "merci", "misaotra",
+              "belle", "ramose"}
 
 # Lieux reconnus sans modèle (texte normalisé : minuscules, sans accents) → zone de livraison.
 _REGIONS = ["majunga", "mahajanga", "diego", "diego suarez", "antsiranana", "tamatave", "toamasina",
@@ -93,7 +94,8 @@ def _nettoyer_nom(texte: str) -> str:
     """Le nom seul : sans mots d'introduction au début ni formules de politesse (« Ny Aina » est gardé)."""
     cle = lambda mot: re.sub(r"[^a-z0-9]", "", _cle(mot))
     mots = [m.strip(" ,.;:!?@") for m in texte.split() if cle(m) not in _POLITESSE]
-    while mots and cle(mots[0]) in _AVANT_NOM:
+    # « anarana », « anaran », « anarn », « anarako »… (7 lettres max : « Anarisoa » reste un prénom)
+    while mots and (cle(mots[0]) in _AVANT_NOM or (cle(mots[0]).startswith("anar") and len(cle(mots[0])) <= 7)):
         mots.pop(0)
     return " ".join(m for m in mots if m)
 
@@ -411,6 +413,10 @@ def _repondre(session: Session, brouillon: dict, message: str, extraire=None) ->
     champs = {k: v for k, v in _CHAMPS.items() if v in etapes}
 
     if b["etape"] == "recap":
+        zone = _lieu(message)  # « tsy en ville fa Darsalam » : la cliente corrige la livraison
+        if zone and zone != b.get("zone"):
+            b["zone"] = zone
+            return _recap(session, p, b)
         if _choisir(message, [OUI]) or _est_oui(message):
             return _creer(session, p, b)
         if _choisir(message, [MODIFIER]):
