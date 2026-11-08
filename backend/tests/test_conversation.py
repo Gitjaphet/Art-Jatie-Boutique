@@ -136,7 +136,7 @@ def test_malgache_accueil_et_piece_en_stock():
                           "Inona no tadiavinao androany ?")
     r = tour_guide("misy kitapo ve ?", r["fiche"], produits=_DEUX_SACS)
     assert r["texte"].startswith("Ireto ny sac nofidiako ho anao ✨\n\nIlay tena tiako : « Sac ")
-    assert ", 20 000 Ar, misy en stock." in r["texte"] and " à 20 000" not in r["texte"]
+    assert ", 20 000 Ar, iray sisa no misy." in r["texte"] and " à 20 000" not in r["texte"]
     assert r["texte"].endswith("sa reservenay ho anao avy hatrany ?")
     assert r["suggestions"][0] == "Eny, tiako"
 
@@ -161,3 +161,25 @@ def test_salutations_du_nord_en_malgache_sans_modele():
         r = tour_guide(message, None, produits=_DEUX_SACS)
         assert r["action"] == "salutation", message
         assert r["texte"].startswith("Salama ! 😊 Izaho no Jatie"), message
+
+
+# --- Réponses en malgache, lot 2 ---
+def test_malgache_total_livre():
+    from ai.recherche.conversation import tour_guide
+    r = tour_guide("misy kitapo any ambatoloaka ve ?", None, produits=_DEUX_SACS)
+    assert " Miaraka amin'ny livraison : 28 000 Ar daholo." in r["texte"], r["texte"]
+
+
+def test_malgache_rien_d_exact():
+    from ai.recherche.conversation import tour_guide
+    r = tour_guide("misy kitapo mena ve ?", None, produits=_DEUX_SACS)
+    assert r["texte"].startswith("Tsy misy sac mena aloha izao. Afaka amboarinay ho anao sur mesure mena ianao "
+                                 "(ao anatin'ny 7 ka hatramin'ny 14 andro), na ireto ny modèle akaiky indrindra 👇"), r["texte"]
+
+
+def test_malgache_remise_et_refus():
+    from ai.recherche.vendeuse import repondre
+    r = repondre("remise", {"langue": "mg"}, _DEUX_SACS)
+    assert r.texte.startswith("Tsy afaka ovaiko ny vidiny 😊") and "Hijery ny boutique rehetra" in r.suggestions
+    r = repondre("non", {"langue": "mg"}, _DEUX_SACS)
+    assert r.texte.startswith("Tsy maninona 😊") and r.suggestions[0] == "Hijery ny boutique rehetra"

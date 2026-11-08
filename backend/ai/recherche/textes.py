@@ -12,7 +12,30 @@ TEXTES = {
         "fr": "Mon coup de cœur : « {nom} »{nuance} à {prix}, {dispo}.",
         "mg": "Ilay tena tiako : « {nom} »{nuance}, {prix}, {dispo}.",
     },
-    "autre_coup_de_coeur": {"fr": "Autre coup de cœur : « {nom} »{nuance} à {prix}, {dispo}."},
+    "autre_coup_de_coeur": {
+        "fr": "Autre coup de cœur : « {nom} »{nuance} à {prix}, {dispo}.",
+        "mg": "Iray hafa tiako koa : « {nom} »{nuance}, {prix}, {dispo}.",
+    },
+    "derniere_piece": {"fr": "en stock — c'est la dernière pièce", "mg": "iray sisa no misy"},
+    "total": {"fr": " Livraison comprise : {total} au total.", "mg": " Miaraka amin'ny livraison : {total} daholo."},
+    "rien_d_exact": {
+        "fr": "Je n'ai pas de {d} pour le moment. Je peux vous en faire {un} sur mesure{couleur} (en {delai}), "
+              "ou voici les modèles les plus proches 👇",
+        "mg": "Tsy misy {d} aloha izao. Afaka amboarinay ho anao sur mesure{couleur} ianao (ao anatin'ny {delai}), "
+              "na ireto ny modèle akaiky indrindra 👇",
+    },
+    "comprends": {"fr": "Je comprends tout à fait 😊", "mg": "Azoko tsara 😊"},
+    "pas_de_souci": {
+        "fr": "Pas de souci 😊 Je peux vous montrer d'autres modèles, ou vous en créer un sur mesure.",
+        "mg": "Tsy maninona 😊 Afaka asehoko anao ny modèle hafa, na amboarinay ho anao sur mesure.",
+    },
+    "remise": {
+        "fr": "Je ne peux pas modifier nos prix 😊 Chaque pièce est crochetée à la main et son prix est fixé par "
+              "l'atelier. Dites-moi votre budget, et je vous trouve la plus belle pièce qui y rentre !",
+        "mg": "Tsy afaka ovaiko ny vidiny 😊 Atao amin'ny tanana avokoa ny pièce tsirairay ary ny atelier no "
+              "mametraka ny vidiny. Lazao ahy ny budget-nao dia hitadiavako ny pièce tsara indrindra mifanaraka "
+              "amin'izany !",
+    },
     "en_stock": {"fr": "en stock", "mg": "misy en stock"},
     "a_fabriquer": {
         "fr": "pas disponible en stock actuellement, mais nous pouvons {pr} réaliser pour vous en {delai}",
@@ -44,3 +67,13 @@ def dire(cle: str, langue: str = "fr", **valeurs) -> str:
 def en_malgache(duree: str) -> str:
     """« 7 à 14 jours » -> « 7 ka hatramin'ny 14 andro » : le délai reste dans sa source unique."""
     return duree.replace(" à ", " ka hatramin'ny ").replace("jours", "andro")
+
+
+# Familles de couleur -> malgache (mots validés du lexique) ; sans nom validé, le français reste
+COULEURS_MG = {"Rouge": "mena", "Blanc": "fotsy", "Noir": "mainty", "Jaune": "mavo", "Vert": "maitso",
+               "Bleu": "manga", "Rose": "mavokely", "Marron": "volontany", "Orange": "volomboasary",
+               "Violet": "volomparasy"}
+
+
+def couleurs_mg(familles: list[str]) -> list[str]:
+    return [COULEURS_MG.get(f, f.lower()) for f in familles]

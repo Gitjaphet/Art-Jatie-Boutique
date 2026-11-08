@@ -16,7 +16,7 @@ MAX_CARTES = 5
 DELAI_LIVRAISON_NOSY_BE = "dans la demi-journée"
 ZONES_NOSY_BE = {"nosybe_ville", "darsalam", "dzamanjar", "nosybe_autre"}
 ZONE_OFFERTE = "nosybe_ville"
-from ai.recherche.textes import dire, en_malgache
+from ai.recherche.textes import couleurs_mg, dire, en_malgache
 
 BOUTONS_ZONES = ["Hell-Ville", "Ambatoloaka", "Dzamanjar"]  # compris par le lecteur
 FEMININS = TYPES_FEMININS
@@ -78,8 +78,8 @@ def _en_couleur(fiche: dict) -> str:
 
 def _disponibilite(p: dict, langue: str = "fr") -> str:
     stock = p.get("stock") or 0
-    if stock == 1 and langue == "fr":  # la rareté n'a pas encore de version malgache validée
-        return "en stock — c'est la dernière pièce"
+    if stock == 1:
+        return dire("derniere_piece", langue)
     if stock > 0:
         return dire("en_stock", langue)
     delai = en_malgache(DELAI_FABRICATION) if langue == "mg" else DELAI_FABRICATION
@@ -114,10 +114,10 @@ def _phrase_livraison(zone: str, p: dict | None = None) -> str:
     return f"Livraison {LIBELLES_ZONE.get(zone, zone)} : {tarif}. {quand}."
 
 
-def _total(p: dict, zone: str | None) -> str:
+def _total(p: dict, zone: str | None, langue: str = "fr") -> str:
     if not zone or (frais := _frais(zone)) is None:
         return ""
-    return f" Livraison comprise : {ar(p['prix_ar'] + frais)} au total."
+    return dire("total", langue, total=ar(p["prix_ar"] + frais))
 
 
 def _tout_de_suite(p: dict, autres: list[dict]) -> str:
@@ -150,12 +150,12 @@ def _cartes(p: dict, liste: list[dict]) -> list[dict]:
 def _proposer(p: dict, fiche: dict, intro: str, autres: list[dict], nuance: str = "",
               relance: bool = False) -> Reponse:
     pr, langue = _pronom(p), fiche.get("langue") or "fr"
-    cle = "autre_coup_de_coeur" if relance and langue == "fr" else "coup_de_coeur"
+    cle = "autre_coup_de_coeur" if relance else "coup_de_coeur"
     deja = fiche.get("coups_de_coeur") or []
     vus = {"coups_de_coeur": deja + [p["id"]] if p["id"] not in deja else [p["id"]]}  # tous vus : on recommence
     ligne = dire(cle, langue, nom=p["nom"], nuance=nuance, prix=ar(p["prix_ar"]), dispo=_disponibilite(p, langue))
     texte = (f"{intro}\n\n{ligne}"
-             f"{_total(p, fiche.get('zone'))}{_tout_de_suite(p, autres)} {_conclure(p, langue)}")
+             f"{_total(p, fiche.get('zone'), langue)}{_tout_de_suite(p, autres)} {_conclure(p, langue)}")
     suggestions = [dire("bouton_oui", langue, pr=pr)]
     if any((a.get("prix_ar") or 0) < p["prix_ar"] for a in autres):
         suggestions.append(f"Moins de {ar(p['prix_ar'])}")
@@ -191,9 +191,16 @@ def _recherche(fiche: dict, produits: list[dict], intro: str | None = None) -> R
     if r.proches:
         # Rien d'exact : on le dit, on propose le sur mesure dans la couleur voulue ET un coup de cœur parmi les plus proches
         p, relance = _choisir(r.proches, fiche)
-        couleurs_p = " et ".join(c.lower() for c in (p.get("familles") or [])[:2])
-        intro = (f"Je n'ai pas de {_demande(fiche, nos=False)} pour le moment. Je peux vous en faire {_un(fiche, p)} "
-                 f"sur mesure{_en_couleur(fiche)} (en {DELAI_FABRICATION}), ou voici les modèles les plus proches 👇")
+        familles_p = (p.get("familles") or [])[:2]
+        if fiche.get("langue") == "mg":
+            couleurs_p = " sy ".join(couleurs_mg(familles_p))
+            couleur = " " + " na ".join(couleurs_mg(fiche["couleurs"])) if fiche.get("couleurs") else ""
+            d_mg = " sy ".join(t.lower() for t in fiche.get("types") or []) or "modèle"
+            intro = dire("rien_d_exact", "mg", d=d_mg + couleur, couleur=couleur, delai=en_malgache(DELAI_FABRICATION))
+        else:
+            couleurs_p = " et ".join(c.lower() for c in familles_p)
+            intro = dire("rien_d_exact", "fr", d=_demande(fiche, nos=False), un=_un(fiche, p),
+                         couleur=_en_couleur(fiche), delai=DELAI_FABRICATION)
         rep = _proposer(p, fiche, intro, r.proches, nuance=f" ({couleurs_p})" if couleurs_p else "",
                         relance=relance)
         rep.produits = _cartes(p, r.proches)
@@ -234,15 +241,17 @@ def repondre(action: str, fiche: dict, produits: list[dict], produit_id: int | N
         return _recherche(fiche, produits)
 
     if action == "objection":
-        rep = _recherche(fiche, produits, intro=f"Je comprends tout à fait 😊 Voici {_demande(fiche)} :")
-        if not rep.texte.startswith("Je comprends"):  # une objection commence toujours par de l'écoute
-            rep.texte = "Je comprends tout à fait 😊 " + rep.texte
+        langue = fiche.get("langue") or "fr"
+        ecoute = dire("comprends", langue)
+        suite = _intro(fiche, _demande(fiche), fiche.get("tour") or 0) if langue == "mg" else f"Voici {_demande(fiche)} :"
+        rep = _recherche(fiche, produits, intro=f"{ecoute} {suite}")
+        if not rep.texte.startswith(ecoute):  # une objection commence toujours par de l'écoute
+            rep.texte = f"{ecoute} {rep.texte}"
         return rep
 
     if action == "remise":
-        texte = ("Je ne peux pas modifier nos prix 😊 Chaque pièce est crochetée à la main et son prix est fixé par l'atelier. "
-                 "Dites-moi votre budget, et je vous trouve la plus belle pièce qui y rentre !")
-        return Reponse(texte, [], ["Moins cher", "Voir toute la boutique"])
+        langue = fiche.get("langue") or "fr"
+        return Reponse(dire("remise", langue), [], ["Moins cher", dire("bouton_tout_voir", langue)])
 
     if action == "livraison":
         zone = fiche.get("zone")
@@ -259,8 +268,8 @@ def repondre(action: str, fiche: dict, produits: list[dict], produit_id: int | N
         return Reponse(texte + " Que puis-je vous montrer ?", [], ["Robes", "Maillots", "Sacs"])
 
     if action == "non":
-        return Reponse("Pas de souci 😊 Je peux vous montrer d'autres modèles, ou vous en créer un sur mesure.",
-                       [], ["Voir toute la boutique", "Sur mesure"])
+        langue = fiche.get("langue") or "fr"
+        return Reponse(dire("pas_de_souci", langue), [], [dire("bouton_tout_voir", langue), "Sur mesure"])
 
     if action == "salutation":
         bonjour = politesse(fiche)
