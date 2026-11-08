@@ -228,3 +228,11 @@ def test_delais_convertis_en_malgache():
     from ai.recherche.textes import en_malgache
     assert en_malgache("7 à 14 jours") == "7 ka hatramin'ny 14 andro"
     assert en_malgache("24 à 48 h") == "24 ka hatramin'ny 48 ora"
+
+
+def test_plus_accessible_evite_la_piece_refusee():
+    from ai.recherche.conversation import tour_guide
+    r1 = tour_guide("vous avez des sacs ?", None, produits=_DEUX_SACS)
+    refuse = r1["fiche"]["question"]["produit_id"]
+    r2 = tour_guide("c'est trop cher", r1["fiche"], produits=_DEUX_SACS)
+    assert r2["produits"][0]["id"] != refuse  # même prix, mais pas celle qu'elle vient de refuser

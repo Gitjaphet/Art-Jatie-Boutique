@@ -221,7 +221,10 @@ def _recherche(fiche: dict, produits: list[dict], intro: str | None = None) -> R
         rep.produits = _cartes(p, r.proches)
         return rep
     # Rien dans les critères : le plus accessible du même type, budget ignoré, avec son vrai prix
-    sans_budget = filtrer(produits, {**fiche, "budget_max": None, "exclus": []})
+    # Le moins cher hors budget, en évitant les pièces déjà refusées (sauf s'il n'y a qu'elles)
+    sans_budget = filtrer(produits, {**fiche, "budget_max": None})
+    if not (sans_budget.exacts or sans_budget.proches):
+        sans_budget = filtrer(produits, {**fiche, "budget_max": None, "exclus": []})
     accessibles = sorted(sans_budget.exacts + sans_budget.proches, key=lambda x: x.get("prix_ar") or 0)
     if fiche.get("budget_max") and accessibles:
         p = accessibles[0]
