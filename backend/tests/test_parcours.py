@@ -354,3 +354,8 @@ def test_correction_de_zone_au_recapitulatif(session, product):
     assert r["brouillon"]["etape"] == "recap" and r["brouillon"]["zone"] == "nosybe_ville"
     r = _suivre(session, r, "azfd tsy en ville fa Darsalam kay")
     assert r["brouillon"]["zone"] == "darsalam" and r["brouillon"]["etape"] == "recap"
+
+
+def test_prix_de_base_reste_en_francais():
+    from ai.recherche.textes import dire
+    assert dire("recap_prix_base", "mg", prix="20 000 Ar").startswith("- Prix de base : 20 000 Ar (mety miova")

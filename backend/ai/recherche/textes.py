@@ -132,7 +132,7 @@ TEXTES = {
     "recap_sur_mesure": {"fr": "**Sur mesure inspiré de « {nom} »**", "mg": "**Sur mesure mitovy endrika amin'ny « {nom} »**"},
     "recap_prix_base": {
         "fr": "- Prix de base : {prix} (il peut varier selon la taille et les couleurs ; notre équipe vous le confirme)",
-        "mg": "- Vidiny fototra : {prix} (mety miova arakaraka ny taille sy ny loko ; ny ekipanay no miconfirmer azy)",
+        "mg": "- Prix de base : {prix} (mety miova arakaraka ny taille sy ny loko ; ny ekipanay no miconfirmer azy)",
     },
     "recap_total_estime": {"fr": "- **Total estimé : {total}**", "mg": "- **Total tombanana : {total}**"},
     "recap_fabrication": {
