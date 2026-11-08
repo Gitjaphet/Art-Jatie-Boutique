@@ -99,18 +99,21 @@ def _frais(zone: str) -> int | None:
     return 0 if zone == ZONE_OFFERTE else None
 
 
-def _phrase_livraison(zone: str, p: dict | None = None) -> str:
+def _phrase_livraison(zone: str, p: dict | None = None, langue: str = "fr") -> str:
     """Tarif réel de la zone + délai : celui d'une pièce en stock, ou celui du modèle cité s'il est à fabriquer."""
     frais = _frais(zone)
-    tarif = "offerte" if frais == 0 else ar(frais) if frais else "sur devis (l'équipe vous confirme le tarif)"
+    tarif = dire("tarif_offert", langue) if frais == 0 else ar(frais) if frais else dire("tarif_devis", langue)
     a_fabriquer = bool(p) and not (p.get("stock") or 0)
     e = "" if a_fabriquer and p.get("type_article") not in FEMININS else "e"  # « la robe … livrée », « le sac … livré »
-    arrivee = (f"puis livré{e} {DELAI_LIVRAISON_NOSY_BE}" if zone in ZONES_NOSY_BE
-               else f"puis acheminé{e} (délai confirmé par l'équipe)")
+    mg = langue == "mg"
+    arrivee = dire("arrivee_nosy_be" if zone in ZONES_NOSY_BE else "arrivee_ailleurs", langue,
+                   e=e, delai=DELAI_LIVRAISON_NOSY_BE)
     if a_fabriquer:
-        quand = f"« {p['nom']} » est réalisé{e} pour vous en {DELAI_FABRICATION}, {arrivee}"
+        quand = dire("livraison_fabrication", langue, nom=p["nom"], e=e, arrivee=arrivee,
+                     delai=en_malgache(DELAI_FABRICATION) if mg else DELAI_FABRICATION)
     else:
-        quand = f"Une pièce en stock est préparée sous {DELAI_TRAITEMENT}, {arrivee}"
+        quand = dire("livraison_stock", langue, arrivee=arrivee,
+                     delai=en_malgache(DELAI_TRAITEMENT) if mg else DELAI_TRAITEMENT)
     return f"Livraison {LIBELLES_ZONE.get(zone, zone)} : {tarif}. {quand}."
 
 
@@ -120,14 +123,14 @@ def _total(p: dict, zone: str | None, langue: str = "fr") -> str:
     return dire("total", langue, total=ar(p["prix_ar"] + frais))
 
 
-def _tout_de_suite(p: dict, autres: list[dict]) -> str:
+def _tout_de_suite(p: dict, autres: list[dict], langue: str = "fr") -> str:
     """Coup de cœur à fabriquer : on signale une autre pièce montrée, disponible tout de suite."""
     if (p.get("stock") or 0) > 0:
         return ""
     a = next((x for x in autres if x["id"] != p["id"] and (x.get("stock") or 0) > 0), None)
     if not a:
         return ""
-    return f" Pour l'avoir tout de suite : « {a['nom']} » à {ar(a['prix_ar'])} est {_disponibilite(a)}."
+    return dire("tout_de_suite", langue, nom=a["nom"], prix=ar(a["prix_ar"]), dispo=_disponibilite(a, langue))
 
 
 def _choisir(candidats: list[dict], fiche: dict) -> tuple[dict, bool]:
@@ -155,7 +158,7 @@ def _proposer(p: dict, fiche: dict, intro: str, autres: list[dict], nuance: str 
     vus = {"coups_de_coeur": deja + [p["id"]] if p["id"] not in deja else [p["id"]]}  # tous vus : on recommence
     ligne = dire(cle, langue, nom=p["nom"], nuance=nuance, prix=ar(p["prix_ar"]), dispo=_disponibilite(p, langue))
     texte = (f"{intro}\n\n{ligne}"
-             f"{_total(p, fiche.get('zone'), langue)}{_tout_de_suite(p, autres)} {_conclure(p, langue)}")
+             f"{_total(p, fiche.get('zone'), langue)}{_tout_de_suite(p, autres, langue)} {_conclure(p, langue)}")
     suggestions = [dire("bouton_oui", langue, pr=pr)]
     if any((a.get("prix_ar") or 0) < p["prix_ar"] for a in autres):
         suggestions.append(f"Moins de {ar(p['prix_ar'])}")
@@ -169,6 +172,18 @@ def _proposer(p: dict, fiche: dict, intro: str, autres: list[dict], nuance: str 
                        fiche_maj={"zone_demandee": True, **vus})
     suggestions.append("Sur mesure")
     return Reponse(texte, [], suggestions, {"type": "commander", "produit_id": p["id"]}, fiche_maj=vus)
+
+
+def _demande_mg(fiche: dict) -> str:
+    """La demande en malgache : « sac mena latsaky ny 20 000 Ar »."""
+    texte = " sy ".join(t.lower() for t in fiche.get("types") or []) or "modèle"
+    if fiche.get("couleurs"):
+        texte += " " + " na ".join(couleurs_mg(fiche["couleurs"]))
+    if fiche.get("tailles"):
+        texte += " taille " + " na ".join(fiche["tailles"])
+    if (b := fiche.get("budget_max")):
+        texte += f" latsaky ny {ar(b + 1)}" if b % 1000 == 999 else f" hatramin'ny {ar(b)}"
+    return texte
 
 
 def _intro(fiche: dict, d: str, tour: int) -> str:
@@ -210,19 +225,23 @@ def _recherche(fiche: dict, produits: list[dict], intro: str | None = None) -> R
     accessibles = sorted(sans_budget.exacts + sans_budget.proches, key=lambda x: x.get("prix_ar") or 0)
     if fiche.get("budget_max") and accessibles:
         p = accessibles[0]
-        texte = (f"Je n'ai pas de {_demande(fiche, nos=False)} en ce moment. Le modèle le plus accessible est « {p['nom']} » "
-                 f"à {ar(p['prix_ar'])}, {_disponibilite(p)}. Et tous nos modèles peuvent être faits sur mesure, "
-                 f"avec un acompte de {int(TAUX_ACOMPTE_SUR_MESURE * 100)} % à la commande. "
-                 f"{_conclure(p)}")
-        suggestions = [f"Oui, je {_pronom(p)} veux"]
+        langue = fiche.get("langue") or "fr"
+        d = _demande_mg(fiche) if langue == "mg" else _demande(fiche, nos=False)
+        texte = dire("plus_accessible", langue, d=d, nom=p["nom"], prix=ar(p["prix_ar"]),
+                     dispo=_disponibilite(p, langue), taux=int(TAUX_ACOMPTE_SUR_MESURE * 100),
+                     conclusion=_conclure(p, langue))
+        suggestions = [dire("bouton_oui", langue, pr=_pronom(p))]
         if fiche.get("types") or fiche.get("couleurs") or fiche.get("tailles"):  # toute la boutique, même budget
             suggestions.append(_bouton_autres(fiche["budget_max"]))
         return Reponse(texte, [p], suggestions + ["Sur mesure"],
                        {"type": "commander", "produit_id": p["id"]})
-    texte = (f"Je n'ai pas de {_demande(fiche, nos=False)} en ce moment 😔 Bonne nouvelle : "
-             f"nous pouvons vous en créer {_un(fiche)} sur mesure{_en_couleur(fiche)}, "
-             f"en {DELAI_FABRICATION}. Je vous montre nos modèles pour vous inspirer ?")
-    return Reponse(texte, [], ["Voir toute la boutique", "Sur mesure"], {"type": "montrer", "produit_id": None})
+    langue = fiche.get("langue") or "fr"
+    if langue == "mg":
+        texte = dire("rien_du_tout", "mg", d=_demande_mg(fiche), delai=en_malgache(DELAI_FABRICATION))
+    else:
+        texte = dire("rien_du_tout", "fr", d=_demande(fiche, nos=False), un=_un(fiche), couleur=_en_couleur(fiche),
+                     delai=DELAI_FABRICATION)
+    return Reponse(texte, [], [dire("bouton_tout_voir", langue), "Sur mesure"], {"type": "montrer", "produit_id": None})
 
 
 def politesse(fiche: dict) -> str:
@@ -254,18 +273,18 @@ def repondre(action: str, fiche: dict, produits: list[dict], produit_id: int | N
         return Reponse(dire("remise", langue), [], ["Moins cher", dire("bouton_tout_voir", langue)])
 
     if action == "livraison":
+        langue = fiche.get("langue") or "fr"
         zone = fiche.get("zone")
         if not zone:
-            texte = (f"Nous livrons partout ! Hell-Ville : offerte · Darsalam, Ambatoloaka, Madirokely : "
-                     f"{ar(FRAIS_LIVRAISON['darsalam'])} · Dzamanjar : {ar(FRAIS_LIVRAISON['dzamanjar'])} · "
-                     f"ailleurs : sur devis. Où souhaitez-vous être livrée ?")
+            texte = dire("zones", langue, darsalam=ar(FRAIS_LIVRAISON["darsalam"]),
+                         dzamanjar=ar(FRAIS_LIVRAISON["dzamanjar"]))
             return Reponse(texte, [], ["Hell-Ville", "Ambatoloaka", "Dzamanjar"])
-        texte = _phrase_livraison(zone, cite)
+        texte = _phrase_livraison(zone, cite, langue)
         if cite:
-            texte += f"{_total(cite, zone)} {_conclure(cite)}"
-            return Reponse(texte, [cite], [f"Oui, je {_pronom(cite)} veux", "Voir toute la boutique"],
+            texte += f"{_total(cite, zone, langue)} {_conclure(cite, langue)}"
+            return Reponse(texte, [cite], [dire("bouton_oui", langue, pr=_pronom(cite)), dire("bouton_tout_voir", langue)],
                            {"type": "commander", "produit_id": cite["id"]})
-        return Reponse(texte + " Que puis-je vous montrer ?", [], ["Robes", "Maillots", "Sacs"])
+        return Reponse(texte + dire("montrer_quoi", langue), [], ["Robes", "Maillots", "Sacs"])
 
     if action == "non":
         langue = fiche.get("langue") or "fr"

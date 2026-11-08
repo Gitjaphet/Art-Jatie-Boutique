@@ -201,3 +201,30 @@ def test_trop_cher_sans_nommer_vise_la_piece_proposee():
     r2 = tour_guide("c'est trop cher", r1["fiche"], produits=_DEUX_SACS)
     assert r2["fiche"]["exclus"] == [refuse] and r2["fiche"]["budget_max"] == 19999
     assert "à moins de 20 000 Ar" in r2["texte"], r2["texte"]  # jamais un autre sac au même prix
+
+
+# --- Réponses en malgache, lot 3 ---
+def test_malgache_rien_dans_le_budget():
+    from ai.recherche.conversation import tour_guide
+    r1 = tour_guide("misy kitapo ve ?", None, produits=_DEUX_SACS)
+    r2 = tour_guide("lafo loatra", r1["fiche"], produits=_DEUX_SACS)
+    assert r2["texte"].startswith("Azoko tsara 😊 Tsy misy sac latsaky ny 20 000 Ar aloha izao. "
+                                  "Ny modèle mora indrindra dia « "), r2["texte"]
+    assert "Ary azo amboarina sur mesure avokoa ny modèle-nay rehetra" in r2["texte"]
+
+
+def test_malgache_livraison_avec_et_sans_zone():
+    from ai.recherche.vendeuse import repondre
+    r = repondre("livraison", {"langue": "mg"}, _DEUX_SACS)
+    assert r.texte.startswith("Manatitra na aiza na aiza izahay !") and r.texte.endswith("Aiza no tianao hanaterana azy ?")
+    from ai.recherche.lecteur import lire
+    zone = lire("ambatoloaka").zone  # la clé interne, telle que le lecteur la produit
+    r = repondre("livraison", {"langue": "mg", "zone": zone}, _DEUX_SACS, 10)
+    assert "Omanina ao anatin'ny 24 ka hatramin'ny 48 ora ny pièce misy en stock" in r.texte, r.texte
+    assert "dia aterina ao anatin'ny antsasak'andro" in r.texte and r.texte.endswith("Reservenay ho anao ve ?")
+
+
+def test_delais_convertis_en_malgache():
+    from ai.recherche.textes import en_malgache
+    assert en_malgache("7 à 14 jours") == "7 ka hatramin'ny 14 andro"
+    assert en_malgache("24 à 48 h") == "24 ka hatramin'ny 48 ora"
