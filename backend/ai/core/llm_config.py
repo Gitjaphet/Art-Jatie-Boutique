@@ -34,4 +34,5 @@ CHAINES = {
     # Données personnelles : Groq (n'entraîne pas ses modèles sur les données, même en gratuit), puis OpenRouter.
     # Jamais Gemini gratuit, qui utilise les données pour améliorer ses produits.
     "commande":      [_GROQ_120B, _OR_120B],
+    "vendeuse":      [_GROQ_120B, _OR_120B],  # vend en côtier avec outils ; jamais Gemini gratuit
 }
