@@ -53,7 +53,7 @@ TEXTES = {
     "tarif_devis": {"fr": "sur devis (l'équipe vous confirme le tarif)", "mg": "resahina ny vidiny"},
     "arrivee_nosy_be": {"fr": "puis livré{e} {delai}", "mg": "dia aterina ao anatin'ny antsasak'andro"},
     "arrivee_ailleurs": {"fr": "puis acheminé{e} (délai confirmé par l'équipe)",
-                         "mg": "dia alefa (ny ekipa no manamafy ny fotoana)"},
+                         "mg": "dia alefa (ny ekipa no milaza delais)"},
     "livraison_stock": {"fr": "Une pièce en stock est préparée sous {delai}, {arrivee}",
                         "mg": "Omanina ao anatin'ny {delai} ny pièce misy en stock, {arrivee}"},
     "livraison_fabrication": {"fr": "« {nom} » est réalisé{e} pour vous en {delai}, {arrivee}",
