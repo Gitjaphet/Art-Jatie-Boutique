@@ -42,7 +42,9 @@ def _plafond(budget: int) -> str:
     return f"à moins de {ar(budget + 1)}" if budget % 1000 == 999 else f"à {ar(budget)} maximum"
 
 
-def _bouton_autres(budget: int) -> str:
+def _bouton_autres(budget: int, langue: str = "fr") -> str:
+    if langue == "mg":
+        return f"Entana hafa latsaky ny {ar(budget + 1)}" if budget % 1000 == 999 else f"Entana hafa hatramin'ny {ar(budget)}"
     return f"Autres articles à moins de {ar(budget + 1)}" if budget % 1000 == 999 else f"Autres articles jusqu'à {ar(budget)}"
 
 
@@ -235,7 +237,7 @@ def _recherche(fiche: dict, produits: list[dict], intro: str | None = None) -> R
                      conclusion=_conclure(p, langue))
         suggestions = [dire("bouton_oui", langue, pr=_pronom(p))]
         if fiche.get("types") or fiche.get("couleurs") or fiche.get("tailles"):  # toute la boutique, même budget
-            suggestions.append(_bouton_autres(fiche["budget_max"]))
+            suggestions.append(_bouton_autres(fiche["budget_max"], langue))
         return Reponse(texte, [p], suggestions + ["Sur mesure"],
                        {"type": "commander", "produit_id": p["id"]})
     langue = fiche.get("langue") or "fr"

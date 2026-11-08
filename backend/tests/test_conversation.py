@@ -236,3 +236,18 @@ def test_plus_accessible_evite_la_piece_refusee():
     refuse = r1["fiche"]["question"]["produit_id"]
     r2 = tour_guide("c'est trop cher", r1["fiche"], produits=_DEUX_SACS)
     assert r2["produits"][0]["id"] != refuse  # même prix, mais pas celle qu'elle vient de refuser
+
+
+def test_bouton_entana_hafa_compris_par_le_lecteur():
+    from ai.recherche.lecteur import lire
+    l = lire("Entana hafa hatramin'ny 30 000 Ar")
+    assert l.autres_articles and l.montant == 30000
+    l = lire("Entana hafa latsaky ny 20 000 Ar")
+    assert l.autres_articles and l.montant == 19999
+
+
+def test_bouton_entana_hafa_apres_objection_en_malgache():
+    from ai.recherche.conversation import tour_guide
+    r1 = tour_guide("misy kitapo ve ?", None, produits=_DEUX_SACS)
+    r2 = tour_guide("lafo loatra", r1["fiche"], produits=_DEUX_SACS)
+    assert "Entana hafa latsaky ny 20 000 Ar" in r2["suggestions"], r2["suggestions"]

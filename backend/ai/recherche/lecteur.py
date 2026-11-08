@@ -17,7 +17,7 @@ _MOTS_LIVRAISON = {"livrer", "livrez", "livraison", "livre", "livrent", "frais",
 _MOTS_REMISE = {"remise", "reduction", "promo", "rabais", "solde", "gerant", "instructions"}
 _MOTS_MOINS_CHER = ("moins cher", "pas cher", "moins chere", "le moins", "petit prix", "pas trop cher")
 _TOUT_VOIR = ("toute la boutique", "tout voir", "tous les modeles", "tous vos modeles", "tout le catalogue", "boutique rehetra")
-_AUTRES_ARTICLES = ("autres articles", "autre chose", "autres modeles", "autre article", "autres choses")
+_AUTRES_ARTICLES = ("autres articles", "autre chose", "autres modeles", "autre article", "autres choses", "entana hafa")
 _REPONSE_COURTE = 5  # mots maximum pour lire un oui/non comme une réponse
 
 # 30000 | 30 000 | 30.000 | 30k ; ignore « 50 % », « 2 ans », « 6 mois »
@@ -64,7 +64,8 @@ def _montant(texte: str) -> int | None:
 def _montant_dans(message: str, texte: str) -> int | None:
     """« moins de 40 000 » : strictement moins cher (39 999) ; « 30000 » seul : budget maximum."""
     valeur = _montant(message)
-    return valeur - 1 if valeur and " moins de " in texte else valeur
+    strictement = (" moins de ", " latsaky ny ")  # « latsaky ny 20 000 » : moins de 20 000
+    return valeur - 1 if valeur and any(x in texte for x in strictement) else valeur
 
 
 def _tailles(liste_mots: list[str]) -> list[str]:
