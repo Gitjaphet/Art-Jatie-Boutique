@@ -192,3 +192,12 @@ def test_langue_du_message_incompris():
     assert _langue_cliente("blabla", {"langue": "mg"}) == "mg"
     assert _langue_cliente("je veux un truc", None) == "fr"
     assert dire("incompris", "mg").startswith("Miala tsiny, tsy azoko tsara 😊")
+
+
+def test_trop_cher_sans_nommer_vise_la_piece_proposee():
+    from ai.recherche.conversation import tour_guide
+    r1 = tour_guide("vous avez des sacs ?", None, produits=_DEUX_SACS)
+    refuse = r1["fiche"]["question"]["produit_id"]
+    r2 = tour_guide("c'est trop cher", r1["fiche"], produits=_DEUX_SACS)
+    assert r2["fiche"]["exclus"] == [refuse] and r2["fiche"]["budget_max"] == 19999
+    assert "à moins de 20 000 Ar" in r2["texte"], r2["texte"]  # jamais un autre sac au même prix

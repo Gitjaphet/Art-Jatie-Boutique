@@ -71,6 +71,8 @@ def mettre_a_jour(fiche: dict | None, lecture: Lecture, montres: dict | None = N
 
     # 3. Objection de prix : le modèle cité sort des résultats, le budget passe sous son prix
     if lecture.trop_cher:
+        # La pièce refusée : celle que la cliente nomme, sinon celle qu'on vient de lui proposer
+        cite = cite or (f.get("question") or {}).get("produit_id")
         prix_cite = (montres or {}).get(cite, {}).get("prix_ar") if cite else None
         reference = lecture.montant or prix_cite
         if cite and cite not in f["exclus"]:
