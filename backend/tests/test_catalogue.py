@@ -88,3 +88,20 @@ def test_frontend_aligne_sur_le_catalogue():
     pastilles = (racine / "components" / "Boutique" / "SidebarFilters.tsx").read_text(encoding="utf-8")
     sans_pastille = [f for f in FAMILLES if not re.search(rf"\b{f}\s*:", pastilles)]
     assert not sans_pastille, f"Famille sans pastille dans COLOR_MAP : {sans_pastille}"
+
+
+@pytest.mark.parametrize("nom, attendu", [
+    ("Fil à coton 200 g", "Fil"),
+    ("Pelote milk cotton bleu ciel", "Fil"),
+    ("Ciseaux de couture", "Matériel"),
+    ("Kit crochet débutant", "Matériel"),
+    ("Robe Fille Rose", "Robe"),          # « fille » commence par « fil » : la robe passe avant
+    ("Sac Crochet Plage", "Sac"),         # « crochet » ne désigne jamais le matériel
+])
+def test_fil_et_materiel(nom, attendu):
+    assert deviner_type(nom) == attendu
+
+
+def test_fil_et_materiel_sans_taille():
+    from services.catalogue import TYPES_SANS_TAILLE
+    assert {"Fil", "Matériel"} <= TYPES_SANS_TAILLE

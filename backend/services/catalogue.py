@@ -41,11 +41,13 @@ RACINES_TYPE: dict[str, tuple[str, ...]] = {
     "Sac":      ("sac",),
     "Pochette": ("pochette",),
     "Chapeau":  ("chapeau", "bob", "bonnet"),
+    "Fil":      ("fil", "pelote", "traphilo", "milk"),
+    "Matériel": ("ciseau", "marqueur", "aiguille", "ruban", "kit"),  # jamais « crochet » : tous les noms le contiennent
 }
 ACCESSOIRE = "Accessoire"
 TYPES_ARTICLE = (*RACINES_TYPE, ACCESSOIRE)
 TYPES_FEMININS = {"Robe", "Jupe", "Pochette"}       # « la robe », « le sac » : accords des phrases
-TYPES_SANS_TAILLE = {"Sac", "Pochette", ACCESSOIRE}  # pas d'étape taille à la commande
+TYPES_SANS_TAILLE = {"Sac", "Pochette", "Fil", "Matériel", ACCESSOIRE}  # pas d'étape taille à la commande
 
 
 def mots(texte: str) -> list[str]:

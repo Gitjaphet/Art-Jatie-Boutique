@@ -24,7 +24,8 @@ DIALECTE = {
 }
 
 # Types d'article dans la bouche des clientes (mot exact ou pluriel)
-EXPRESSIONS_TYPE = {"akanjo milomano": "Maillot", "maillot de bain": "Maillot"}
+EXPRESSIONS_TYPE = {"akanjo milomano": "Maillot", "maillot de bain": "Maillot", "milk cotton": "Fil",
+                    "fil a coton": "Fil", "vy crochet": "Matériel", "metre ruban": "Matériel"}
 MOTS_TYPE = {
     "robe": "Robe", "akanjo": "Robe",
     "maillot": "Maillot", "bikini": "Maillot", "string": "Maillot",
@@ -35,6 +36,8 @@ MOTS_TYPE = {
     "sac": "Sac", "kitapo": "Sac",
     "pochette": "Pochette",
     "chapeau": "Chapeau", "bob": "Chapeau", "satroka": "Chapeau",
+    "fil": "Fil", "traphilo": "Fil", "pelote": "Fil", "boule": "Fil",
+    "ciseau": "Matériel", "ciseaux": "Matériel", "marqueur": "Matériel", "aiguille": "Matériel",
 }
 
 # Couleurs en malgache (mot exact) ; le français passe par services.catalogue.familles_de

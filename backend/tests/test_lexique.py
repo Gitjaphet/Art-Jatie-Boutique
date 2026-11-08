@@ -55,3 +55,14 @@ def test_dialecte_reconnu_comme_malgache():
     for message in ("zah te angano formation", "afak amaizanw sar zah azafady belle",
                     "zegny ma zeu", "aleko driaby belle", "firy ny sarany ?"):
         assert langue(mots_message(message)) == "mg", message
+
+
+@pytest.mark.parametrize("message, types", [
+    ("misy traphilo bleu ciel ve ?", ["Fil"]),
+    ("firy ny milk cotton 200g", ["Fil"]),
+    ("otrino vy crochet araiky ?", ["Matériel"]),
+    ("Robe Crochet rouge", ["Robe"]),
+])
+def test_fil_et_materiel_compris(message, types):
+    from ai.recherche.lexique import mots_message, types_cites
+    assert types_cites(mots_message(message)) == types

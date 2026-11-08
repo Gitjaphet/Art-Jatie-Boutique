@@ -53,7 +53,7 @@ def _pronom(p: dict) -> str:
 
 
 def _pluriel(type_article: str) -> str:
-    return "chapeaux" if type_article == "Chapeau" else type_article.lower() + "s"
+    return {"Chapeau": "chapeaux", "Matériel": "matériel"}.get(type_article, type_article.lower() + "s")
 
 
 def _demande(fiche: dict, nos: bool = True) -> str:
