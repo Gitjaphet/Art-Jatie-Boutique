@@ -265,6 +265,10 @@ function getFaq(now: Date) {
       r: "Non. La formation est ouverte aux débutantes complètes : nous commençons par le point de base et la tenue du fil avant d'aborder le granny square.",
     },
     {
+      q: "Comment se déroulent les cours ?",
+      r: "Dès le premier jour, vous pratiquez : la théorie vous est expliquée en même temps, sur votre propre ouvrage, sans longs cours théoriques. En petit groupe de 10 personnes maximum, chacune est suivie individuellement.",
+    },
+    {
       q: "Quand commence la prochaine session ?",
       r: "Vous pouvez commencer à tout moment : contactez-nous par WhatsApp ou Messenger pour choisir votre créneau.",
     },
@@ -302,7 +306,7 @@ function getFaq(now: Date) {
     },
     {
       q: "Y a-t-il un certificat ?",
-      r: "Pas de certificat pour le moment, mais mieux : une garantie de résultat. Nous ne vous laissons pas partir tant que vous n'avez pas terminé au moins un modèle, en petit groupe de 10 personnes maximum pour un vrai suivi individuel.",
+      r: "Pas de certificat pour le moment, mais mieux : une garantie de résultat. Nous ne vous laissons pas partir tant que vous n'avez pas terminé au moins un modèle. Pas de longs cours théoriques : vous pratiquez dès le premier jour, la théorie vient en même temps, en petit groupe de 10 personnes maximum pour un vrai suivi individuel.",
     },
   ];
 }
