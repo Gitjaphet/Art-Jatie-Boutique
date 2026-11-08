@@ -302,7 +302,7 @@ function getFaq(now: Date) {
     },
     {
       q: "Y a-t-il un certificat ?",
-      r: "Pas de certificat pour le moment, mais mieux : une garantie de résultat. Nous ne vous laissons pas partir tant que vous n'avez pas terminé au moins un modèle. Et Art Jatie peut acheter et vendre vos créations : ce que vous apprenez peut vous rapporter.",
+      r: "Pas de certificat pour le moment, mais mieux : une garantie de résultat. Nous ne vous laissons pas partir tant que vous n'avez pas terminé au moins un modèle, en petit groupe de 10 personnes maximum pour un vrai suivi individuel.",
     },
   ];
 }
