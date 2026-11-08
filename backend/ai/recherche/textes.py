@@ -129,6 +129,17 @@ TEXTES = {
     "confirmer": {"fr": "Je confirme la commande ?", "mg": "Confirmeko ve ?"},
     "recap_titre": {"fr": "Voici le récapitulatif de votre commande :", "mg": "Ireto ny famintinana ny commande-nao :"},
     "recap_question": {"fr": "Je confirme ?", "mg": "Confirmeko ve ?"},
+    "recap_sur_mesure": {"fr": "**Sur mesure inspiré de « {nom} »**", "mg": "**Sur mesure mitovy endrika amin'ny « {nom} »**"},
+    "recap_prix_base": {
+        "fr": "- Prix de base : {prix} (il peut varier selon la taille et les couleurs ; notre équipe vous le confirme)",
+        "mg": "- Vidiny fototra : {prix} (mety miova arakaraka ny taille sy ny loko ; ny ekipanay no miconfirmer azy)",
+    },
+    "recap_total_estime": {"fr": "- **Total estimé : {total}**", "mg": "- **Total tombanana : {total}**"},
+    "recap_fabrication": {
+        "fr": "- Fabrication : {delai} après l'avance de {avance} % du prix confirmé",
+        "mg": "- Fanamboarana : {delai} aorian'ny avance {avance} % amin'ny vidiny voaconfirmer",
+    },
+    "recap_au_nom": {"fr": "- Au nom de {nom}, WhatsApp {wa}", "mg": "- Amin'ny anaran'i {nom}, WhatsApp {wa}"},
     "incompris": {
         "fr": "Je n'ai pas bien compris 😊 Je peux vous montrer nos créations au crochet, ou vous en faire une "
               "sur mesure. Que cherchez-vous ?",

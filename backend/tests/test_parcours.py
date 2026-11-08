@@ -334,3 +334,10 @@ def test_nom_sans_mots_d_introduction_ni_politesse():
     assert _nettoyer_nom("je m'appelle Marie Claire") == "Marie Claire"
     assert _nettoyer_nom("Ny Aina") == "Ny Aina"
     assert _nettoyer_nom("Rakoto, merci") == "Rakoto"
+
+
+def test_recapitulatif_en_malgache():
+    from ai.recherche.textes import dire
+    assert dire("recap_au_nom", "mg", nom="Vanessa", wa="034") == "- Amin'ny anaran'i Vanessa, WhatsApp 034"
+    assert dire("recap_total_estime", "mg", total="30 000 Ar") == "- **Total tombanana : 30 000 Ar**"
+    assert dire("recap_au_nom", "fr", nom="Vanessa", wa="034") == "- Au nom de Vanessa, WhatsApp 034"

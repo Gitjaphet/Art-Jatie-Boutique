@@ -198,15 +198,16 @@ def _recap(session: Session, p: Product, b: dict) -> dict:
     except HTTPException as exc:
         return _reponse(f"Je ne peux pas finaliser cette commande : {_detail(exc)}", [MODIFIER, ANNULER], b)
     options = " · ".join(x for x in (b.get("taille"), b.get("couleur")) if x)
-    qui = f"- Au nom de {b['client_name']}, WhatsApp {b['client_whatsapp']}"
+    L = _L(b)
+    qui = dire("recap_au_nom", L, nom=b["client_name"], wa=b["client_whatsapp"])
     if _sur_mesure(b):
         lignes = [
-            f"**Sur mesure inspiré de « {p.name} »**" + (f" — {options}" if options else ""),
-            f"- Prix de base : {_fmt(calc['sous_total'])} (il peut varier selon la taille et les couleurs ; "
-            "notre équipe vous le confirme)",
+            dire("recap_sur_mesure", L, nom=p.name) + (f" — {options}" if options else ""),
+            dire("recap_prix_base", L, prix=_fmt(calc["sous_total"])),
             f"- Livraison : {_libelle_zone(b['zone'])}",
-            f"- **Total estimé : {_fmt(calc['total'])}**",
-            f"- Fabrication : {DELAI_FABRICATION} après l'avance de {AVANCE} % du prix confirmé",
+            dire("recap_total_estime", L, total=_fmt(calc["total"])),
+            dire("recap_fabrication", L, avance=AVANCE,
+                 delai=en_malgache(DELAI_FABRICATION) if L == "mg" else DELAI_FABRICATION),
             qui,
         ]
     else:
@@ -328,6 +329,8 @@ def _creer(session: Session, p: Product, b: dict) -> dict:
         return _reponse(dire("vendue", _L(b)), [SUR_MESURE, ANNULER], {**b, "etape": "mode"})
     note = (f"Sur mesure inspiré du modèle « {p.name} » — prix à confirmer avec la cliente. "
             "Commande passée via le chat Jatie." if sur_mesure else "Commande passée via le chat Jatie")
+    if _L(b) == "mg":  # l'équipe sait dans quelle langue rappeler la cliente
+        note += " — cliente en malgache"
     try:
         order = creer_commande(
             session,
