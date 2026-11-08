@@ -16,6 +16,8 @@ MAX_CARTES = 5
 DELAI_LIVRAISON_NOSY_BE = "dans la demi-journée"
 ZONES_NOSY_BE = {"nosybe_ville", "darsalam", "dzamanjar", "nosybe_autre"}
 ZONE_OFFERTE = "nosybe_ville"
+from ai.recherche.textes import dire, en_malgache
+
 BOUTONS_ZONES = ["Hell-Ville", "Ambatoloaka", "Dzamanjar"]  # compris par le lecteur
 FEMININS = TYPES_FEMININS
 
@@ -74,19 +76,19 @@ def _en_couleur(fiche: dict) -> str:
     return " en " + " ou ".join(c.lower() for c in fiche["couleurs"]) if fiche.get("couleurs") else ""
 
 
-def _disponibilite(p: dict) -> str:
+def _disponibilite(p: dict, langue: str = "fr") -> str:
     stock = p.get("stock") or 0
-    if stock == 1:
+    if stock == 1 and langue == "fr":  # la rareté n'a pas encore de version malgache validée
         return "en stock — c'est la dernière pièce"
-    if stock > 1:
-        return "en stock"
-    return (f"pas disponible en stock actuellement, mais nous pouvons {_pronom(p)} réaliser "
-            f"pour vous en {DELAI_FABRICATION}")
+    if stock > 0:
+        return dire("en_stock", langue)
+    delai = en_malgache(DELAI_FABRICATION) if langue == "mg" else DELAI_FABRICATION
+    return dire("a_fabriquer", langue, pr=_pronom(p), delai=delai)
 
 
-def _conclure(p: dict) -> str:
+def _conclure(p: dict, langue: str = "fr") -> str:
     """On réserve une pièce en stock ; on lance la réalisation d'une pièce à fabriquer."""
-    return f"Je vous {_pronom(p)} réserve ?" if (p.get("stock") or 0) > 0 else "On lance sa réalisation pour vous ?"
+    return dire("reserver", langue, pr=_pronom(p)) if (p.get("stock") or 0) > 0 else dire("realiser", langue)
 
 
 def _frais(zone: str) -> int | None:
@@ -147,25 +149,33 @@ def _cartes(p: dict, liste: list[dict]) -> list[dict]:
 
 def _proposer(p: dict, fiche: dict, intro: str, autres: list[dict], nuance: str = "",
               relance: bool = False) -> Reponse:
-    pr = _pronom(p)
-    accroche = "Autre coup de cœur" if relance else "Mon coup de cœur"
+    pr, langue = _pronom(p), fiche.get("langue") or "fr"
+    cle = "autre_coup_de_coeur" if relance and langue == "fr" else "coup_de_coeur"
     deja = fiche.get("coups_de_coeur") or []
     vus = {"coups_de_coeur": deja + [p["id"]] if p["id"] not in deja else [p["id"]]}  # tous vus : on recommence
-    texte = (f"{intro}\n\n{accroche} : « {p['nom']} »{nuance} à {ar(p['prix_ar'])}, {_disponibilite(p)}."
-             f"{_total(p, fiche.get('zone'))}{_tout_de_suite(p, autres)} {_conclure(p)}")
-    suggestions = [f"Oui, je {pr} veux"]
+    ligne = dire(cle, langue, nom=p["nom"], nuance=nuance, prix=ar(p["prix_ar"]), dispo=_disponibilite(p, langue))
+    texte = (f"{intro}\n\n{ligne}"
+             f"{_total(p, fiche.get('zone'))}{_tout_de_suite(p, autres)} {_conclure(p, langue)}")
+    suggestions = [dire("bouton_oui", langue, pr=pr)]
     if any((a.get("prix_ar") or 0) < p["prix_ar"] for a in autres):
         suggestions.append(f"Moins de {ar(p['prix_ar'])}")
     if not fiche.get("zone") and not fiche.get("zone_demandee"):
         # Une seule fois par conversation : le prix livré lève une hésitation fréquente avant l'achat
         # Une seule question, avec un choix : la zone (prix livré) ou la réservation directe
-        conclusion = _conclure(p)
-        texte = (texte.removesuffix(f" {conclusion}")
-                 + f" Dites-moi où vous livrer pour connaître le prix livré, ou {conclusion[0].lower()}{conclusion[1:]}")
+        conclusion = _conclure(p, langue)
+        cle = "zone_ou_reserver" if (p.get("stock") or 0) > 0 else "zone_ou_realiser"
+        texte = texte.removesuffix(f" {conclusion}") + " " + dire(cle, langue, pr=pr)
         return Reponse(texte, [], suggestions + BOUTONS_ZONES, {"type": "commander", "produit_id": p["id"]},
                        fiche_maj={"zone_demandee": True, **vus})
     suggestions.append("Sur mesure")
     return Reponse(texte, [], suggestions, {"type": "commander", "produit_id": p["id"]}, fiche_maj=vus)
+
+
+def _intro(fiche: dict, d: str, tour: int) -> str:
+    """Phrase d'ouverture d'une sélection ; en malgache, le type seul (couleurs et tailles : lot suivant)."""
+    if (fiche.get("langue") or "fr") == "mg":
+        return dire("selection", "mg", d=" sy ".join(t.lower() for t in fiche.get("types") or []) or "modèle")
+    return _INTROS[tour % len(_INTROS)].format(d=d)
 
 
 def _recherche(fiche: dict, produits: list[dict], intro: str | None = None) -> Reponse:
@@ -174,7 +184,7 @@ def _recherche(fiche: dict, produits: list[dict], intro: str | None = None) -> R
     tour = fiche.get("tour") or 0
     if r.exacts:
         p, relance = _choisir(r.exacts, fiche)
-        rep = _proposer(p, fiche, intro or _INTROS[tour % len(_INTROS)].format(d=d), r.exacts + r.proches,
+        rep = _proposer(p, fiche, intro or _intro(fiche, d, tour), r.exacts + r.proches,
                         relance=relance)
         rep.produits = _cartes(p, r.exacts)
         return rep
@@ -255,7 +265,7 @@ def repondre(action: str, fiche: dict, produits: list[dict], produit_id: int | N
     if action == "salutation":
         bonjour = politesse(fiche)
         types = [t for t in ("Robe", "Maillot", "Ensemble", "Sac") if any(p.get("type_article") == t for p in produits)]
-        return Reponse(f"{bonjour} Je suis Jatie, la conseillère d'Art Jatie. Que cherchez-vous aujourd'hui ?",
+        return Reponse(f"{bonjour} {dire('accueil', fiche.get('langue') or 'fr')}",
                        [], [_pluriel(t).capitalize() for t in types] + ["Sur mesure"])
 
     return _recherche(fiche, produits)

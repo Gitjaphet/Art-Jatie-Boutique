@@ -16,7 +16,7 @@ _AVANT_TAILLE = {"taille", "en", "size", "t"}
 _MOTS_LIVRAISON = {"livrer", "livrez", "livraison", "livre", "livrent", "frais", "expedition", "envoyer"}
 _MOTS_REMISE = {"remise", "reduction", "promo", "rabais", "solde", "gerant", "instructions"}
 _MOTS_MOINS_CHER = ("moins cher", "pas cher", "moins chere", "le moins", "petit prix", "pas trop cher")
-_TOUT_VOIR = ("toute la boutique", "tout voir", "tous les modeles", "tous vos modeles", "tout le catalogue")
+_TOUT_VOIR = ("toute la boutique", "tout voir", "tous les modeles", "tous vos modeles", "tout le catalogue", "boutique rehetra")
 _AUTRES_ARTICLES = ("autres articles", "autre chose", "autres modeles", "autre article", "autres choses")
 _REPONSE_COURTE = 5  # mots maximum pour lire un oui/non comme une réponse
 

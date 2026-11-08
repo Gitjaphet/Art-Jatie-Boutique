@@ -122,3 +122,34 @@ def test_coup_de_coeur_varie_puis_revient_au_premier():
 
     r3 = tour_guide("vous avez des sacs ?", r2["fiche"], produits=_DEUX_SACS)  # tous vus : on recommence
     assert r3["produits"][0]["id"] == premier and "Mon coup de cœur" in r3["texte"]
+
+
+# --- Réponses en malgache, lot 1 (phrases validées par Art Jatie) ---
+_SAC_A_FAIRE = [{"id": 20, "nom": "Sac Bleu", "type_article": "Sac", "prix_ar": 20000, "familles": ["Bleu"],
+                 "stock": 0, "sur_commande": True, "tailles": "", "images": []}]
+
+
+def test_malgache_accueil_et_piece_en_stock():
+    from ai.recherche.conversation import tour_guide
+    r = tour_guide("salama", None, produits=_DEUX_SACS)
+    assert r["texte"] == ("Salama ! 😊 Izaho no Jatie, mpanolotsaina ato amin'ny Art Jatie. "
+                          "Inona no tadiavinao androany ?")
+    r = tour_guide("misy kitapo ve ?", r["fiche"], produits=_DEUX_SACS)
+    assert r["texte"].startswith("Ireto ny sac nofidiako ho anao ✨\n\nIlay tena tiako : « Sac ")
+    assert ", 20 000 Ar, misy en stock." in r["texte"] and " à 20 000" not in r["texte"]
+    assert r["texte"].endswith("sa reservenay ho anao avy hatrany ?")
+    assert r["suggestions"][0] == "Eny, tiako"
+
+
+def test_malgache_piece_a_fabriquer():
+    from ai.recherche.conversation import tour_guide
+    r = tour_guide("misy kitapo ve ?", None, produits=_SAC_A_FAIRE)
+    assert ("tsy misy en stock aloha izao, fa afaka amboarinay ho anao ao anatin'ny 7 ka hatramin'ny 14 andro."
+            in r["texte"])
+    assert r["texte"].endswith("sa amboarinay ho anao avy hatrany ?")
+
+
+def test_boutons_malgaches_compris_par_le_lecteur():
+    from ai.recherche.lecteur import lire
+    assert lire("Hijery ny boutique rehetra").tout_voir
+    assert lire("Eny, tiako").reponse
