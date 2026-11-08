@@ -42,6 +42,10 @@ _DEBUT_OUI = {"oui", "ok", "okay", "yes", "eny", "daccord"}
 _NEGATIONS = {"non", "pas", "annule", "annuler", "attends", "attendez", "no"}
 _MOTS_ANNULER = {"annuler", "annule", "stop", "laisse tomber", "abandonner", "annuleko"}
 _MOTS_ZONE_GENERIQUES = {"nosy", "zone", "devis", "frais", "sur"}
+# Autour d'un nom tapé : « @anarn Valeureux azafad », « je m'appelle Marie » -> le nom seul
+_AVANT_NOM = {"anarana", "anarako", "anarn", "anarany", "izaho", "zaho", "zah", "dia",
+              "je", "mappelle", "appelle", "mon", "nom", "est", "cest", "moi"}
+_POLITESSE = {"azafady", "azafad", "azafdy", "svp", "stp", "merci", "misaotra", "belle", "ramose"}
 
 # Lieux reconnus sans modèle (texte normalisé : minuscules, sans accents) → zone de livraison.
 _REGIONS = ["majunga", "mahajanga", "diego", "diego suarez", "antsiranana", "tamatave", "toamasina",
@@ -82,6 +86,16 @@ def _choisir(message: str, options: list):
     """Bouton cliqué ou texte équivalent (casse, accents, espaces ignorés) → option exacte."""
     cle = _cle(message)
     return next((o for o in options if _cle(o) == cle), None)
+
+
+
+def _nettoyer_nom(texte: str) -> str:
+    """Le nom seul : sans mots d'introduction au début ni formules de politesse (« Ny Aina » est gardé)."""
+    cle = lambda mot: re.sub(r"[^a-z0-9]", "", _cle(mot))
+    mots = [m.strip(" ,.;:!?@") for m in texte.split() if cle(m) not in _POLITESSE]
+    while mots and cle(mots[0]) in _AVANT_NOM:
+        mots.pop(0)
+    return " ".join(m for m in mots if m)
 
 
 def _est_oui(message: str) -> bool:
@@ -262,7 +276,7 @@ def _valider(p: Product, b: dict, message: str):
             return dire("e_options", _L(b), options=", ".join(options))
         b[e] = choix
     elif e == "nom":
-        nom = texte[:120]
+        nom = _nettoyer_nom(texte)[:120]
         if len(nom) < 2 or len(nom.split()) > 4 or any(c.isdigit() for c in nom):
             return dire("e_nom", _L(b))
         b["client_name"] = nom

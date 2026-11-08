@@ -325,3 +325,12 @@ def test_phrases_de_commande_en_malgache():
     assert dire("e_zone", "mg") == "Fidio amin'reo ary lay toerana hanaterana ilay izy."
     assert dire("merci_stock", "mg", nom="Vanessa", id=12, total="28 000 Ar", wa="0340000000").startswith(
         "Misaotra Vanessa ! Voaray ny commande-nao laharana 12 ✨")
+
+
+def test_nom_sans_mots_d_introduction_ni_politesse():
+    from ai.commande.parcours import _nettoyer_nom
+    assert _nettoyer_nom("@anarn Valeureux azafad") == "Valeureux"
+    assert _nettoyer_nom("anarako dia Vanessa") == "Vanessa"
+    assert _nettoyer_nom("je m'appelle Marie Claire") == "Marie Claire"
+    assert _nettoyer_nom("Ny Aina") == "Ny Aina"
+    assert _nettoyer_nom("Rakoto, merci") == "Rakoto"
