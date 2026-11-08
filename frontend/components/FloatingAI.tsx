@@ -542,7 +542,11 @@ export default function FloatingAI() {
     setResume(null);
     setInput("");
   };
-  const commander = (p: Produit) => envoyer(`Je souhaite commander « ${p.nom} »`, p.id);
+  // Le message de la cliente dans sa langue (la fiche la connaît depuis ses premiers messages)
+  const commander = (p: Produit) =>
+    envoyer((fiche as { langue?: string } | null)?.langue === "mg"
+      ? `Te hanao commande « ${p.nom} » aho`
+      : `Je souhaite commander « ${p.nom} »`, p.id);
 
   if (!isOpen) return (
     <>
