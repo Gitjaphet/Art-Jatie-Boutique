@@ -80,11 +80,11 @@ OUTILS = [
         "name": "chercher_produits",
         "description": "Cherche les modèles de la boutique. Appelle-le avant de parler d'un modèle, d'un prix ou d'un stock.",
         "parameters": {"type": "object", "properties": {
-            "types": {"type": "array", "items": {"type": "string", "enum": list(TYPES_ARTICLE)}},
-            "couleurs": {"type": "array", "items": {"type": "string", "enum": list(FAMILLES)}},
-            "tailles": {"type": "array", "items": {"type": "string"}},
-            "budget_max": {"type": "integer", "description": "Budget maximum en Ariary, seulement s'il est écrit"},
-            "moins_cher": {"type": "boolean", "description": "La cliente veut le moins cher"},
+            "types": {"type": ["array", "null"], "items": {"type": "string", "enum": list(TYPES_ARTICLE)}},
+            "couleurs": {"type": ["array", "null"], "items": {"type": "string", "enum": list(FAMILLES)}},
+            "tailles": {"type": ["array", "null"], "items": {"type": "string"}},
+            "budget_max": {"type": ["integer", "null"], "description": "Budget maximum en Ariary, seulement s'il est écrit"},
+            "moins_cher": {"type": ["boolean", "null"], "description": "La cliente veut le moins cher"},
         }}}},
     {"type": "function", "function": {
         "name": "detail_produit", "description": "Détail d'un modèle déjà montré (par son id).",

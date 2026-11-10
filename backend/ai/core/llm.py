@@ -45,10 +45,16 @@ def appeler_modele(
         body["tools"] = tools
         body["tool_choice"] = tool_choice or "auto"
 
-    try:
-        r = httpx.post(p["url"], headers=headers, json=body, timeout=30)
-    except httpx.HTTPError as e:
-        raise ModeleIndisponible(f"{provider}/{model}: réseau ou délai dépassé ({e})")
+    # Un appel d'outil mal formé (outil inventé, JSON cassé) est souvent ponctuel : on réessaie une fois.
+    for essai in range(2):
+        try:
+            r = httpx.post(p["url"], headers=headers, json=body, timeout=30)
+        except httpx.HTTPError as e:
+            raise ModeleIndisponible(f"{provider}/{model}: réseau ou délai dépassé ({e})")
+        if essai == 0 and r.status_code == 400 and "tool_use_failed" in r.text:
+            logging.warning(f"[LLM] {provider}/{model}: appel d'outil mal formé → nouvelle tentative")
+            continue
+        break
 
     if r.status_code != 200:
         raise ModeleIndisponible(f"{provider}/{model}: HTTP {r.status_code} {r.text[:200]}")
