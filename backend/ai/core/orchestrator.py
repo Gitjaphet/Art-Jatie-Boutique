@@ -11,6 +11,7 @@ from ai.data.cartes import construire_cartes
 from ai.recherche.conversation import lecture_comprise, tour_guide
 from ai.recherche.lexique import langue, mots_message
 from ai.recherche.textes import dire
+from ai.vendeuse_ia.vente import vendre
 from ai.agents.extracteur_commande import extraire_champs
 from ai.commande.parcours import demarrer, repondre
 from ai.agents.faq import llm5_faq
@@ -77,6 +78,14 @@ def run_multi_agent(
                 intent = "indisponible"
     logging.info(f"[ORCHESTRATOR] Intent : {intent}")
 
+    # Nouvelle vendeuse (interrupteur VENDEUSE_IA) pour les messages produits ; None = l'ancienne Jatie répond.
+    vente = (vendre(message_masque, history_masque, fiche, _langue_cliente(message, fiche), token_log)
+             if intent.startswith("guide:") else None)
+    if vente and vente.get("commander"):  # la cliente veut commander : le parcours guidé démarre
+        commander, commande_en_cours, intent = vente["commander"], True, "commande"
+    elif vente and vente["produits"]:  # « la rouge », « celle-là » resteront compris au message suivant
+        fiche["montres"] = [p["id"] for p in vente["produits"]]
+
     reponse = ""
     produits = []
     liens = []
@@ -85,8 +94,9 @@ def run_multi_agent(
 
     # ── Salutation ────────────────────────────────────────────────────
     if intent.startswith("guide:"):
-        reponse, suggestions = guide["texte"], guide["suggestions"]
-        produits = construire_cartes(guide["produits"])
+        source = vente or guide  # la nouvelle vendeuse si elle a répondu, sinon l'ancienne Jatie
+        reponse, suggestions = source["texte"], source["suggestions"]
+        produits = construire_cartes(source["produits"])
 
     elif intent == "salutation":
         reponse = "Bonjour ! 💕 Je suis Jatie, votre assistante Art-Jatie ✨ Comment puis-je vous aider aujourd'hui ?"
