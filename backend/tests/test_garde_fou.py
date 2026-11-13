@@ -51,3 +51,29 @@ def test_reponse_fidele_passe(sens, reponse):
 ])
 def test_erreur_de_fait_detectee(sens, reponse, probleme):
     assert probleme in verifier(sens, reponse)
+
+
+# ── Style SMS : unité omise ou collée (mesure sur le VPS du 13/11/2026) ─────────
+from ai.vendeuse_ia.garde_fou import verifier as _verifier
+
+
+@pytest.mark.parametrize("sens, reponse", [
+    ("Le sac rouge coûte 45 000 Ar.", "Sac rouge nazy io 45000 araik belle"),
+    ("La robe noire en taille M est disponible à 65 000 Ar.", "Ya belle robe noir taille m dispo 65 000 araik"),
+    ("La pelote de milk cotton 50 g est à 7 000 Ar.", "Ya belle pelote Milk Cotton 50g araiky 7000ara izio"),
+    ("Je peux le faire en 3 jours.", "Ya afak atao 3j belle"),
+])
+def test_unite_omise_ou_collee_acceptee(sens, reponse):
+    assert _verifier(sens, reponse) == []
+
+
+def test_montant_different_toujours_refuse():
+    assert _verifier("Le sac coûte 45 000 Ar.", "Sac 40000 araik belle") == ["prix manquant : 45000"]
+
+
+def test_prix_invente_toujours_refuse():
+    assert "prix inventé : 5000" in _verifier("Le sac coûte 45 000 Ar.", "Sac 45000 araik, livraison 5000 Ar")
+
+
+def test_mora2_ne_compte_toujours_pas():
+    assert _verifier("Il en reste 2.", "Mbol misy mora2 belle") == ["nombre manquant : 2"]

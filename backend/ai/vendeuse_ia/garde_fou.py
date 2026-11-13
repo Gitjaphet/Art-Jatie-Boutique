@@ -110,6 +110,16 @@ def extraire_faits(texte: str) -> dict:
 
 # ── Brique 2 : comparer les faits du sens et de la réponse ──────────────────
 STRICTS = ("prix", "grammes", "tailles", "jours", "heures")
+
+# En SMS, l'unité est souvent omise ou collée : « 45000 araik », « 7000ara », « 3j ».
+# Ces montants écrits servent seulement à TOLÉRER un prix ou un nombre du sens écrit sans unité ;
+# un prix marqué (Ar, k, mille) absent du sens reste « inventé ». « mora2 » ne compte toujours pas.
+RE_MONTANT = re.compile(r"(?<![\w])(\d{1,3}(?:[\s.,]\d{3})+|\d+)")
+
+
+def _montants(texte: str) -> set[int]:
+    """Tous les montants écrits dans le texte, avec ou sans unité, même collés à un mot."""
+    return {int(re.sub(r"[\s.,]", "", m)) for m in RE_MONTANT.findall(_normaliser(texte.replace("[prix]", " ")))}
 _NOM = {"prix": "prix", "grammes": "grammage", "tailles": "taille",
         "jours": "jour", "heures": "heure", "nombres": "nombre"}
 
@@ -119,12 +129,15 @@ def verifier(sens: str, reponse: str) -> list[str]:
 
     - Prix, grammes, tailles, jours, heures : mêmes faits exactement
       (rien de manquant, rien d'inventé).
-    - Nombres simples : la réponse ne doit pas en perdre (elle peut en ajouter).
+    - Un prix du sens peut être écrit sans unité dans la réponse (« 45000 araik ») : même montant = présent.
+    - Nombres simples : la réponse ne doit pas en perdre (elle peut en ajouter ; « 3j » vaut 3).
     """
     a, b = extraire_faits(sens), extraire_faits(reponse)
+    ecrits = _montants(reponse)
     problemes = []
     for cat in STRICTS:
-        problemes += [f"{_NOM[cat]} manquant : {x}" for x in sorted(a[cat] - b[cat], key=str)]
+        manquants = a[cat] - b[cat] - (ecrits if cat == "prix" else set())
+        problemes += [f"{_NOM[cat]} manquant : {x}" for x in sorted(manquants, key=str)]
         problemes += [f"{_NOM[cat]} inventé : {x}" for x in sorted(b[cat] - a[cat], key=str)]
-    problemes += [f"nombre manquant : {x}" for x in sorted(a["nombres"] - b["nombres"])]
+    problemes += [f"nombre manquant : {x}" for x in sorted(a["nombres"] - b["nombres"] - ecrits)]
     return problemes
