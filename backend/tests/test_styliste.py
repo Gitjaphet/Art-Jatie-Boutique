@@ -75,3 +75,23 @@ def test_vide_ou_trop_long_inchange_sans_appel(monkeypatch, texte):
     appels = _simuler(monkeypatch, [])
     assert styliste.mettre_en_style(texte, "Mbola misy ve ?", "mg") == texte
     assert appels == []
+
+
+# ── « Ar » remis derrière les prix (corrections de Japhet du 13/11/2026) ────────
+@pytest.mark.parametrize("sens, reponse, attendu", [
+    ("Le sac rouge coûte 45 000 Ar.", "Sac rouge nazy io 45 000 araik belle", "Sac rouge nazy io 45 000Ar araik belle"),
+    ("La pelote 50 g est à 7 000 Ar.", "Ya belle pelote 50g 7000 araik", "Ya belle pelote 50g 7000Ar araik"),
+    ("La formation en ligne coûte 100 000 Ar.", "Formation en ligne 100 000", "Formation en ligne 100 000Ar"),
+    ("À partir de 40 000 Ar.", "a partir nazy 40 000Ar belle", "a partir nazy 40 000Ar belle"),   # déjà marqué
+    ("La robe coûte 65 000 Ar.", "Ya dispo 65k aro", "Ya dispo 65k aro"),                           # « k » = unité
+    ("La pelote est à 7 000 Ar.", "Pelote 7000ara izio", "Pelote 7000ara izio"),                    # collé : intact
+    ("Livraison 10 000 Ar, sous 2 jours.", "Livraison 10 000 belle 2 jours", "Livraison 10 000Ar belle 2 jours"),
+])
+def test_ariary_remis_derriere_les_prix(sens, reponse, attendu):
+    assert styliste._ajouter_ariary(sens, reponse) == attendu
+
+
+def test_mettre_en_style_remet_ariary(monkeypatch):
+    _simuler(monkeypatch, ["Sac rouge nazy io 45 000 araik belle"])
+    sortie = styliste.mettre_en_style("Le sac rouge coûte 45 000 Ar.", "Ohatrinona ?", "mg")
+    assert sortie == "Sac rouge nazy io 45 000Ar araik belle"
