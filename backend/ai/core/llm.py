@@ -25,15 +25,12 @@ def appeler_modele(
     tool_choice: str | None = None,
 ) -> dict:
     p = PROVIDERS[provider]
-    cle = os.getenv(p["key_env"])
-    if not cle:
-        raise ModeleIndisponible(f"{provider}: clé {p['key_env']} absente")
-
-    headers = {
-        "Authorization": f"Bearer {cle}",
-        "Content-Type": "application/json",
-        **p.get("headers", {}),
-    }
+    headers = {"Content-Type": "application/json", **p.get("headers", {})}
+    if p.get("key_env"):  # Ollama, sur notre VPS, n'a pas de clé
+        cle = os.getenv(p["key_env"])
+        if not cle:
+            raise ModeleIndisponible(f"{provider}: clé {p['key_env']} absente")
+        headers["Authorization"] = f"Bearer {cle}"
     body = {
         "model": model,
         "messages": messages,
@@ -48,7 +45,7 @@ def appeler_modele(
     # Un appel d'outil mal formé (outil inventé, JSON cassé) est souvent ponctuel : on réessaie une fois.
     for essai in range(2):
         try:
-            r = httpx.post(p["url"], headers=headers, json=body, timeout=30)
+            r = httpx.post(p["url"], headers=headers, json=body, timeout=p.get("timeout", 30))
         except httpx.HTTPError as e:
             raise ModeleIndisponible(f"{provider}/{model}: réseau ou délai dépassé ({e})")
         if essai == 0 and r.status_code == 400 and "tool_use_failed" in r.text:

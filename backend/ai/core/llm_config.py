@@ -1,5 +1,6 @@
 # ai/core/llm_config.py
 """Fournisseurs LLM et chaînes de bascule par rôle (gratuit d'abord, payant en dernier)."""
+import os
 
 # Tous ces fournisseurs parlent le même format "chat/completions" (compatible OpenAI).
 PROVIDERS = {
@@ -16,6 +17,12 @@ PROVIDERS = {
         "key_env": "OPENROUTER_API_KEY",
         "headers": {"HTTP-Referer": "https://artjatie.com"},
     },
+    # Modèle fine-tuné hébergé sur notre VPS (conteneur artjatie_ollama, réseau Docker interne).
+    # Pas de clé ; processeur seul, d'où un délai plus long (max mesuré : 44 s).
+    "ollama": {
+        "url": os.getenv("OLLAMA_URL", "http://artjatie_ollama:11434") + "/v1/chat/completions",
+        "timeout": 60,
+    },
 }
 
 # Un maillon = (fournisseur, modèle, paramètres en plus dans la requête).
@@ -24,6 +31,7 @@ _GROQ_20B  = ("groq", "openai/gpt-oss-20b", {"reasoning_effort": "low"})
 _GROQ_120B = ("groq", "openai/gpt-oss-120b", {"reasoning_effort": "low"})
 _GEMINI    = ("gemini", "gemini-3.5-flash-lite", {})
 _OR_120B   = ("openrouter", "openai/gpt-oss-120b", {"reasoning": {"effort": "low"}})
+_OLLAMA_V3 = ("ollama", "artjatie-vendeuse", {})  # v3 : Qwen3-4B + LoRA, style côtier de Japhet
 
 # Pour chaque rôle : modèles essayés dans l'ordre, le dernier est le payant garanti.
 CHAINES = {
@@ -35,4 +43,7 @@ CHAINES = {
     # Jamais Gemini gratuit, qui utilise les données pour améliorer ses produits.
     "commande":      [_GROQ_120B, _OR_120B],
     "vendeuse":      [_GROQ_120B, _OR_120B],  # vend en côtier avec outils ; jamais Gemini gratuit
+    # Réécrit le sens dans le style côtier. Ollama seul : les messages ne quittent pas le VPS,
+    # et s'il est indisponible, l'appelant garde la réponse française (aucun payant en secours).
+    "styliste":      [_OLLAMA_V3],
 }
