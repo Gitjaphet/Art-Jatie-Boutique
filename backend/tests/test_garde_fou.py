@@ -35,6 +35,7 @@ def test_extraire_faits(texte, categorie, attendu):
     ("Je peux t'en préparer 50 ou 100 g.", "Afak agnamboarako 50 n 100g zegn ndrk anw"),
     ("Récapitulatif : Traphilo 300 g × 3 ; total 66 500 Ar.", "Traphilo 300g x3 Total 66500ar belle"),
     ("Je suis près de la mosquée du vendredi.", "Mariny mousqué joma aty belle"),
+    ("2, 3, 4, 5, 6, 7, 8.", "2,3,4,5,6,7,8"),                       # liste sans espaces
 ])
 def test_reponse_fidele_passe(sens, reponse):
     assert verifier(sens, reponse) == []

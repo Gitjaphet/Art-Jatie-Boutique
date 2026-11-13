@@ -27,7 +27,7 @@ RE_PRIX = re.compile(
     r"(?<![\w\[])(\d+(?:[\s.,]\d{3})*|\d+)\s*(k|mille|mil)?\s*(ariary|ar|fmg)?(?![a-zà-ÿ])", re.I)
 RE_GRAMMES = re.compile(r"(?<![\w])(\d+(?:[.,]\d+)?)\s*(kg|g|gr|grammes?)(?![a-zà-ÿ])", re.I)
 RE_HEURE = re.compile(r"(?<![\w])([01]?\d|2[0-3])\s*h\s*([0-5]\d)?(?![a-zà-ÿ])", re.I)
-RE_NOMBRE = re.compile(r"(?<![\w])(?<!\d[.,])(\d+)(?![\w]|[.,]\d)")  # « mora2 », « lava2 » ne comptent pas
+RE_NOMBRE = re.compile(r"(?<![\w])(\d+)(?![\w])")  # « 2,3,4 » = liste ; « mora2 » ignoré  # « mora2 », « lava2 » ne comptent pas
 
 _T = r"(?:xxl|xl|xs|s|m|l)"
 RE_TAILLE_MAJ = re.compile(r"(?<![\w'’])(XXL|XL|XS|S|M|L)(?![\w'’])")
