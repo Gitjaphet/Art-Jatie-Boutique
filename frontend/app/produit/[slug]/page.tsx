@@ -1,4 +1,3 @@
-import { DELAIS } from "@/lib/contact";
 import { getProductBySlug, getProducts, getProductReviews, getProductReviewAggregate } from "@/lib/api";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -78,14 +77,6 @@ export default async function ProductPage({
     getProductReviewAggregate(product.id),
   ]);
 
-  // Délai de fabrication (sur commande) ou de préparation (en stock)
-  const handlingTime = {
-    "@type": "QuantitativeValue",
-    minValue: product.on_order ? DELAIS.fabrication.min : DELAIS.stock.min,
-    maxValue: product.on_order ? DELAIS.fabrication.max : DELAIS.stock.max,
-    unitCode: "DAY",
-  };
-
   // Pays desservis (livraison et retours)
   const returnCountries = ["MG", "FR", "RE", "YT", "MU", "BE", "DE", "IT"];
 
@@ -116,42 +107,9 @@ export default async function ProductPage({
       "@type": "Organization",
       name: "Art Jatie",
     },
-    // Les tarifs sont sur devis (cf. /livraison) : aucun shippingRate déclaré
-    shippingDetails: [
-      {
-        "@type": "OfferShippingDetails",
-        shippingDestination: {
-          "@type": "DefinedRegion",
-          addressCountry: "MG",
-        },
-        deliveryTime: {
-          "@type": "ShippingDeliveryTime",
-          handlingTime,
-          transitTime: {
-            "@type": "QuantitativeValue",
-            minValue: 0,   // Demi-journée à Nosy Be
-            maxValue: 7,   // Jusqu'à 7 jours pour le reste de Madagascar
-            unitCode: "DAY",
-          },
-        },
-      },
-      {
-        "@type": "OfferShippingDetails",
-        shippingDestination: ["FR", "RE", "YT", "MU", "BE", "DE", "IT"].map(
-          (c) => ({ "@type": "DefinedRegion", addressCountry: c })
-        ),
-        deliveryTime: {
-          "@type": "ShippingDeliveryTime",
-          handlingTime,
-          transitTime: {
-            "@type": "QuantitativeValue",
-            minValue: 7,   // 7 jours (avion) à 3 mois (bateau)
-            maxValue: 90,
-            unitCode: "DAY",
-          },
-        },
-      },
-    ],
+    // Pas de shippingDetails : les frais dépendent du quartier (Nosy Be) ou sont sur devis
+    // (coopérative, international). Google exige un tarif par destination : en déclarer un
+    // serait faux pour la plupart des zones. Le détail reste sur /livraison.
     hasMerchantReturnPolicy: {
       "@type": "MerchantReturnPolicy",
       applicableCountry: returnCountries,
